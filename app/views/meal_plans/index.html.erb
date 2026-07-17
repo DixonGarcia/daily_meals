@@ -1,0 +1,144 @@
+<div class="dashboard-grid">
+  <!-- Left Side: Weekly Calendar -->
+  <div>
+    <h2 class="section-title">📆 Weekly Meal Calendar</h2>
+    
+    <div class="calendar-grid">
+      <% MealPlan::DAYS_OF_WEEK.each do |day| %>
+        <% plan = @meal_plans[day] %>
+        <div class="card day-card">
+          <div class="day-header">
+            <span><%= day %></span>
+            <span style="font-size: 1.1rem;">🗓️</span>
+          </div>
+
+          <%= form_with url: update_day_meal_plans_path, method: :patch, local: true do |f| %>
+            <%= f.hidden_field :day_of_week, value: day %>
+
+            <div class="meal-slot" style="margin-bottom: 0.8rem;">
+              <span class="meal-label">☀️ Lunch</span>
+              <%= f.select :lunch_dish_id, 
+                           options_from_collection_for_select(@dishes, :id, :name, plan.lunch_dish_id), 
+                           { include_blank: "None" }, 
+                           { class: "meal-dish-selector" } %>
+            </div>
+
+            <div class="meal-slot" style="margin-bottom: 1.2rem;">
+              <span class="meal-label">🌙 Dinner</span>
+              <%= f.select :dinner_dish_id, 
+                           options_from_collection_for_select(@dishes, :id, :name, plan.dinner_dish_id), 
+                           { include_blank: "None" }, 
+                           { class: "meal-dish-selector" } %>
+            </div>
+
+            <%= f.submit "Update Day", class: "update-day-btn" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Right Side: Sidebar (Shopping List & AI Copilot) -->
+  <div class="sidebar-panel">
+    <!-- AI Copilot Panel -->
+    <div class="card ai-copilot-card">
+      <h3 class="section-title" style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--accent-violet);">🤖 AI Copilot</h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Export your catalog for AI or import a planned menu.
+      </p>
+
+      <!-- Export Form -->
+      <div style="margin-bottom: 1.5rem;">
+        <label class="form-label" style="font-size: 0.8rem;">Planning Restrictions:</label>
+        <input type="text" id="ai-restrictions" class="ai-text-input" placeholder="e.g., Monday to Friday, avoid repeating beef..." value="Plan Monday to Friday.">
+        
+        <button type="button" id="btn-export" class="btn-ai-violet" style="font-size: 0.85rem;">
+          📤 Generate JSON for AI
+        </button>
+
+        <textarea id="ai-export-payload" class="ai-textarea" readonly placeholder="The catalog JSON will appear here..."></textarea>
+        
+        <button type="button" id="btn-copy" class="btn-secondary" style="width: 100%; font-size: 0.85rem; padding: 0.5rem; display: none;">
+          📋 Copy to Clipboard
+        </button>
+      </div>
+
+      <!-- Import Form -->
+      <%= form_with url: import_ai_copilot_path, method: :post, local: true do |f| %>
+        <label class="form-label" style="font-size: 0.8rem;">Paste AI-planned JSON:</label>
+        <%= f.text_area :payload, class: "ai-textarea", required: true, placeholder: "Paste response JSON here..." %>
+        <%= f.submit "📥 Import Meal Plan", class: "btn-ai-violet", style: "background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);" %>
+      <% end %>
+    </div>
+
+    <!-- Shopping List Card -->
+    <div class="card shopping-list-card">
+      <h3 class="section-title" style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--accent-pink);">🛒 Shopping List</h3>
+      
+      <% if @shopping_list.empty? %>
+        <p class="empty-shopping-list">No ingredients planned for this week.</p>
+      <% else %>
+        <% @shopping_list.each do |section, items| %>
+          <div class="shopping-list-aisle">
+            <div class="shopping-list-aisle-name"><%= section %></div>
+            <% items.each do |item| %>
+              <div class="shopping-item">
+                <span class="shopping-item-name"><%= item[:ingredient].name %></span>
+                <span class="shopping-item-qty"><%= item[:quantity] %></span>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("turbo:load", function() {
+    const btnExport = document.getElementById("btn-export");
+    const restrictionsInput = document.getElementById("ai-restrictions");
+    const exportTextarea = document.getElementById("ai-export-payload");
+    const btnCopy = document.getElementById("btn-copy");
+
+    if (btnExport) {
+      btnExport.addEventListener("click", function() {
+        const restrictions = encodeURIComponent(restrictionsInput.value);
+        btnExport.innerText = "🔄 Generating...";
+        btnExport.disabled = true;
+
+        fetch(`/ai_copilot/export?restrictions=${restrictions}`, {
+          method: "POST",
+          headers: {
+            "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").getAttribute("content"),
+            "Content-Type": "application/json"
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          exportTextarea.value = JSON.stringify(data, null, 2);
+          btnExport.innerText = "📤 Generate JSON for AI";
+          btnExport.disabled = false;
+          btnCopy.style.display = "block";
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Error exporting catalog.");
+          btnExport.innerText = "📤 Generate JSON for AI";
+          btnExport.disabled = false;
+        });
+      });
+    }
+
+    if (btnCopy) {
+      btnCopy.addEventListener("click", function() {
+        exportTextarea.select();
+        document.execCommand("copy");
+        btnCopy.innerText = "✅ Copied!";
+        setTimeout(() => {
+          btnCopy.innerText = "📋 Copy to Clipboard";
+        }, 2000);
+      });
+    }
+  });
+</script>

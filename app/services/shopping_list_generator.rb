@@ -1,0 +1,68 @@
+class ShoppingListGenerator
+  def generate
+    # Collect all dishes from active meal plans
+    dishes = MealPlan.all.flat_map { |plan| [plan.lunch_dish, plan.dinner_dish] }.compact
+
+    # Get all dish_ingredients for those dishes
+    dish_ingredients = DishIngredient.where(dish: dishes).includes(:ingredient)
+
+    # Group by ingredient
+    grouped_by_ingredient = dish_ingredients.group_by(&:ingredient)
+
+    # Build the consolidated list
+    shopping_list = {}
+
+    grouped_by_ingredient.each do |ingredient, associations|
+      quantities = associations.map(&:suggested_quantity)
+      consolidated_qty = consolidate_quantities(quantities)
+
+      section = ingredient.supermarket_section
+      shopping_list[section] ||= []
+      shopping_list[section] << {
+        ingredient: ingredient,
+        quantity: consolidated_qty
+      }
+    end
+
+    # Sort each section's ingredients by name for clean presentation
+    shopping_list.each do |section, items|
+      shopping_list[section] = items.sort_by { |item| item[:ingredient].name }
+    end
+
+    shopping_list
+  end
+
+  private
+
+  def consolidate_quantities(quantities)
+    return "" if quantities.empty?
+
+    parsed = quantities.map do |q|
+      match = q.to_s.match(/\A([\d.]+)(\s*)(.*)\z/)
+      if match
+        { val: match[1].to_f, spacing: match[2], unit: match[3].to_s.strip }
+      else
+        { val: 0.0, spacing: "", unit: q.to_s.strip }
+      end
+    end
+
+    # Group by unit (case-insensitive for comparison)
+    grouped = parsed.group_by { |p| p[:unit].downcase }
+
+    parts = grouped.map do |unit_key, items|
+      sum = items.map { |p| p[:val] }.sum
+      # Find original casing of unit and spacing
+      original_unit = items.map { |p| p[:unit] }.find(&:present?) || ""
+      spacing = items.map { |p| p[:spacing] }.find { |s| !s.nil? } || ""
+
+      if sum > 0
+        formatted_sum = sum % 1 == 0 ? sum.to_i : sum
+        "#{formatted_sum}#{spacing}#{original_unit}"
+      else
+        items.map { |p| p[:unit] }.uniq.join(" + ")
+      end
+    end
+
+    parts.join(" + ")
+  end
+end

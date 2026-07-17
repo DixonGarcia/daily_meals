@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Daily Meals" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  </head>
+
+  <body>
+    <!-- Navbar -->
+    <nav class="app-nav">
+      <div class="nav-container">
+        <a href="/" class="nav-logo">
+          <span class="logo-emoji">🍳</span>
+          <span class="logo-text">DailyMeals</span>
+        </a>
+        <div class="nav-links">
+          <a href="/" class="nav-link <%= 'active' if current_page?(root_path) %>">📆 Calendar</a>
+          <a href="/dishes" class="nav-link <%= 'active' if controller_name == 'dishes' %>">🍽️ Dishes</a>
+          <a href="/ingredients" class="nav-link <%= 'active' if controller_name == 'ingredients' %>">🥕 Ingredients</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="main-content">
+      <!-- Flash Notifications -->
+      <% if flash[:notice].present? %>
+        <div class="flash flash-notice"><%= flash[:notice] %></div>
+      <% end %>
+      <% if flash[:alert].present? %>
+        <div class="flash flash-alert"><%= flash[:alert] %></div>
+      <% end %>
+
+      <%= yield %>
+    </main>
+  </body>
+</html>

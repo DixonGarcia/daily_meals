@@ -1,0 +1,30 @@
+<%= form_with model: ingredient, local: true, class: "card", style: "max-width: 500px; margin: 0 auto;" do |f| %>
+  <% if ingredient.errors.any? %>
+    <div class="flash flash-alert" style="margin-bottom: 1.5rem;">
+      <h4 style="margin-bottom: 0.5rem;">Please correct the following errors:</h4>
+      <ul>
+        <% ingredient.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group">
+    <%= f.label :name, "Ingredient Name", class: "form-label" %>
+    <%= f.text_field :name, class: "form-input", placeholder: "e.g. Ground beef" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :supermarket_section, "Supermarket Section", class: "form-label" %>
+    <%= f.select :supermarket_section, 
+                 ['Butcher', 'Produce', 'Pantry', 'Dairy', 'Bakery', 'Frozen', 'Beverages', 'Cleaning', 'Other'], 
+                 { include_blank: "Select a section" }, 
+                 { class: "form-input" } %>
+  </div>
+
+  <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+    <%= f.submit ingredient.new_record? ? "Create Ingredient" : "Save Changes", class: "btn-action", style: "flex: 1;" %>
+    <a href="<%= ingredients_path %>" class="btn-secondary" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;">Cancel</a>
+  </div>
+<% end %>

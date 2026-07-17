@@ -1,0 +1,49 @@
+<div class="header-actions">
+  <h2 class="section-title">🍽️ Dish Catalog</h2>
+  <a href="<%= new_dish_path %>" class="btn-action">➕ Add New Dish</a>
+</div>
+
+<div class="card">
+  <% if @dishes.empty? %>
+    <p style="color: var(--text-secondary); text-align: center; font-style: italic;">No dishes in the catalog yet.</p>
+  <% else %>
+    <table class="table-card">
+      <thead>
+        <tr>
+          <th>Dish Name</th>
+          <th>Category</th>
+          <th>Associated Ingredients</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @dishes.each do |dish| %>
+          <tr>
+            <td>
+              <a href="<%= dish_path(dish) %>" style="font-weight: 700; color: var(--accent-rose); hover: underline;">
+                <%= dish.name %>
+              </a>
+            </td>
+            <td>
+              <% category_class = case dish.category
+                                when 'Breakfast' then 'tag-breakfast'
+                                when 'Lunch' then 'tag-lunch'
+                                when 'Dinner' then 'tag-dinner'
+                                when 'Snack' then 'tag-snack'
+                                else 'tag-other'
+                                end %>
+              <span class="category-tag <%= category_class %>"><%= dish.category %></span>
+            </td>
+            <td>
+              <%= dish.ingredients.map(&:name).join(', ').presence || 'None' %>
+            </td>
+            <td style="text-align: right;">
+              <a href="<%= edit_dish_path(dish) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-right: 0.5rem;">✏️ Edit</a>
+              <%= button_to '❌ Delete', dish_path(dish), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn-danger', style: 'display: inline-block; padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

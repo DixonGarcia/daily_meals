@@ -1,0 +1,46 @@
+<div class="header-actions">
+  <h2 class="section-title">🍽️ Dish Details</h2>
+  <div>
+    <a href="<%= edit_dish_path(@dish) %>" class="btn-action" style="margin-right: 0.5rem; background: var(--accent-blue);">✏️ Edit Dish</a>
+    <a href="<%= dishes_path %>" class="btn-secondary">Back to Catalog</a>
+  </div>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+  <div class="day-header" style="border-bottom: 2px solid var(--accent-rose); margin-bottom: 1.5rem;">
+    <span><%= @dish.name %></span>
+    <% category_class = case @dish.category
+                      when 'Breakfast' then 'tag-breakfast'
+                      when 'Lunch' then 'tag-lunch'
+                      when 'Dinner' then 'tag-dinner'
+                      when 'Snack' then 'tag-snack'
+                      else 'tag-other'
+                      end %>
+    <span class="category-tag <%= category_class %>" style="font-size: 0.9rem; padding: 0.3rem 0.8rem;"><%= @dish.category %></span>
+  </div>
+
+  <h3 class="form-label" style="margin-bottom: 1rem; color: var(--accent-cyan);">🥕 Ingredients and Quantities</h3>
+  
+  <% if @dish.dish_ingredients.empty? %>
+    <p style="font-style: italic; color: var(--text-secondary);">This dish has no associated ingredients.</p>
+  <% else %>
+    <table class="table-card">
+      <thead>
+        <tr>
+          <th>Ingredient</th>
+          <th>Supermarket Section</th>
+          <th>Suggested Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @dish.dish_ingredients.includes(:ingredient).each do |di| %>
+          <tr>
+            <td style="font-weight: 600;"><%= di.ingredient.name %></td>
+            <td><span style="color: var(--text-secondary);"><%= di.ingredient.supermarket_section %></span></td>
+            <td style="color: var(--accent-pink); font-weight: 700;"><%= di.suggested_quantity %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>
