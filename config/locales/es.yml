@@ -1,0 +1,133 @@
+es:
+  layout:
+    title: "Daily Meals"
+    calendar: "📆 Calendario"
+    dishes: "🍽️ Platos"
+    ingredients: "🥕 Ingredientes"
+  meal_plans:
+    index:
+      title: "📆 Calendario Semanal de Comidas"
+      lunch: "☀️ Almuerzo"
+      dinner: "🌙 Cena"
+      none: "Ninguno"
+      update_day: "Actualizar Día"
+      ai_copilot: "🤖 Copiloto de IA"
+      ai_description: "Exporta tu catálogo para la IA o importa un menú planificado."
+      planning_restrictions: "Restricciones de Planificación:"
+      generate_json: "📤 Generar JSON para la IA"
+      catalog_placeholder: "El JSON del catálogo aparecerá aquí..."
+      copy_clipboard: "📋 Copiar al Portapapeles"
+      paste_json: "Pega el JSON planificado por la IA:"
+      paste_placeholder: "Pega el JSON de respuesta aquí..."
+      import_plan: "📥 Importar Plan de Comidas"
+      shopping_list: "🛒 Lista de Compras"
+      no_ingredients: "No hay ingredientes planificados para esta semana."
+      generating: "🔄 Generando..."
+      copied: "✅ ¡Copiado!"
+      error_exporting: "Error al exportar el catálogo."
+    controller:
+      updated: "Plan de comidas para %{day} actualizado con éxito."
+      error_update: "No se pudo actualizar el plan de comidas para %{day}: %{errors}"
+  dishes:
+    index:
+      title: "🍽️ Catálogo de Platos"
+      add_new: "➕ Agregar Nuevo Plato"
+      empty: "No hay platos en el catálogo aún."
+      table:
+        name: "Nombre del Plato"
+        category: "Categoría"
+        ingredients: "Ingredientes Asociados"
+        actions: "Acciones"
+      actions:
+        edit: "✏️ Editar"
+        delete: "❌ Eliminar"
+        confirm_delete: "¿Estás seguro?"
+    show:
+      title: "🍽️ Detalles del Plato"
+      edit_dish: "✏️ Editar Plato"
+      back: "Volver al Catálogo"
+      ingredients_title: "🥕 Ingredientes y Cantidades"
+      empty_ingredients: "Este plato no tiene ingredientes asociados."
+      table:
+        ingredient: "Ingrediente"
+        section: "Sección del Supermercado"
+        quantity: "Cantidad Sugerida"
+    form:
+      errors_title: "Por favor corrige los siguientes errores:"
+      name_label: "Nombre del Plato"
+      name_placeholder: "ej. Pasta Boloñesa"
+      category_label: "Categoría de Comida"
+      category_placeholder: "Selecciona una categoría"
+      ingredients_label: "🥕 Ingredientes Requeridos"
+      add_ingredient: "➕ Agregar Ingrediente"
+      select_ingredient: "Selecciona un ingrediente"
+      quantity_placeholder: "ej. 500g, 1 lata"
+      submit_create: "Crear Plato"
+      submit_update: "Guardar Cambios"
+      cancel: "Cancelar"
+    new:
+      title: "➕ Agregar Nuevo Plato"
+    edit:
+      title: "✏️ Editar Plato"
+    controller:
+      created: "El plato fue creado con éxito."
+      updated: "El plato fue actualizado con éxito."
+      deleted: "El plato fue eliminado con éxito."
+  ingredients:
+    index:
+      title: "🥕 Catálogo de Ingredientes"
+      add_new: "➕ Agregar Nuevo Ingrediente"
+      empty: "No hay ingredientes en el catálogo aún."
+      table:
+        name: "Nombre del Ingrediente"
+        section: "Sección del Supermercado"
+        actions: "Acciones"
+      actions:
+        edit: "✏️ Editar"
+        delete: "❌ Eliminar"
+        confirm_delete: "¿Estás seguro?"
+    form:
+      errors_title: "Por favor corrige los siguientes errores:"
+      name_label: "Nombre del Ingrediente"
+      name_placeholder: "ej. Carne molida"
+      section_label: "Sección del Supermercado"
+      section_placeholder: "Selecciona una sección"
+      submit_create: "Crear Ingrediente"
+      submit_update: "Guardar Cambios"
+      cancel: "Cancelar"
+    new:
+      title: "➕ Agregar Nuevo Ingrediente"
+    edit:
+      title: "✏️ Editar Ingrediente"
+    controller:
+      created: "El ingrediente fue creado con éxito."
+      updated: "El ingrediente fue actualizado con éxito."
+      deleted: "El ingrediente fue eliminado con éxito."
+  sections:
+    butcher: "Carnicería"
+    produce: "Verdulería"
+    pantry: "Despensa"
+    dairy: "Lácteos"
+    bakery: "Panadería"
+    frozen: "Congelados"
+    beverages: "Bebidas"
+    cleaning: "Limpieza"
+    other: "Otros"
+  dish_categories:
+    breakfast: "Desayuno"
+    lunch: "Almuerzo"
+    dinner: "Cena"
+    snack: "Merienda"
+    other: "Otro"
+  days_of_week:
+    monday: "Lunes"
+    tuesday: "Martes"
+    wednesday: "Miércoles"
+    thursday: "Jueves"
+    friday: "Viernes"
+    saturday: "Sábado"
+    sunday: "Domingo"
+  ai_copilots:
+    controller:
+      imported: "Plan de comidas de IA importado con éxito."
+      error_import: "Error al importar el plan de comidas de IA."

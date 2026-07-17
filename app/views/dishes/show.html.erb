@@ -1,8 +1,8 @@
 <div class="header-actions">
-  <h2 class="section-title">🍽️ Dish Details</h2>
+  <h2 class="section-title"><%= t('dishes.show.title') %></h2>
   <div>
-    <a href="<%= edit_dish_path(@dish) %>" class="btn-action" style="margin-right: 0.5rem; background: var(--accent-blue);">✏️ Edit Dish</a>
-    <a href="<%= dishes_path %>" class="btn-secondary">Back to Catalog</a>
+    <a href="<%= edit_dish_path(@dish) %>" class="btn-action" style="margin-right: 0.5rem; background: var(--accent-blue);"><%= t('dishes.show.edit_dish') %></a>
+    <a href="<%= dishes_path %>" class="btn-secondary"><%= t('dishes.show.back') %></a>
   </div>
 </div>
 
@@ -16,27 +16,34 @@
                       when 'Snack' then 'tag-snack'
                       else 'tag-other'
                       end %>
-    <span class="category-tag <%= category_class %>" style="font-size: 0.9rem; padding: 0.3rem 0.8rem;"><%= @dish.category %></span>
+    <span class="category-tag <%= category_class %>" style="font-size: 0.9rem; padding: 0.3rem 0.8rem;">
+      <%= t("dish_categories.#{@dish.category.downcase}", default: @dish.category) %>
+    </span>
   </div>
 
-  <h3 class="form-label" style="margin-bottom: 1rem; color: var(--accent-cyan);">🥕 Ingredients and Quantities</h3>
+  <h3 class="form-label" style="margin-bottom: 1rem; color: var(--accent-cyan);"><%= t('dishes.show.ingredients_title') %></h3>
   
   <% if @dish.dish_ingredients.empty? %>
-    <p style="font-style: italic; color: var(--text-secondary);">This dish has no associated ingredients.</p>
+    <p style="font-style: italic; color: var(--text-secondary);"><%= t('dishes.show.empty_ingredients') %></p>
   <% else %>
     <table class="table-card">
       <thead>
         <tr>
-          <th>Ingredient</th>
-          <th>Supermarket Section</th>
-          <th>Suggested Quantity</th>
+          <th><%= t('dishes.show.table.ingredient') %></th>
+          <th><%= t('dishes.show.table.section') %></th>
+          <th><%= t('dishes.show.table.quantity') %></th>
         </tr>
       </thead>
       <tbody>
         <% @dish.dish_ingredients.includes(:ingredient).each do |di| %>
           <tr>
             <td style="font-weight: 600;"><%= di.ingredient.name %></td>
-            <td><span style="color: var(--text-secondary);"><%= di.ingredient.supermarket_section %></span></td>
+            <td>
+              <span style="color: var(--text-secondary);">
+                <% section_key = di.ingredient.supermarket_section.downcase %>
+                <%= t("ingredients.sections.#{section_key}", default: di.ingredient.supermarket_section) %>
+              </span>
+            </td>
             <td style="color: var(--accent-pink); font-weight: 700;"><%= di.suggested_quantity %></td>
           </tr>
         <% end %>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Daily Meals" %></title>
+    <title><%= content_for(:title) || t('layout.title') %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
@@ -30,9 +30,9 @@
           <span class="logo-text">DailyMeals</span>
         </a>
         <div class="nav-links">
-          <a href="/" class="nav-link <%= 'active' if current_page?(root_path) %>">📆 Calendar</a>
-          <a href="/dishes" class="nav-link <%= 'active' if controller_name == 'dishes' %>">🍽️ Dishes</a>
-          <a href="/ingredients" class="nav-link <%= 'active' if controller_name == 'ingredients' %>">🥕 Ingredients</a>
+          <a href="/" class="nav-link <%= 'active' if current_page?(root_path) %>"><%= t('layout.calendar') %></a>
+          <a href="/dishes" class="nav-link <%= 'active' if controller_name == 'dishes' %>"><%= t('layout.dishes') %></a>
+          <a href="/ingredients" class="nav-link <%= 'active' if controller_name == 'ingredients' %>"><%= t('layout.ingredients') %></a>
         </div>
       </div>
     </nav>

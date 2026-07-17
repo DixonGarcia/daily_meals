@@ -1,4 +1,10 @@
+# Generates a consolidated shopping list based on the active MealPlans.
+# Groups ingredients by their supermarket section and combines quantities with the same units.
 class ShoppingListGenerator
+  # Generates the consolidated shopping list from the current week's meal plans.
+  #
+  # @return [Hash{String => Array<Hash>}] A hash mapping supermarket sections (String)
+  #   to arrays of consolidated ingredient details, e.g. { "Produce" => [{ ingredient: <Ingredient>, quantity: "500g" }] }
   def generate
     # Collect all dishes from active meal plans
     dishes = MealPlan.all.flat_map { |plan| [plan.lunch_dish, plan.dinner_dish] }.compact
@@ -34,6 +40,11 @@ class ShoppingListGenerator
 
   private
 
+  # Parses and sums quantities sharing identical units (case-insensitive).
+  # e.g., ["500g", "250g"] => "750g"
+  #
+  # @param quantities [Array<String>] The quantities to consolidate.
+  # @return [String] The combined/summed quantity representation.
   def consolidate_quantities(quantities)
     return "" if quantities.empty?
 

@@ -1,14 +1,14 @@
 <div class="dashboard-grid">
   <!-- Left Side: Weekly Calendar -->
   <div>
-    <h2 class="section-title">📆 Weekly Meal Calendar</h2>
+    <h2 class="section-title"><%= t('meal_plans.index.title') %></h2>
     
     <div class="calendar-grid">
       <% MealPlan::DAYS_OF_WEEK.each do |day| %>
         <% plan = @meal_plans[day] %>
         <div class="card day-card">
           <div class="day-header">
-            <span><%= day %></span>
+            <span><%= t("days_of_week.#{day.downcase}") %></span>
             <span style="font-size: 1.1rem;">🗓️</span>
           </div>
 
@@ -16,22 +16,22 @@
             <%= f.hidden_field :day_of_week, value: day %>
 
             <div class="meal-slot" style="margin-bottom: 0.8rem;">
-              <span class="meal-label">☀️ Lunch</span>
+              <span class="meal-label"><%= t('meal_plans.index.lunch') %></span>
               <%= f.select :lunch_dish_id, 
                            options_from_collection_for_select(@dishes, :id, :name, plan.lunch_dish_id), 
-                           { include_blank: "None" }, 
+                           { include_blank: t('meal_plans.index.none') }, 
                            { class: "meal-dish-selector" } %>
             </div>
 
             <div class="meal-slot" style="margin-bottom: 1.2rem;">
-              <span class="meal-label">🌙 Dinner</span>
+              <span class="meal-label"><%= t('meal_plans.index.dinner') %></span>
               <%= f.select :dinner_dish_id, 
                            options_from_collection_for_select(@dishes, :id, :name, plan.dinner_dish_id), 
-                           { include_blank: "None" }, 
+                           { include_blank: t('meal_plans.index.none') }, 
                            { class: "meal-dish-selector" } %>
             </div>
 
-            <%= f.submit "Update Day", class: "update-day-btn" %>
+            <%= f.submit t('meal_plans.index.update_day'), class: "update-day-btn" %>
           <% end %>
         </div>
       <% end %>
@@ -42,45 +42,48 @@
   <div class="sidebar-panel">
     <!-- AI Copilot Panel -->
     <div class="card ai-copilot-card">
-      <h3 class="section-title" style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--accent-violet);">🤖 AI Copilot</h3>
+      <h3 class="section-title" style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--accent-violet);"><%= t('meal_plans.index.ai_copilot') %></h3>
       <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-        Export your catalog for AI or import a planned menu.
+        <%= t('meal_plans.index.ai_description') %>
       </p>
 
       <!-- Export Form -->
       <div style="margin-bottom: 1.5rem;">
-        <label class="form-label" style="font-size: 0.8rem;">Planning Restrictions:</label>
-        <input type="text" id="ai-restrictions" class="ai-text-input" placeholder="e.g., Monday to Friday, avoid repeating beef..." value="Plan Monday to Friday.">
+        <label class="form-label" style="font-size: 0.8rem;"><%= t('meal_plans.index.planning_restrictions') %></label>
+        <input type="text" id="ai-restrictions" class="ai-text-input" placeholder="e.g., Monday to Friday..." value="Plan Monday to Friday.">
         
         <button type="button" id="btn-export" class="btn-ai-violet" style="font-size: 0.85rem;">
-          📤 Generate JSON for AI
+          <%= t('meal_plans.index.generate_json') %>
         </button>
 
-        <textarea id="ai-export-payload" class="ai-textarea" readonly placeholder="The catalog JSON will appear here..."></textarea>
+        <textarea id="ai-export-payload" class="ai-textarea" readonly placeholder="<%= t('meal_plans.index.catalog_placeholder') %>"></textarea>
         
         <button type="button" id="btn-copy" class="btn-secondary" style="width: 100%; font-size: 0.85rem; padding: 0.5rem; display: none;">
-          📋 Copy to Clipboard
+          <%= t('meal_plans.index.copy_clipboard') %>
         </button>
       </div>
 
       <!-- Import Form -->
       <%= form_with url: import_ai_copilot_path, method: :post, local: true do |f| %>
-        <label class="form-label" style="font-size: 0.8rem;">Paste AI-planned JSON:</label>
-        <%= f.text_area :payload, class: "ai-textarea", required: true, placeholder: "Paste response JSON here..." %>
-        <%= f.submit "📥 Import Meal Plan", class: "btn-ai-violet", style: "background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);" %>
+        <label class="form-label" style="font-size: 0.8rem;"><%= t('meal_plans.index.paste_json') %></label>
+        <%= f.text_area :payload, class: "ai-textarea", required: true, placeholder: t('meal_plans.index.paste_placeholder') %>
+        <%= f.submit t('meal_plans.index.import_plan'), class: "btn-ai-violet", style: "background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);" %>
       <% end %>
     </div>
 
     <!-- Shopping List Card -->
     <div class="card shopping-list-card">
-      <h3 class="section-title" style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--accent-pink);">🛒 Shopping List</h3>
+      <h3 class="section-title" style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--accent-pink);"><%= t('meal_plans.index.shopping_list') %></h3>
       
       <% if @shopping_list.empty? %>
-        <p class="empty-shopping-list">No ingredients planned for this week.</p>
+        <p class="empty-shopping-list"><%= t('meal_plans.index.no_ingredients') %></p>
       <% else %>
         <% @shopping_list.each do |section, items| %>
           <div class="shopping-list-aisle">
-            <div class="shopping-list-aisle-name"><%= section %></div>
+            <div class="shopping-list-aisle-name">
+              <% section_key = section.to_s.downcase %>
+              <%= t("ingredients.sections.#{section_key}", default: section.to_s) %>
+            </div>
             <% items.each do |item| %>
               <div class="shopping-item">
                 <span class="shopping-item-name"><%= item[:ingredient].name %></span>
@@ -104,7 +107,7 @@
     if (btnExport) {
       btnExport.addEventListener("click", function() {
         const restrictions = encodeURIComponent(restrictionsInput.value);
-        btnExport.innerText = "🔄 Generating...";
+        btnExport.innerText = "<%= j t('meal_plans.index.generating') %>";
         btnExport.disabled = true;
 
         fetch(`/ai_copilot/export?restrictions=${restrictions}`, {
@@ -117,14 +120,14 @@
         .then(response => response.json())
         .then(data => {
           exportTextarea.value = JSON.stringify(data, null, 2);
-          btnExport.innerText = "📤 Generate JSON for AI";
+          btnExport.innerText = "<%= j t('meal_plans.index.generate_json') %>";
           btnExport.disabled = false;
           btnCopy.style.display = "block";
         })
         .catch(err => {
           console.error(err);
-          alert("Error exporting catalog.");
-          btnExport.innerText = "📤 Generate JSON for AI";
+          alert("<%= j t('meal_plans.index.error_exporting') %>");
+          btnExport.innerText = "<%= j t('meal_plans.index.generate_json') %>";
           btnExport.disabled = false;
         });
       });
@@ -134,9 +137,9 @@
       btnCopy.addEventListener("click", function() {
         exportTextarea.select();
         document.execCommand("copy");
-        btnCopy.innerText = "✅ Copied!";
+        btnCopy.innerText = "<%= j t('meal_plans.index.copied') %>";
         setTimeout(() => {
-          btnCopy.innerText = "📋 Copy to Clipboard";
+          btnCopy.innerText = "<%= j t('meal_plans.index.copy_clipboard') %>";
         }, 2000);
       });
     }

@@ -1,4 +1,10 @@
+# Service to handle the import and export operations for the AI Copilot features.
+# Enables JSON-based sharing of dishes and meal plans.
 class AiCopilotService
+  # Exports the catalog of dishes alongside the user's restrictions.
+  #
+  # @param restrictions [String, nil] The restrictions textual input from the user.
+  # @return [Hash] The catalog hash with :dish_catalog and :restrictions.
   def export_catalog(restrictions)
     dishes = Dish.all.map do |dish|
       {
@@ -14,6 +20,11 @@ class AiCopilotService
     }
   end
 
+  # Imports a meal plan from a JSON payload or parsed Hash structure.
+  # Operates inside a transaction to guarantee atomicity.
+  #
+  # @param payload [String, Hash] The JSON payload or hash describing the planned days and dishes.
+  # @return [Boolean] true if the entire import was successful, false otherwise.
   def import_plan(payload)
     data = payload.is_a?(String) ? JSON.parse(payload, symbolize_names: true) : payload
 

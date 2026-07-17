@@ -33,7 +33,7 @@ RSpec.describe "AiCopilots", type: :request do
     it "shows alert when import fails" do
       post import_ai_copilot_path, params: { payload: 'invalid json' }
       expect(response).to redirect_to(root_path)
-      expect(flash[:alert]).to eq('Error importing the AI meal plan.')
+      expect(flash[:alert]).to eq(I18n.t('ai_copilots.controller.error_import'))
     end
   end
 end

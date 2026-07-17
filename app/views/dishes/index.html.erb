@@ -1,19 +1,19 @@
 <div class="header-actions">
-  <h2 class="section-title">🍽️ Dish Catalog</h2>
-  <a href="<%= new_dish_path %>" class="btn-action">➕ Add New Dish</a>
+  <h2 class="section-title"><%= t('dishes.index.title') %></h2>
+  <a href="<%= new_dish_path %>" class="btn-action"><%= t('dishes.index.add_new') %></a>
 </div>
 
 <div class="card">
   <% if @dishes.empty? %>
-    <p style="color: var(--text-secondary); text-align: center; font-style: italic;">No dishes in the catalog yet.</p>
+    <p style="color: var(--text-secondary); text-align: center; font-style: italic;"><%= t('dishes.index.empty') %></p>
   <% else %>
     <table class="table-card">
       <thead>
         <tr>
-          <th>Dish Name</th>
-          <th>Category</th>
-          <th>Associated Ingredients</th>
-          <th style="text-align: right;">Actions</th>
+          <th><%= t('dishes.index.table.name') %></th>
+          <th><%= t('dishes.index.table.category') %></th>
+          <th><%= t('dishes.index.table.ingredients') %></th>
+          <th style="text-align: right;"><%= t('dishes.index.table.actions') %></th>
         </tr>
       </thead>
       <tbody>
@@ -32,14 +32,16 @@
                                 when 'Snack' then 'tag-snack'
                                 else 'tag-other'
                                 end %>
-              <span class="category-tag <%= category_class %>"><%= dish.category %></span>
+              <span class="category-tag <%= category_class %>">
+                <%= t("dish_categories.#{dish.category.downcase}", default: dish.category) %>
+              </span>
             </td>
             <td>
-              <%= dish.ingredients.map(&:name).join(', ').presence || 'None' %>
+              <%= dish.ingredients.map(&:name).join(', ').presence || t('meal_plans.index.none') %>
             </td>
             <td style="text-align: right;">
-              <a href="<%= edit_dish_path(dish) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-right: 0.5rem;">✏️ Edit</a>
-              <%= button_to '❌ Delete', dish_path(dish), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn-danger', style: 'display: inline-block; padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
+              <a href="<%= edit_dish_path(dish) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-right: 0.5rem;"><%= t('dishes.index.actions.edit') %></a>
+              <%= button_to t('dishes.index.actions.delete'), dish_path(dish), method: :delete, data: { confirm: t('dishes.index.actions.confirm_delete') }, class: 'btn-danger', style: 'display: inline-block; padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
             </td>
           </tr>
         <% end %>

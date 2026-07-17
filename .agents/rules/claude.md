@@ -52,6 +52,16 @@ Before writing any implementation code:
   end
   success
   ```
+- **Ship to Learn**: Prototype quality is valid. Do not over-engineer or polish prematurely; focus on shipping to gather feedback and learn.
+- **Fix Root Causes, Not Symptoms**: Avoid implementing quick workarounds for symptoms. Investigate and fix the root of the problem.
+- **Modern Rails Parameters**: Use `params.expect` instead of `params.require` for handling controller parameters (following Rails 7.2+ conventions).
+- **Fail Loudly (Bang Methods)**: Prefer bang methods (e.g., `save!`, `create!`, `update!`, `destroy!`) so that errors explode and trigger exceptions rather than failing silently, unless handling failures gracefully is a core requirement of the flow.
+- **Positive Method Naming**: Use positive names for boolean and query methods (e.g., use `active?` instead of `inactive?`, `visible?` instead of `hidden?`).
+- **Idiomatic Rails**: Aim to write pure, clean Rails by following standard framework conventions and design patterns.
+- **YARD Documentation**: Document classes, modules, and non-trivial methods using structured YARD comments (e.g., `@param`, `@return`, `@raise`, `@yield`) to keep the codebase self-documenting and clear.
+- **Controller-Model Alignment**: Controllers should generally align directly with their corresponding models (e.g., `DishesController` for the `Dish` model).
+- **Pragmatic Logic Extraction**: Do not extract logic from controllers prematurely. Keep actions simple and direct; only extract logic to service objects or concerns if the controller action or class starts to grow significantly and becomes difficult to maintain.
+- **Internationalization (I18n)**: All user-facing text, alerts, labels, and UI messages must be managed using Rails i18n and locales (e.g., in `config/locales/es.yml` for Spanish UI/messages) instead of being hardcoded in views or controllers.
 
 ---
 

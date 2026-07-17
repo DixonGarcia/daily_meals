@@ -7,8 +7,8 @@ RSpec.describe "MealPlans", type: :request do
     it "renders the dashboard / weekly calendar" do
       get root_path
       expect(response).to have_http_status(:success)
-      expect(response.body).to include('Monday')
-      expect(response.body).to include('Tuesday')
+      expect(response.body).to include('Lunes')
+      expect(response.body).to include('Martes')
     end
   end
 

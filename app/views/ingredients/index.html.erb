@@ -1,28 +1,31 @@
 <div class="header-actions">
-  <h2 class="section-title">🥕 Ingredient Catalog</h2>
-  <a href="<%= new_ingredient_path %>" class="btn-action">➕ Add New Ingredient</a>
+  <h2 class="section-title"><%= t('ingredients.index.title') %></h2>
+  <a href="<%= new_ingredient_path %>" class="btn-action"><%= t('ingredients.index.add_new') %></a>
 </div>
 
 <div class="card" style="max-width: 800px; margin: 0 auto;">
   <% if @ingredients.empty? %>
-    <p style="color: var(--text-secondary); text-align: center; font-style: italic;">No ingredients in the catalog yet.</p>
+    <p style="color: var(--text-secondary); text-align: center; font-style: italic;"><%= t('ingredients.index.empty') %></p>
   <% else %>
     <table class="table-card">
       <thead>
         <tr>
-          <th>Ingredient Name</th>
-          <th>Supermarket Section</th>
-          <th style="text-align: right;">Actions</th>
+          <th><%= t('ingredients.index.table.name') %></th>
+          <th><%= t('ingredients.index.table.section') %></th>
+          <th style="text-align: right;"><%= t('ingredients.index.table.actions') %></th>
         </tr>
       </thead>
       <tbody>
         <% @ingredients.each do |ingredient| %>
           <tr>
             <td style="font-weight: 700; color: var(--accent-cyan);"><%= ingredient.name %></td>
-            <td><%= ingredient.supermarket_section %></td>
+            <td>
+              <% section_key = ingredient.supermarket_section.downcase %>
+              <%= t("ingredients.sections.#{section_key}", default: ingredient.supermarket_section) %>
+            </td>
             <td style="text-align: right;">
-              <a href="<%= edit_ingredient_path(ingredient) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-right: 0.5rem;">✏️ Edit</a>
-              <%= button_to '❌ Delete', ingredient_path(ingredient), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn-danger', style: 'display: inline-block; padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
+              <a href="<%= edit_ingredient_path(ingredient) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-right: 0.5rem;"><%= t('ingredients.index.actions.edit') %></a>
+              <%= button_to t('ingredients.index.actions.delete'), ingredient_path(ingredient), method: :delete, data: { confirm: t('ingredients.index.actions.confirm_delete') }, class: 'btn-danger', style: 'display: inline-block; padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
             </td>
           </tr>
         <% end %>

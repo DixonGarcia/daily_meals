@@ -1,7 +1,7 @@
 <%= form_with model: ingredient, local: true, class: "card", style: "max-width: 500px; margin: 0 auto;" do |f| %>
   <% if ingredient.errors.any? %>
     <div class="flash flash-alert" style="margin-bottom: 1.5rem;">
-      <h4 style="margin-bottom: 0.5rem;">Please correct the following errors:</h4>
+      <h4 style="margin-bottom: 0.5rem;"><%= t('ingredients.form.errors_title') %></h4>
       <ul>
         <% ingredient.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>
@@ -11,20 +11,20 @@
   <% end %>
 
   <div class="form-group">
-    <%= f.label :name, "Ingredient Name", class: "form-label" %>
-    <%= f.text_field :name, class: "form-input", placeholder: "e.g. Ground beef" %>
+    <%= f.label :name, t('ingredients.form.name_label'), class: "form-label" %>
+    <%= f.text_field :name, class: "form-input", placeholder: t('ingredients.form.name_placeholder') %>
   </div>
 
   <div class="form-group">
-    <%= f.label :supermarket_section, "Supermarket Section", class: "form-label" %>
+    <%= f.label :supermarket_section, t('ingredients.form.section_label'), class: "form-label" %>
     <%= f.select :supermarket_section, 
-                 ['Butcher', 'Produce', 'Pantry', 'Dairy', 'Bakery', 'Frozen', 'Beverages', 'Cleaning', 'Other'], 
-                 { include_blank: "Select a section" }, 
+                 ['Butcher', 'Produce', 'Pantry', 'Dairy', 'Bakery', 'Frozen', 'Beverages', 'Cleaning', 'Other'].map { |s| [t("ingredients.sections.#{s.downcase}", default: s), s] }, 
+                 { include_blank: t('ingredients.form.section_placeholder') }, 
                  { class: "form-input" } %>
   </div>
 
   <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-    <%= f.submit ingredient.new_record? ? "Create Ingredient" : "Save Changes", class: "btn-action", style: "flex: 1;" %>
-    <a href="<%= ingredients_path %>" class="btn-secondary" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;">Cancel</a>
+    <%= f.submit ingredient.new_record? ? t('ingredients.form.submit_create') : t('ingredients.form.submit_update'), class: "btn-action", style: "flex: 1;" %>
+    <a href="<%= ingredients_path %>" class="btn-secondary" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;"><%= t('ingredients.form.cancel') %></a>
   </div>
 <% end %>
