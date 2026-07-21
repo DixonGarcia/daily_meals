@@ -40,8 +40,10 @@
               <%= dish.ingredients.map(&:name).join(', ').presence || t('meal_plans.index.none') %>
             </td>
             <td style="text-align: right;">
-              <a href="<%= edit_dish_path(dish) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-right: 0.5rem;"><%= t('dishes.index.actions.edit') %></a>
-              <%= button_to t('dishes.index.actions.delete'), dish_path(dish), method: :delete, data: { confirm: t('dishes.index.actions.confirm_delete') }, class: 'btn-danger', style: 'display: inline-block; padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
+              <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+                <a href="<%= edit_dish_path(dish) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;"><%= t('dishes.index.actions.edit') %></a>
+                <%= button_to t('dishes.index.actions.delete'), dish_path(dish), method: :delete, data: { confirm: t('dishes.index.actions.confirm_delete') }, class: 'btn-danger', style: 'padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
+              </div>
             </td>
           </tr>
         <% end %>

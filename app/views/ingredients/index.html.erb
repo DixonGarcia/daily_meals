@@ -24,8 +24,10 @@
               <%= t("ingredients.sections.#{section_key}", default: ingredient.supermarket_section) %>
             </td>
             <td style="text-align: right;">
-              <a href="<%= edit_ingredient_path(ingredient) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-right: 0.5rem;"><%= t('ingredients.index.actions.edit') %></a>
-              <%= button_to t('ingredients.index.actions.delete'), ingredient_path(ingredient), method: :delete, data: { confirm: t('ingredients.index.actions.confirm_delete') }, class: 'btn-danger', style: 'display: inline-block; padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
+              <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+                <a href="<%= edit_ingredient_path(ingredient) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;"><%= t('ingredients.index.actions.edit') %></a>
+                <%= button_to t('ingredients.index.actions.delete'), ingredient_path(ingredient), method: :delete, data: { confirm: t('ingredients.index.actions.confirm_delete') }, class: 'btn-danger', style: 'padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
+              </div>
             </td>
           </tr>
         <% end %>
