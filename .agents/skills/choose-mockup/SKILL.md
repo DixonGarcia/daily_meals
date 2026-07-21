@@ -27,9 +27,8 @@ Identify the files belonging to **Variant 1** and **Variant 2** (e.g., `variant_
 ### Step 2: Present Choices to the User
 Ask the user directly (or using the `ask_question` tool) to select their preferred mockup layout. Present the names and descriptions of both options clearly.
 
-### Step 3: Delete Discarded Variant
-Once the user responds with their selection (e.g. "Keep Variant 1"):
-1. Identify the files of the discarded variant.
-2. Remove the discarded files using shell commands (e.g. `rm _product/<domain>/mockups/variant_2.html`).
-3. Keep ONLY the chosen variant in the directory.
-4. Confirm to the user which variant has been kept and which has been deleted.
+### Step 3: Document the Selected Variant
+Once the user responds with their selection (e.g., "Keep Variant 1"):
+1. Mark the preferred mockup variant in `overview.md` and/or `implementation.md`.
+2. Do **NOT** delete the discarded mockup files. Retain all variants in the `_product/<domain>/mockups/` folder for historical context and documentation.
+3. Confirm to the user that the selected layout has been noted, and that all mockup files remain preserved in the workspace.
