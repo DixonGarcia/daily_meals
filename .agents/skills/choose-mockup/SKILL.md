@@ -18,17 +18,18 @@ Use this skill when the user is ready to review the designed mockup variants for
 
 ## 🚀 Step-by-Step Selection Workflow
 
-### Step 1: Identify Mockup Files
+### Step 1: Identify Mockup Files and Overview Index
 Locate the mockup files under the target domain directory:
 `_product/<domain>/mockups/`
 
-Identify the files belonging to **Variant 1** and **Variant 2** (e.g., `variant_1.html` vs. `variant_2.html`).
+Identify the files belonging to **Variant 1** and **Variant 2** (e.g., `variant_1.html` vs. `variant_2.html`). Also verify that there is a central mockups index/overview file `_product/<domain>/mockups/index.html` (or `overview.html`) linking to both.
 
 ### Step 2: Present Choices to the User
 Ask the user directly (or using the `ask_question` tool) to select their preferred mockup layout. Present the names and descriptions of both options clearly.
 
-### Step 3: Document the Selected Variant
+### Step 3: Document and Present Mockup Overview Index
 Once the user responds with their selection (e.g., "Keep Variant 1"):
 1. Mark the preferred mockup variant in `overview.md` and/or `implementation.md`.
 2. Do **NOT** delete the discarded mockup files. Retain all variants in the `_product/<domain>/mockups/` folder for historical context and documentation.
-3. Confirm to the user that the selected layout has been noted, and that all mockup files remain preserved in the workspace.
+3. In your response output, provide the clickable link (using standard markdown `file://` scheme) to the central mockup index file so that the user can open it in their browser (e.g., `[mockups/index.html](file:///path/to/mockups/index.html)`).
+4. Confirm to the user that the selection has been noted and all files remain preserved.
