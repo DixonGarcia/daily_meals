@@ -86,3 +86,17 @@ psql -U postgres -c "CREATE ROLE dixon WITH SUPERUSER LOGIN;"
 - **Color Palette**: Strictly follow the Biteclub palette (White body backgrounds `#ffffff`/`#f8f9fa`, charcoal accents `#141414`, lime green `#9bc024`, action blue `#0094e4`).
 - **No Heavy Gradients**: Keep the interface clean, flat-minimalist, using elegant shadows (`box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05)`) and thin borders (`#e9e9e9`).
 - **Dynamic Rows in Forms**: Use simple vanilla JS clone methods in ERB templates to allow users to add/remove nested items (like dish ingredients) dynamically without adding front-end bloat.
+
+---
+
+## 6. Required Feature Workflow
+For any new feature development, the agent must strictly follow and enforce the following sequence of steps:
+1. **`build-spec`**: Outline and write the specifications (`overview.md` and `implementation.md`), and design HTML mockup variations inside `_product/<domain>/mockups/` (if the feature has UI components).
+2. **`choose-mockup`**: Present the mockup variations to the user, help them choose their preferred option, and document the selection.
+3. **`build-feature`**: Implement the backend models, migrations, controllers, locales, HTML/ERB views, and specs in a Test-Driven Development (TDD) loop.
+4. **`review-implementation`**: Perform a staff-level code review for security, stability, code style/localization, and performance.
+5. **`qa`**: Quality assurance validation (to be defined in detail in a future skill update).
+
+### Workflow Enforcement Guidance:
+* If the user attempts to request actions belonging to a later step (for instance, requesting code implementation in `build-feature` before a specification exists or a mockup variant has been chosen), the agent **MUST** remind the user of the expected next step in the workflow.
+* If the user, after receiving this reminder, explicitly commands the agent to skip the step, the agent is then permitted to skip the step and proceed as requested.
