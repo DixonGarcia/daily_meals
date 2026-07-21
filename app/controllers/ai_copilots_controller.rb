@@ -1,8 +1,6 @@
 # Handles exporting the dish catalog and importing planned meals via AI copilot.
 class AiCopilotsController < ApplicationController
-  protect_from_forgery except: [:export] # Allow easy JSON requests if client does it
-
-  # POST /ai_copilot/export
+  # GET /ai_copilot/export
   # Exports the catalog of dishes as JSON.
   # @return [void]
   def export

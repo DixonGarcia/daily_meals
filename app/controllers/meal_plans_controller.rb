@@ -5,10 +5,11 @@ class MealPlansController < ApplicationController
   # Renders the dashboard featuring the weekly calendar, shopping list, and AI copilot forms.
   # @return [void]
   def index
-    # Load all meal plans in order of the week
+    # Load all meal plans in order of the week (eager loading associations to prevent N+1 queries)
     days = MealPlan::DAYS_OF_WEEK
+    existing_plans = MealPlan.includes(:lunch_dish, :dinner_dish).index_by(&:day_of_week)
     @meal_plans = days.each_with_object({}) do |day, hash|
-      hash[day] = MealPlan.find_by(day_of_week: day) || MealPlan.new(day_of_week: day)
+      hash[day] = existing_plans[day] || MealPlan.new(day_of_week: day)
     end
 
     # Load available dishes for selecting in the form

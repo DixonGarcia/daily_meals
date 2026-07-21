@@ -3,9 +3,9 @@ require 'rails_helper'
 RSpec.describe "AiCopilots", type: :request do
   let!(:dish) { Dish.create!(name: 'Pasta boloñesa', category: 'Lunch') }
 
-  describe "POST /ai_copilot/export" do
+  describe "GET /ai_copilot/export" do
     it "exports the catalog with restrictions" do
-      post export_ai_copilot_path, params: { restrictions: 'Avoid meat' }
+      get export_ai_copilot_path, params: { restrictions: 'Avoid meat' }
       expect(response).to have_http_status(:success)
       
       json = JSON.parse(response.body)

@@ -1,13 +1,13 @@
 <div class="header-actions">
   <h2 class="section-title"><%= t('dishes.show.title') %></h2>
   <div>
-    <a href="<%= edit_dish_path(@dish) %>" class="btn-action" style="margin-right: 0.5rem; background: var(--accent-blue);"><%= t('dishes.show.edit_dish') %></a>
+    <a href="<%= edit_dish_path(@dish) %>" class="btn-action" style="margin-right: 0.5rem; background: var(--blue-high);"><%= t('dishes.show.edit_dish') %></a>
     <a href="<%= dishes_path %>" class="btn-secondary"><%= t('dishes.show.back') %></a>
   </div>
 </div>
 
 <div class="card" style="max-width: 600px; margin: 0 auto;">
-  <div class="day-header" style="border-bottom: 2px solid var(--accent-rose); margin-bottom: 1.5rem;">
+  <div class="day-header" style="border-bottom: 2px solid var(--color-primary); margin-bottom: 1.5rem;">
     <span><%= @dish.name %></span>
     <% category_class = case @dish.category
                       when 'Breakfast' then 'tag-breakfast'
@@ -21,7 +21,7 @@
     </span>
   </div>
 
-  <h3 class="form-label" style="margin-bottom: 1rem; color: var(--accent-cyan);"><%= t('dishes.show.ingredients_title') %></h3>
+  <h3 class="form-label" style="margin-bottom: 1rem; color: var(--color-secondary);"><%= t('dishes.show.ingredients_title') %></h3>
   
   <% if @dish.dish_ingredients.empty? %>
     <p style="font-style: italic; color: var(--text-secondary);"><%= t('dishes.show.empty_ingredients') %></p>
@@ -44,7 +44,7 @@
                 <%= t("ingredients.sections.#{section_key}", default: di.ingredient.supermarket_section) %>
               </span>
             </td>
-            <td style="color: var(--accent-pink); font-weight: 700;"><%= di.suggested_quantity %></td>
+            <td style="color: var(--blue-high); font-weight: 700;"><%= di.suggested_quantity %></td>
           </tr>
         <% end %>
       </tbody>

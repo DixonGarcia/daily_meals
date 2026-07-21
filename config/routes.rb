@@ -21,7 +21,7 @@ Rails.application.routes.draw do
   end
 
   resource :ai_copilot, only: [], controller: 'ai_copilots' do
-    post :export
+    get :export
     post :import
   end
 end

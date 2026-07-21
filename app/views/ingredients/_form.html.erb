@@ -18,7 +18,7 @@
   <div class="form-group">
     <%= f.label :supermarket_section, t('ingredients.form.section_label'), class: "form-label" %>
     <%= f.select :supermarket_section, 
-                 ['Butcher', 'Produce', 'Pantry', 'Dairy', 'Bakery', 'Frozen', 'Beverages', 'Cleaning', 'Other'].map { |s| [t("ingredients.sections.#{s.downcase}", default: s), s] }, 
+                 Ingredient::SECTIONS.map { |s| [s, s] }, 
                  { include_blank: t('ingredients.form.section_placeholder') }, 
                  { class: "form-input" } %>
   </div>

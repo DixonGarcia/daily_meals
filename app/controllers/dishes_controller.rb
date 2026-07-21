@@ -8,7 +8,7 @@ class DishesController < ApplicationController
   # Lists all dishes ordered by name.
   # @return [void]
   def index
-    @dishes = Dish.all.order(:name)
+    @dishes = Dish.includes(:ingredients).order(:name)
   end
 
   # GET /dishes/:id
