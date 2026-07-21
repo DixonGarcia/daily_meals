@@ -25,7 +25,7 @@ This document (`.agents/AGENTS.md`) serves as the entry point for all AI agents 
 
 ## 🛠 Tech Stack
 
-- **Backend**: Ruby on Rails 7.2.x
+- **Backend**: Ruby on Rails 8.0.x
 - **Database**: PostgreSQL
 - **Testing**: RSpec
 - **Styling**: Vanilla CSS with custom "Biteclub" minimalist design system in `app/assets/stylesheets/application.css`.

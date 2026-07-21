@@ -5,7 +5,7 @@ This rule defines the coding style, language conventions, TDD workflows, and env
 ---
 
 ## 1. Project Context & Stack
-- **Framework**: Ruby on Rails 7.2.x
+- **Framework**: Ruby on Rails 8.0.x
 - **Database**: PostgreSQL (Development & Test)
 - **Test Suite**: RSpec (Unit & Request tests)
 - **Aesthetic Theme**: Biteclub Modern Minimalist Light Theme (implemented in `app/assets/stylesheets/application.css`)
