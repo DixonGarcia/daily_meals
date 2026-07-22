@@ -10,9 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_17_163805) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_22_155513) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+  enable_extension "pg_catalog.plpgsql"
+
+  create_table "api_keys", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "token_digest", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "last_used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token_digest"], name: "index_api_keys_on_token_digest", unique: true
+  end
 
   create_table "dish_ingredients", force: :cascade do |t|
     t.bigint "dish_id", null: false

@@ -133,3 +133,35 @@ es:
     controller:
       imported: "Plan de comidas de IA importado con éxito."
       error_import: "Error al importar el plan de comidas de IA."
+  layout:
+    title: "Daily Meals"
+    calendar: "📆 Calendario"
+    dishes: "🍽️ Platos"
+    ingredients: "🥕 Ingredientes"
+    api_keys: "🔑 API Keys"
+  api_keys:
+    index:
+      title: "🔑 Gestión de Llaves de API"
+      create_key: "Generar Llave de API"
+      revoke_key: "Revocar"
+      activate_key: "Activar"
+      deactivate_key: "Desactivar"
+      name_label: "Nombre de la Llave"
+      name_placeholder: "ej. Asistente Local"
+      no_keys: "No tienes llaves de API creadas. Genera una a la derecha para comenzar."
+      copy_warning: "¡Llave creada con éxito! Copie el token ahora. Por motivos de seguridad, no podrá volver a verlo."
+      created_at: "Creada el"
+      last_used: "Último uso"
+      status: "Estado"
+      active: "Activa"
+      inactive: "Inactiva"
+      generate_title: "Generar Llave"
+      keys_title: "Llaves Activas"
+      actions: "Acciones"
+    form:
+      errors_title: "Por favor corrige los siguientes errores:"
+    controller:
+      created: "Llave de API creada con éxito."
+      updated: "Estado de la llave de API actualizado."
+      revoked: "Llave de API revocada con éxito."
+      error_import: "Error al importar el plan de comidas de IA."

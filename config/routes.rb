@@ -24,4 +24,21 @@ Rails.application.routes.draw do
     get :export
     post :import
   end
+
+  resources :api_keys, only: [:index, :create, :destroy, :update]
+
+  namespace :api, defaults: { format: :json } do
+    namespace :v1 do
+      resources :dishes, only: [:index] do
+        collection do
+          post :import
+        end
+      end
+      resources :meal_plans, only: [:index] do
+        collection do
+          post :import
+        end
+      end
+    end
+  end
 end
