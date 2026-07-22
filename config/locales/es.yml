@@ -16,7 +16,7 @@ es:
       planning_restrictions: "Restricciones de Planificación:"
       generate_json: "📤 Generar JSON para la IA"
       catalog_placeholder: "El JSON del catálogo aparecerá aquí..."
-      copy_clipboard: "📋 Copiar al Portapapeles"
+      copy_clipboard: "📋 Copiar"
       paste_json: "Pega el JSON planificado por la IA:"
       paste_placeholder: "Pega el JSON de respuesta aquí..."
       import_plan: "📥 Importar Plan de Comidas"

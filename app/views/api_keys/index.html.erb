@@ -116,52 +116,62 @@
 </div>
 
 <script>
-  document.addEventListener("turbo:load", function() {
-    const modal = document.getElementById("generate-modal");
-    const btnOpen = document.getElementById("btn-open-generate-modal");
-    const btnsClose = document.querySelectorAll(".btn-close-modal");
-    
-    const btnCopy = document.getElementById("btn-copy-token");
-    const tokenText = document.getElementById("generated-token-text");
+  (function() {
+    function initGenerateModal() {
+      const modal = document.getElementById("generate-modal");
+      const btnOpen = document.getElementById("btn-open-generate-modal");
+      const btnsClose = document.querySelectorAll(".btn-close-modal");
+      
+      const btnCopy = document.getElementById("btn-copy-token");
+      const tokenText = document.getElementById("generated-token-text");
 
-    // Open modal to generate a new key
-    if (btnOpen && modal) {
-      btnOpen.addEventListener("click", function() {
-        modal.style.display = "flex";
-        // Reset inputs if form is rendered inside modal
-        const nameInput = document.getElementById("api_key_name");
-        if (nameInput) nameInput.value = "";
-      });
-    }
+      // Open modal to generate a new key
+      if (btnOpen && modal) {
+        btnOpen.addEventListener("click", function() {
+          modal.style.display = "flex";
+          // Reset inputs if form is rendered inside modal
+          const nameInput = document.getElementById("api_key_name");
+          if (nameInput) nameInput.value = "";
+        });
+      }
 
-    // Close modal function
-    function closeModal() {
-      if (modal) {
-        modal.style.display = "none";
-        // If success message was shown, reloading cleans the flash token so it cannot be recovered
-        if (document.getElementById("modal-success-content")) {
-          window.location.reload();
+      // Close modal function
+      function closeModal() {
+        if (modal) {
+          modal.style.display = "none";
+          // If success message was shown, reloading cleans the flash token so it cannot be recovered
+          if (document.getElementById("modal-success-content")) {
+            window.location.reload();
+          }
         }
+      }
+
+      btnsClose.forEach(btn => {
+        btn.addEventListener("click", function(e) {
+          e.preventDefault();
+          closeModal();
+        });
+      });
+
+      // Copy to clipboard functionality
+      if (btnCopy && tokenText) {
+        btnCopy.addEventListener("click", function() {
+          navigator.clipboard.writeText(tokenText.innerText).then(() => {
+            btnCopy.innerText = "<%= j t('meal_plans.index.copied') %>";
+            setTimeout(() => {
+              btnCopy.innerText = "<%= j t('meal_plans.index.copy_clipboard') %>";
+            }, 2000);
+          });
+        });
       }
     }
 
-    btnsClose.forEach(btn => {
-      btn.addEventListener("click", function(e) {
-        e.preventDefault();
-        closeModal();
-      });
-    });
-
-    // Copy to clipboard functionality
-    if (btnCopy && tokenText) {
-      btnCopy.addEventListener("click", function() {
-        navigator.clipboard.writeText(tokenText.innerText).then(() => {
-          btnCopy.innerText = "<%= j t('meal_plans.index.copied') %>";
-          setTimeout(() => {
-            btnCopy.innerText = "<%= j t('meal_plans.index.copy_clipboard') %>";
-          }, 2000);
-        });
-      });
+    // Bind to DOMContentLoaded, direct execution if already ready, and turbo:load
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initGenerateModal);
+    } else {
+      initGenerateModal();
     }
-  });
+    document.addEventListener("turbo:load", initGenerateModal);
+  })();
 </script>
