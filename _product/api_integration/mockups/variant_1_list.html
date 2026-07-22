@@ -221,6 +221,12 @@
       border: 1px solid rgba(86, 173, 106, 0.2);
     }
 
+    .status-inactive {
+      background: #fdf2f2;
+      color: var(--error-red);
+      border: 1px solid rgba(208, 46, 46, 0.2);
+    }
+
     .btn-action {
       background: var(--color-primary);
       color: var(--color-secondary);
@@ -370,19 +376,25 @@
               <tr id="key-row-1">
                 <td style="font-weight: 700; color: var(--color-secondary);">Copiloto IA de Cocina</td>
                 <td style="font-family: monospace;">dmeal_live_...4a9d</td>
-                <td><span class="status-badge status-active">Activa</span></td>
+                <td><span class="status-badge status-active" id="status-key-row-1">Activa</span></td>
                 <td style="font-size: 0.85rem; color: var(--color-subtitle);">Hace 2 horas</td>
                 <td style="text-align: right;">
-                  <button class="btn-danger" onclick="revokeKey('key-row-1')">Revocar</button>
+                  <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+                    <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;" id="btn-toggle-key-row-1" onclick="toggleKeyStatus('key-row-1')">Desactivar</button>
+                    <button class="btn-danger" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;" onclick="revokeKey('key-row-1')">Revocar</button>
+                  </div>
                 </td>
               </tr>
               <tr id="key-row-2">
                 <td style="font-weight: 700; color: var(--color-secondary);">Integración Home Assistant</td>
                 <td style="font-family: monospace;">dmeal_live_...f92b</td>
-                <td><span class="status-badge status-active">Activa</span></td>
+                <td><span class="status-badge status-active" id="status-key-row-2">Activa</span></td>
                 <td style="font-size: 0.85rem; color: var(--color-subtitle);">Nunca</td>
                 <td style="text-align: right;">
-                  <button class="btn-danger" onclick="revokeKey('key-row-2')">Revocar</button>
+                  <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+                    <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;" id="btn-toggle-key-row-2" onclick="toggleKeyStatus('key-row-2')">Desactivar</button>
+                    <button class="btn-danger" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;" onclick="revokeKey('key-row-2')">Revocar</button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -458,6 +470,24 @@
       }
     }
 
+    function toggleKeyStatus(rowId) {
+      const statusBadge = document.getElementById("status-" + rowId);
+      const toggleBtn = document.getElementById("btn-toggle-" + rowId);
+      if (!statusBadge || !toggleBtn) return;
+
+      if (statusBadge.classList.contains("status-active")) {
+        statusBadge.classList.remove("status-active");
+        statusBadge.classList.add("status-inactive");
+        statusBadge.innerText = "Inactiva";
+        toggleBtn.innerText = "Activar";
+      } else {
+        statusBadge.classList.remove("status-inactive");
+        statusBadge.classList.add("status-active");
+        statusBadge.innerText = "Activa";
+        toggleBtn.innerText = "Desactivar";
+      }
+    }
+
     function handleFormSubmit(event) {
       event.preventDefault();
       const input = document.getElementById("key-name");
@@ -488,10 +518,13 @@
         <tr id="${newRowId}">
           <td style="font-weight: 700; color: var(--color-secondary);">${escapeHtml(input.value)}</td>
           <td style="font-family: monospace;">dmeal_live_...${randomHex.substring(28)}</td>
-          <td><span class="status-badge status-active">Activa</span></td>
+          <td><span class="status-badge status-active" id="status-${newRowId}">Activa</span></td>
           <td style="font-size: 0.85rem; color: var(--color-subtitle);">Nunca</td>
           <td style="text-align: right;">
-            <button class="btn-danger" onclick="revokeKey('${newRowId}')">Revocar</button>
+            <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+              <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;" id="btn-toggle-${newRowId}" onclick="toggleKeyStatus('${newRowId}')">Desactivar</button>
+              <button class="btn-danger" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;" onclick="revokeKey('${newRowId}')">Revocar</button>
+            </div>
           </td>
         </tr>
       `;

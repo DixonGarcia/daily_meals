@@ -38,7 +38,7 @@ end
 ### Routes
 ```ruby
 # UI Management
-resources :api_keys, only: [:index, :create, :destroy]
+resources :api_keys, only: [:index, :create, :destroy, :update]
 
 # API Endpoints
 namespace :api do
@@ -62,7 +62,8 @@ end
 #### 1. `ApiKeysController` (UI Key Management)
 *   `index`: Loads all active and inactive api keys. If a new key has just been created, passes the unhashed plain token to the view *once* via flash/session.
 *   `create`: Instantiates a new API key. Expects `params.expect(api_key: [:name])`. Generates and returns the plain key for display.
-*   `destroy`: Permanently deletes or deactivates the key.
+*   `update`: Updates key parameters (specifically toggling `active` state or renaming). Expects `params.expect(api_key: [:name, :active])`.
+*   `destroy`: Permanently deletes the key.
 
 #### 2. `Api::V1::BaseController` (API Base)
 *   Inherits from `ActionController::API` to omit sessions/cookies.
@@ -139,3 +140,13 @@ end
 *   **Given** a user is on the API Key settings page and has an existing key
 *   **When** the user clicks "Revocar" on a key and confirms deletion
 *   **Then** the key is deleted from the database and any subsequent API request using that token returns `401 Unauthorized`
+
+### Scenario 5: Toggling the Active Status of an API Key
+*   **Given** a valid and active `ApiKey` exists in the database
+*   **When** the user toggles the status of the key (deactivates it)
+*   **Then** the key's `active` attribute is set to `false`
+*   **And** any subsequent API request using that token returns `401 Unauthorized`
+*   **When** the user toggles the status again (reactivates it)
+*   **Then** the key's `active` attribute is set to `true`
+*   **And** subsequent API requests using that token return `200 OK`
+
