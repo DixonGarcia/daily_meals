@@ -14,11 +14,12 @@ This file (`.agents/AGENTS.md`) is the entry point for all AI agents working on 
   - **`rules/`** — Coding style and constraint rules.
     - [`claude.md`](file:///home/dixon/Workspace/DailyMeals/daily_meals/.agents/rules/claude.md) — Language conventions, TDD, Rails 8 best practices, Biteclub theme.
   - **`skills/`** — Workflow skills loaded on demand.
-    - `build-spec` — Design mockups and write a feature spec before coding.
-    - `choose-mockup` — Present mockup variants and record the user's choice.
-    - `build-feature` — Implement a feature via TDD from an existing spec.
+    - `build-spec` — Create a `spec/` branch, design mockups, and write the feature spec.
+    - `choose-mockup` — Present mockup variants, record the user's choice, delete the discarded variant.
+    - `merge-spec` — Merge the approved `spec/` branch into `main`. Runs between `choose-mockup` and `build-feature`.
+    - `build-feature` — Create a `feat/` branch and implement via TDD from the merged spec.
     - `review-implementation` — Audit code for security, stability, localization, and performance.
-    - `close-feature` — **Mandatory last step**: write the `History.md` entry and delete `implementation.md`.
+    - `close-feature` — **Mandatory last step**: write `History.md`, merge the `feat/` branch into `main`, delete implementation artifacts.
 - **`_product/`** — Feature specifications written before any code is written.
   - Each domain subfolder contains `overview.md` (permanent), `implementation.md` (deleted after `close-feature`), and `mockups/` (permanent).
 - **`History.md`** — Project development log at the repository root. One entry per logical feature or fix. Always written by the `close-feature` skill, never edited by hand.
@@ -55,11 +56,17 @@ All agents modifying this codebase **must** follow the rules in [`.agents/rules/
 Every feature or fix must complete this sequence end-to-end:
 
 1. **Pre-flight** — Read `History.md`. Verify no feature is `[OPEN]`. Determine the next `FEAT-XX` or `FIX-XX` ID.
-2. **Spec** (`build-spec` skill) — Create `_product/<domain>/overview.md`, `implementation.md`, and `mockups/`.
-3. **Design** (`choose-mockup` skill) — Present variants to the user and record the chosen one.
-4. **TDD** (`build-feature` skill) — Write failing specs first, implement minimal code to pass, then refactor.
-5. **Review** (`review-implementation` skill) — Audit security, stability, localization, and performance.
-6. **Close** (`close-feature` skill — **cannot be skipped**) — Write the `History.md` entry and delete `_product/<domain>/implementation.md`.
+2. **Spec** (`build-spec` skill) — `git checkout main && git pull`, create `spec/<FEAT-XX>-<slug>` branch, write `overview.md`, `implementation.md`, and `mockups/`.
+3. **Design** (`choose-mockup` skill) — Present variants, record choice, delete discarded mockup file.
+4. **Merge Spec** (`merge-spec` skill) — Merge `spec/<FEAT-XX>-<slug>` into `main` with `--no-ff`, delete the spec branch.
+5. **TDD** (`build-feature` skill) — `git checkout main && git pull`, create `feat/<FEAT-XX>-<slug>` branch, run migrations, write failing specs, implement, refactor.
+6. **Review** (`review-implementation` skill) — Audit security, stability, localization, and performance.
+7. **Close** (`close-feature` skill — **cannot be skipped**) — Write `History.md` entry, delete `implementation.md` + `mockups/`, merge `feat/<FEAT-XX>-<slug>` into `main` with `--no-ff`, delete the feat branch.
+
+**Branch naming convention**:
+- Spec work: `spec/<FEAT-XX>-<short-slug>` (e.g., `spec/feat-03-shopping-list`)
+- Implementation: `feat/<FEAT-XX>-<short-slug>` (e.g., `feat/feat-03-shopping-list`)
+- Bug fixes: `fix/<FIX-XX>-<short-slug>` (e.g., `fix/fix-01-modal-bind`)
 
 ### 3. Biteclub CSS Theme
 

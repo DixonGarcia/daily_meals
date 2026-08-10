@@ -1,6 +1,6 @@
 ---
 name: close-feature
-description: Mandatory last step of every feature or fix cycle. Writes a prose entry in History.md, verifies no other feature is open, and deletes implementation.md and the mockups/ directory from the spec folder.
+description: Mandatory last step of every feature or fix cycle. Writes a prose entry in History.md, merges the feat branch into main, deletes implementation artifacts, and verifies no other feature is open.
 ---
 
 # Close a Feature (`close-feature`)
@@ -66,12 +66,28 @@ rm -rf _product/<domain>/mockups/
 ```
 > **Keep**: `overview.md` (business context, permanent).
 
-### Step 5: Confirm Closure
+### Step 5: Commit, Merge Feature Branch, and Clean Up
+Commit the History.md update and artifact deletions, then merge the implementation branch into `main`:
+```bash
+# Commit the closure changes
+git add History.md _product/<domain>/
+git commit -m "chore: close FEAT-XX — History.md entry and spec artifact cleanup"
+
+# Merge into main (no fast-forward to preserve the branch in history)
+git checkout main
+git merge --no-ff feat/<FEAT-XX>-<slug> -m "merge(feat): FEAT-XX <short title> into main"
+
+# Delete the feature branch
+git branch -d feat/<FEAT-XX>-<slug>
+```
+
+### Step 6: Confirm Closure
 Reply to the user confirming:
 1. The `History.md` entry was written (include the ID and title).
 2. `implementation.md` was deleted from `_product/<domain>/`.
 3. `mockups/` directory was deleted from `_product/<domain>/`.
-4. The next available feature ID (e.g., "Next: FEAT-03").
+4. Branch `feat/<FEAT-XX>-<slug>` was merged into `main` and deleted.
+5. The next available feature ID (e.g., "Next: FEAT-03").
 
 ---
 
