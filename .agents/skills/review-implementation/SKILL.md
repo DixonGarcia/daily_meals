@@ -23,15 +23,11 @@ cat _product/current.yml
 
 If the prerequisite is not met, stop and tell the user which step needs to be completed first.
 
-**After completing the review**, update `_product/current.yml`:
+**After completing the review**, update `_product/current.yml` on disk:
 - Set `lifecycle.review-implementation.status` to `done` and add `completed_at: "YYYY-MM-DD"`.
 - Set `current_step` to `close-feature`.
 
-Commit the state update:
-```bash
-git add _product/current.yml
-git commit -m "chore: review-implementation complete — advance lifecycle to close-feature"
-```
+> This is a local disk write only — `current.yml` is gitignored and never committed.
 
 ---
 

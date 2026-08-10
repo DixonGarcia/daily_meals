@@ -67,8 +67,8 @@ Once the user responds with their selection (e.g., "Variant 2"):
    ```
 
 ### Step 5: Update Lifecycle State
-Update `_product/current.yml` to mark `choose-mockup` as done and advance `current_step` to `merge-spec`. Commit:
+Update `_product/current.yml` on disk to mark `choose-mockup` as done and advance `current_step` to `merge-spec`. Then commit the mockup selection changes:
 ```bash
-git add _product/<domain>/ _product/current.yml
-git commit -m "spec(<domain>): select winning mockup variant and update lifecycle state"
+git add _product/<domain>/
+git commit -m "spec(<domain>): select winning mockup variant"
 ```

@@ -85,10 +85,12 @@ rm -rf _product/<domain>/mockups/
 
 ### Step 5: Commit, Merge Feature Branch, and Clean Up
 ```bash
-# Commit History.md update, artifact deletions, and removal of state file
+# Delete the state file from disk (gitignored, never tracked)
+rm _product/current.yml
+
+# Commit History.md update and artifact deletions
 git add History.md _product/<domain>/
-git rm _product/current.yml
-git commit -m "chore: close FEAT-XX — History.md entry, spec artifacts removed, lifecycle state closed"
+git commit -m "chore: close FEAT-XX — History.md entry and spec artifacts removed"
 
 # Merge into main (no fast-forward to preserve the branch in history)
 git checkout main

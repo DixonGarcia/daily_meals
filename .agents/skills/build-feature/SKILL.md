@@ -150,8 +150,8 @@ bundle exec rspec
 
 ### 6.3. Commit Green + Update State + Refactor
 ```bash
-# After Green phase (all specs pass) — update lifecycle state first:
-# Edit _product/current.yml: set build-feature done, current_step: review-implementation
+# After Green phase (all specs pass) — update current.yml on disk first:
+# set build-feature: done, current_step: review-implementation
 
 git add .
 git commit -m "feat(<domain>): implement FEAT-XX — <short description>"

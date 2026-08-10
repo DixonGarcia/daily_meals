@@ -31,5 +31,8 @@
 
 /public/assets
 
-# Ignore master key for decrypting credentials and more.
 /config/master.key
+
+# Feature lifecycle state tracker — local only, not tracked in git.
+# Created by build-spec when a feature starts, deleted by close-feature when it closes.
+_product/current.yml

@@ -136,8 +136,5 @@ Create two distinct variants (e.g., `variant_1_list.html` and `variant_2_card.ht
 git add _product/<domain>/
 git commit -m "spec(<domain>): add FEAT-XX overview, implementation spec, and mockups"
 ```
-Then create `_product/current.yml` (see Lifecycle State section above) and commit it:
-```bash
-git add _product/current.yml
-git commit -m "chore: initialize lifecycle state for FEAT-XX"
-```
+Then create `_product/current.yml` on disk (see Lifecycle State section above).
+> `current.yml` is listed in `.gitignore` — it is **never committed to git**. It is a local-only state file that persists across skill invocations on the same machine.

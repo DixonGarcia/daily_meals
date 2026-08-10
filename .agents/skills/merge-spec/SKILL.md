@@ -54,12 +54,9 @@ git add _product/<domain>/
 git commit -m "spec(<domain>): record winning mockup variant selection"
 ```
 
-### Step 3: Update Lifecycle State on the Spec Branch
-Update `_product/current.yml` before merging so the state change is included in the merge commit:
-```bash
-git add _product/current.yml
-git commit -m "chore: advance lifecycle state to build-feature"
-```
+### Step 3: Update Lifecycle State
+Update `_product/current.yml` on disk: set `merge-spec: done`, `branches.spec: ~`, and `current_step: build-feature`.
+> This is a local disk write only — `current.yml` is gitignored and never committed.
 
 ### Step 4: Merge Spec Branch into Main
 ```bash
