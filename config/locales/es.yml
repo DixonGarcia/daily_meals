@@ -158,6 +158,10 @@ es:
       generate_title: "Generar Llave"
       keys_title: "Llaves Activas"
       actions: "Acciones"
+      confirm_revoke: "¿Estás seguro de que deseas revocar esta llave de API? Cualquier integración conectada (como asistentes de IA) dejará de funcionar inmediatamente. Esta acción es irreversible."
+      masked_key_label: "Llave (Enmascarada)"
+      understand: "Entendido"
+      cancel: "Cancelar"
     form:
       errors_title: "Por favor corrige los siguientes errores:"
     controller:
