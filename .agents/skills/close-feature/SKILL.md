@@ -1,6 +1,6 @@
 ---
 name: close-feature
-description: Mandatory last step of every feature or fix cycle. Writes a prose entry in History.md, merges the feat branch into main, deletes implementation artifacts, and verifies no other feature is open.
+description: Mandatory last step of every feature or fix cycle. Writes a prose entry in History.md, merges the feat branch into main, deletes implementation artifacts, and removes the lifecycle state file.
 ---
 
 # Close a Feature (`close-feature`)
@@ -9,10 +9,27 @@ description: Mandatory last step of every feature or fix cycle. Writes a prose e
 
 ---
 
+## 🔄 Lifecycle State
+
+**This is Step 6 (final) of the feature lifecycle.**
+
+**Prerequisite check** — Before proceeding, read `_product/current.yml` and verify:
+```bash
+cat _product/current.yml
+```
+- The file exists.
+- `lifecycle.review-implementation.status` is `done`.
+- `current_step` is `close-feature`.
+
+If the prerequisite is not met, stop and tell the user which step needs to be completed first.
+
+**At the end of this skill**, `_product/current.yml` is deleted — it is the signal that no feature is currently open. The permanent record is in `History.md`.
+
+---
+
 ## 🚫 Hard Rules
 
-- **Never skip this step.** If a new feature is requested, you MUST verify that the previous feature is properly closed (its entry exists in `History.md`) before starting.
-- **One open feature at a time.** Before running `build-spec` for a new feature, check `History.md` for any entry marked `[OPEN]`. If one exists, close it first.
+- **Never skip this step.** If a new feature is requested, you MUST verify that `_product/current.yml` does not exist (or that all steps are `done`) before starting.
 - **No bullets in History.md entries.** Dense prose only — 1 to 3 paragraphs per entry.
 - **No relative dates.** All dates must be ISO 8601 absolute format: `YYYY-MM-DD`.
 - **Real names only.** Use actual class names, table names, file names, and route paths — never vague descriptions.
@@ -28,7 +45,7 @@ Every feature or fix must carry a sequential ID prefix:
 - New capabilities → `FEAT-XX` (e.g., `FEAT-01`, `FEAT-02`)
 - Bug fixes or patches → `FIX-XX` (e.g., `FIX-01`, `FIX-02`)
 
-The ID is assigned during the pre-flight check before `build-spec` runs. To determine the next ID, read `History.md` and find the highest number for each prefix, then increment by 1.
+Read the feature ID from `_product/current.yml` (`feature.id`).
 
 ---
 
@@ -40,8 +57,8 @@ Run the full test suite. Do not close the feature if there are failures.
 bundle exec rspec
 ```
 
-### Step 2: Confirm the Feature ID
-Re-read `History.md` to confirm this feature's `FEAT-XX` or `FIX-XX` ID.
+### Step 2: Verify Lifecycle State
+Read `_product/current.yml` and confirm `review-implementation` is `done` (see Lifecycle State section above).
 
 ### Step 3: Append the History.md Entry
 Append a new entry at the **top** of `History.md` (newest-first) using this exact structure:
@@ -58,8 +75,8 @@ Paragraph 2: Which classes, tables, controllers, routes, or services were create
 Paragraph 3 (optional): Notable design decisions, constraints, or deviations from the original spec. Include test coverage summary (number of examples, 0 failures).
 ```
 
-### Step 4: Delete implementation artifacts
-Once the code exists both `implementation.md` (the "how" scaffold) and `mockups/` (the visual proposals) are redundant — the design intent now lives in the implemented code. Delete both:
+### Step 4: Delete Implementation Artifacts
+Once the code exists, `implementation.md` (the "how" scaffold) and `mockups/` (the visual proposals) are redundant — the design intent now lives in the code:
 ```bash
 rm _product/<domain>/implementation.md
 rm -rf _product/<domain>/mockups/
@@ -67,11 +84,11 @@ rm -rf _product/<domain>/mockups/
 > **Keep**: `overview.md` (business context, permanent).
 
 ### Step 5: Commit, Merge Feature Branch, and Clean Up
-Commit the History.md update and artifact deletions, then merge the implementation branch into `main`:
 ```bash
-# Commit the closure changes
+# Commit History.md update, artifact deletions, and removal of state file
 git add History.md _product/<domain>/
-git commit -m "chore: close FEAT-XX — History.md entry and spec artifact cleanup"
+git rm _product/current.yml
+git commit -m "chore: close FEAT-XX — History.md entry, spec artifacts removed, lifecycle state closed"
 
 # Merge into main (no fast-forward to preserve the branch in history)
 git checkout main
@@ -84,10 +101,10 @@ git branch -d feat/<FEAT-XX>-<slug>
 ### Step 6: Confirm Closure
 Reply to the user confirming:
 1. The `History.md` entry was written (include the ID and title).
-2. `implementation.md` was deleted from `_product/<domain>/`.
-3. `mockups/` directory was deleted from `_product/<domain>/`.
+2. `implementation.md` and `mockups/` were deleted from `_product/<domain>/`.
+3. `_product/current.yml` was removed — no feature is currently open.
 4. Branch `feat/<FEAT-XX>-<slug>` was merged into `main` and deleted.
-5. The next available feature ID (e.g., "Next: FEAT-03").
+5. The next available feature ID (e.g., "Next: FEAT-04").
 
 ---
 
@@ -116,7 +133,6 @@ Prose paragraph...
 ## ⚠️ Pre-Feature Checklist (enforced before `build-spec`)
 
 Before starting any `build-spec`, the agent must:
-1. Read `History.md`.
-2. Check if the last feature has a closed entry (no `[OPEN]` marker).
-3. If an open feature is detected → **stop, close it first, then proceed**.
-4. Confirm the next sequential ID to assign.
+1. Confirm `_product/current.yml` does **not** exist (no open feature).
+2. Read `History.md` to find the next sequential ID.
+3. If `current.yml` exists → read it, identify the blocked step, and resolve it before proceeding.

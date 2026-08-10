@@ -9,6 +9,32 @@ Use this skill whenever you need to review implementation code, database migrati
 
 ---
 
+## 🔄 Lifecycle State
+
+**This is Step 5 of the feature lifecycle.**
+
+**Prerequisite check** — Before proceeding, read `_product/current.yml` and verify:
+```bash
+cat _product/current.yml
+```
+- The file exists.
+- `lifecycle.build-feature.status` is `done`.
+- `current_step` is `review-implementation`.
+
+If the prerequisite is not met, stop and tell the user which step needs to be completed first.
+
+**After completing the review**, update `_product/current.yml`:
+- Set `lifecycle.review-implementation.status` to `done` and add `completed_at: "YYYY-MM-DD"`.
+- Set `current_step` to `close-feature`.
+
+Commit the state update:
+```bash
+git add _product/current.yml
+git commit -m "chore: review-implementation complete — advance lifecycle to close-feature"
+```
+
+---
+
 ## 🔍 Review Framework
 
 ### 1. Security Analysis (Critical Priority)

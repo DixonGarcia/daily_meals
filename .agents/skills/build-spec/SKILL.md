@@ -9,6 +9,44 @@ Use this skill whenever you need to outline, design, or write a specification fo
 
 ---
 
+## 🔄 Lifecycle State
+
+**This is Step 1 of the feature lifecycle.**
+
+Before starting, perform the pre-flight check:
+1. Read `History.md` — verify no entry is marked `[OPEN]`.
+2. Confirm `_product/current.yml` does **not** exist. If it does, a feature is already in progress — stop and resolve it first.
+3. Determine the next sequential `FEAT-XX` or `FIX-XX` ID from `History.md`.
+
+**After completing all spec files**, create `_product/current.yml` with the following structure:
+
+```yaml
+# _product/current.yml
+# Active feature lifecycle tracker. Created by build-spec. Deleted by close-feature.
+# Do not edit manually — updated by each lifecycle skill.
+
+feature:
+  id: FEAT-XX          # e.g., FEAT-03
+  slug: short-slug     # e.g., shopping-list
+  domain: domain_name  # e.g., shopping_list
+
+branches:
+  spec: spec/FEAT-XX-short-slug   # e.g., spec/feat-03-shopping-list
+  feat: ~                          # set later by build-feature
+
+lifecycle:
+  build-spec:            { status: done, completed_at: "YYYY-MM-DD" }
+  choose-mockup:         { status: pending }
+  merge-spec:            { status: pending }
+  build-feature:         { status: pending }
+  review-implementation: { status: pending }
+  close-feature:         { status: pending }
+
+current_step: choose-mockup
+```
+
+---
+
 ## 📂 Output Structure
 
 Every feature specification must live in its own directory `_product/<domain>/` and consist of:
@@ -68,8 +106,9 @@ For any UI components, design and save mockups in `_product/<domain>/mockups/`.
 
 ## 🚀 Step-by-Step Workflow
 
-### Step 1: Git Setup
-Run the git workflow above to create the `spec/<FEAT-XX>-<slug>` branch before touching any files.
+### Step 1: Pre-flight & Git Setup
+1. Read `History.md` and `_product/current.yml` (pre-flight checks above).
+2. Run the git workflow to create the `spec/<FEAT-XX>-<slug>` branch.
 
 ### Step 2: Research Context
 1. Check your current context for relevant models, controllers, and rules already loaded.
@@ -92,8 +131,13 @@ Use [`implementation_template.md`](./resources/implementation_template.md). Ensu
 ### Step 6: Design and Save Mockups
 Create two distinct variants (e.g., `variant_1_list.html` and `variant_2_card.html`) under `_product/<domain>/mockups/`. Both must present identical data to allow a direct comparison.
 
-### Step 7: Commit the Spec
+### Step 7: Commit the Spec and Create State File
 ```bash
 git add _product/<domain>/
 git commit -m "spec(<domain>): add FEAT-XX overview, implementation spec, and mockups"
+```
+Then create `_product/current.yml` (see Lifecycle State section above) and commit it:
+```bash
+git add _product/current.yml
+git commit -m "chore: initialize lifecycle state for FEAT-XX"
 ```

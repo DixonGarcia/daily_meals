@@ -23,6 +23,7 @@ This file (`.agents/AGENTS.md`) is the entry point for all AI agents working on 
 - **`_product/`** — Feature specifications written before any code is written.
   - Each domain subfolder contains `overview.md` (permanent), `implementation.md` (deleted after `close-feature`), and `mockups/` (permanent).
 - **`History.md`** — Project development log at the repository root. One entry per logical feature or fix. Always written by the `close-feature` skill, never edited by hand.
+- **`_product/current.yml`** — Active feature lifecycle state tracker. Created by `build-spec` when a feature starts, deleted by `close-feature` when it closes. If this file exists, a feature is in progress. Each skill reads it to verify prerequisites and writes to it after completing.
 - **`app/`** — Standard Rails layout.
   - `models/` — Models in English (`Dish`, `Ingredient`, `DishIngredient`, `MealPlan`, `ApiKey`).
   - `controllers/` — Rails controllers in English.

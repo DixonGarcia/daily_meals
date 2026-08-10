@@ -9,6 +9,27 @@ Use this skill to build and implement a feature after its specification files ha
 
 ---
 
+## 🔄 Lifecycle State
+
+**This is Step 4 of the feature lifecycle.**
+
+**Prerequisite check** — Before proceeding, read `_product/current.yml` and verify:
+```bash
+cat _product/current.yml
+```
+- The file exists.
+- `lifecycle.merge-spec.status` is `done`.
+- `current_step` is `build-feature`.
+
+If the prerequisite is not met, stop and tell the user which step needs to be completed first.
+
+**After the Green phase passes** (all specs green), update `_product/current.yml`:
+- Set `lifecycle.build-feature.status` to `done` and add `completed_at: "YYYY-MM-DD"`.
+- Set `branches.feat` to the actual branch name (e.g., `feat/feat-03-shopping-list`).
+- Set `current_step` to `review-implementation`.
+
+---
+
 ## Workflow Overview
 
 ```
@@ -63,7 +84,7 @@ bin/rails db:migrate
 bin/rails db:migrate RAILS_ENV=test
 ```
 
-> Verify the migration in `db/schema.rb` before proceeding to specs.
+> Verify the migration landed correctly in `db/schema.rb` before proceeding to specs.
 
 ---
 
@@ -127,9 +148,11 @@ bundle exec rspec
 - Add YARD documentation to all public classes, modules, and non-trivial methods (`@param`, `@return`, `@raise`).
 - Verify all user-facing text is localized in `config/locales/es.yml` — no hardcoded Spanish strings in views or controllers.
 
-### 6.3. Commit Green + Refactor Separately
+### 6.3. Commit Green + Update State + Refactor
 ```bash
-# After Green phase (all specs pass):
+# After Green phase (all specs pass) — update lifecycle state first:
+# Edit _product/current.yml: set build-feature done, current_step: review-implementation
+
 git add .
 git commit -m "feat(<domain>): implement FEAT-XX — <short description>"
 
