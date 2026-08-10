@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DailyMeals - API Key Mockups Overview</title>
+  <title>DailyMeals - API Key Mockup Overview</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,13 +52,13 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 680px;
       width: 100%;
     }
 
     .header {
       text-align: center;
-      margin-bottom: 3rem;
+      margin-bottom: 2.5rem;
     }
 
     .logo-emoji {
@@ -77,90 +77,69 @@
     }
 
     .subtitle {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       color: var(--color-subtitle);
       font-weight: 500;
     }
 
-    /* Grid Layout */
-    .variants-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      margin-bottom: 3rem;
-    }
-
-    @media (max-width: 768px) {
-      .variants-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
     .card {
       background: var(--color-body);
-      border: 1px solid var(--color-border);
+      border: 2px solid var(--color-primary);
       border-radius: 20px;
-      padding: 2rem;
-      box-shadow: var(--shadow-md);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 2.5rem;
+      box-shadow: var(--shadow-lg);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-    }
-
-    .card:hover {
-      border-color: var(--grey-text);
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-4px);
+      position: relative;
     }
 
     .card-badge {
       align-self: flex-start;
-      background: var(--color-body-alt);
-      border: 1px solid var(--color-border);
-      padding: 0.25rem 0.75rem;
+      background: var(--color-primary);
+      color: var(--color-secondary);
+      padding: 0.35rem 0.85rem;
       border-radius: 20px;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       font-weight: 800;
       text-transform: uppercase;
       font-family: var(--font-family-title);
-      color: var(--color-subtitle);
       margin-bottom: 1.25rem;
     }
 
     .card-title {
       font-family: var(--font-family-title);
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       font-weight: 800;
       color: var(--color-secondary);
       margin-bottom: 1rem;
     }
 
     .card-description {
-      font-size: 0.95rem;
+      font-size: 1rem;
       color: var(--color-text);
       margin-bottom: 1.5rem;
-      flex-grow: 1;
     }
 
     .features-list {
-      margin-bottom: 1.75rem;
+      margin-bottom: 2rem;
       list-style-type: none;
     }
 
     .features-list li {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: var(--color-subtitle);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.6rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
     }
 
     .features-list li::before {
       content: "✓";
       color: var(--color-primary);
       font-weight: bold;
+      font-size: 1.1rem;
     }
 
     .btn-open {
@@ -170,7 +149,7 @@
       text-decoration: none;
       font-family: var(--font-family-title);
       font-weight: 800;
-      padding: 0.85rem;
+      padding: 1rem;
       border-radius: 12px;
       transition: all 0.2s ease;
       display: block;
@@ -188,6 +167,7 @@
       text-align: center;
       font-size: 0.8rem;
       color: var(--grey-text);
+      margin-top: 2rem;
     }
   </style>
 </head>
@@ -199,48 +179,25 @@
     <header class="header">
       <span class="logo-emoji">🔑</span>
       <h1 class="main-title">DailyMeals API Key Manager</h1>
-      <p class="subtitle">Selección y comparación de maquetas de interfaz para la gestión de tokens</p>
+      <p class="subtitle">Maqueta seleccionada para la gestión de llaves API</p>
     </header>
 
-    <!-- Variants Grid -->
-    <div class="variants-grid">
-      
-      <!-- Variant 1 -->
-      <div class="card">
-        <span class="card-badge">Variante 1</span>
-        <div>
-          <h2 class="card-title">Listado en Tabla</h2>
-          <p class="card-description">
-            Presenta las llaves de API activas en una estructura tabular densa y limpia, ideal para una auditoría rápida de tokens. La creación de llaves se realiza mediante un formulario lateral estático.
-          </p>
-          <ul class="features-list">
-            <li>Estructura de tabla organizada</li>
-            <li>Formulario lateral persistente</li>
-            <li>Alertas de éxito integradas</li>
-            <li>Simulador de estado vacío</li>
-          </ul>
-        </div>
-        <a href="variant_1_list.html" target="_blank" class="btn-open">Abrir Variante 1 (Tabla) ➔</a>
+    <!-- Selected Variant Display -->
+    <div class="card">
+      <span class="card-badge">★ Selección Ganadora: Variante 2</span>
+      <div>
+        <h2 class="card-title">Vista de Tarjetas & Modal Emergente</h2>
+        <p class="card-description">
+          Diseño en cuadrícula moderna donde cada token se representa como una tarjeta individual. Incorpora un modal emergente para la generación de llaves con copiado de token al portapapeles.
+        </p>
+        <ul class="features-list">
+          <li>Diseño en cuadrícula limpia</li>
+          <li>Generación de token en ventana modal emergente</li>
+          <li>Visualización única y copia de token en portapapeles</li>
+          <li>Manejo de estado activo/revocado y confirmaciones</li>
+        </ul>
       </div>
-
-      <!-- Variant 2 -->
-      <div class="card">
-        <span class="card-badge">Variante 2</span>
-        <div>
-          <h2 class="card-title">Vista de Tarjetas</h2>
-          <p class="card-description">
-            Organiza las llaves de API en un diseño de cuadrícula moderna, donde cada token se presenta como una tarjeta de control individual. Incorpora un modal emergente interactivo para generar nuevas llaves.
-          </p>
-          <ul class="features-list">
-            <li>Diseño moderno en cuadrícula</li>
-            <li>Generación mediante modal emergente</li>
-            <li>Mensaje de éxito y copiado en modal</li>
-            <li>Simulador de estado vacío</li>
-          </ul>
-        </div>
-        <a href="variant_2_card.html" target="_blank" class="btn-open">Abrir Variante 2 (Tarjetas) ➔</a>
-      </div>
-
+      <a href="variant_2_card.html" target="_blank" class="btn-open">Abrir Maqueta Seleccionada (Variante 2) ➔</a>
     </div>
 
     <!-- Footer -->
