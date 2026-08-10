@@ -1,6 +1,6 @@
 ---
 name: close-feature
-description: Mandatory last step of every feature or fix cycle. Writes a prose entry in History.md, verifies no other feature is open, and deletes the implementation.md file from the spec folder.
+description: Mandatory last step of every feature or fix cycle. Writes a prose entry in History.md, verifies no other feature is open, and deletes implementation.md and the mockups/ directory from the spec folder.
 ---
 
 # Close a Feature (`close-feature`)
@@ -58,18 +58,20 @@ Paragraph 2: Which classes, tables, controllers, routes, or services were create
 Paragraph 3 (optional): Notable design decisions, constraints, or deviations from the original spec. Include test coverage summary (number of examples, 0 failures).
 ```
 
-### Step 4: Delete implementation.md
-The `implementation.md` file served as a scaffolding guide. Once the code exists, it is redundant. Delete it:
+### Step 4: Delete implementation artifacts
+Once the code exists both `implementation.md` (the "how" scaffold) and `mockups/` (the visual proposals) are redundant — the design intent now lives in the implemented code. Delete both:
 ```bash
 rm _product/<domain>/implementation.md
+rm -rf _product/<domain>/mockups/
 ```
-> **Keep**: `overview.md` (business context, permanent) and `mockups/` (design history, permanent).
+> **Keep**: `overview.md` (business context, permanent).
 
 ### Step 5: Confirm Closure
 Reply to the user confirming:
 1. The `History.md` entry was written (include the ID and title).
 2. `implementation.md` was deleted from `_product/<domain>/`.
-3. The next available feature ID (e.g., "Next: FEAT-03").
+3. `mockups/` directory was deleted from `_product/<domain>/`.
+4. The next available feature ID (e.g., "Next: FEAT-03").
 
 ---
 
