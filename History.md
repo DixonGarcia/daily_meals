@@ -1,31 +1,31 @@
 # History
 
-Registro de desarrollo de **DailyMeals**. Entradas en orden descendente (más reciente primero). Cada entrada cubre un ciclo lógico de feature o fix, independientemente del número de commits que lo componga.
+Development log for **DailyMeals**. Entries are newest-first. Each entry covers one logical feature or fix cycle, regardless of how many commits it produced.
 
 ---
 
-## [FEAT-02] API Integration y Gestión de Llaves API — 2026-07-22
+## [FEAT-02] API Integration & API Key Management — 2026-07-22
 
-Se implementó acceso programático seguro a la aplicación mediante un sistema de llaves API Bearer. El objetivo fue permitir que clientes externos (agentes AI, scripts o herramientas de automatización) pudieran consultar el catálogo de platillos y planes de comida sin pasar por la interfaz web. El token se muestra una única vez al generarlo y nunca se almacena en texto plano.
+Secure programmatic access was added to DailyMeals via a Bearer token API key system. The goal was to allow external clients — AI agents, scripts, or automation tools — to query the dish catalog and weekly meal plans without going through the web UI. The plain-text token is displayed exactly once upon creation and is never stored in cleartext.
 
-Se creó el modelo `ApiKey` con la tabla `api_keys`, que almacena `name`, `token_digest` (SHA256 del token real), `active` y `last_used_at`. El `ApiKeysController` maneja la UI de gestión (index, create, destroy, update) con un modal emergente para la visualización única del token. Se introdujo el namespace `Api::V1::` con `Api::V1::BaseController` (hereda de `ActionController::API`) que autentica via `Authorization: Bearer <token>`, y los controladores `Api::V1::DishesController` y `Api::V1::MealPlansController` que exponen los endpoints `GET /api/v1/dishes`, `GET /api/v1/dishes/:id`, `GET /api/v1/meal_plans` y `GET /api/v1/meal_plans/:id`. La autenticación actualiza `last_used_at` en cada request válido.
+The `ApiKey` model was created alongside the `api_keys` table, which stores `name`, `token_digest` (SHA-256 of the actual token), `active`, and `last_used_at`. `ApiKeysController` handles the management UI (index, create, destroy, update) with a pop-up modal that shows the generated token once. The `Api::V1` namespace was introduced: `Api::V1::BaseController` (inheriting from `ActionController::API`) handles `Authorization: Bearer <token>` authentication and stamps `last_used_at` on every valid request. `Api::V1::DishesController` and `Api::V1::MealPlansController` expose `GET /api/v1/dishes`, `GET /api/v1/dishes/:id`, `GET /api/v1/meal_plans`, and `GET /api/v1/meal_plans/:id`, plus `POST /api/v1/dishes/import` and `POST /api/v1/meal_plans/import` for bulk atomic ingestion inside `ActiveRecord::Base.transaction`.
 
-Se eligió el layout Variant 2 (tarjetas + modal) sobre Variant 1 (tabla + formulario lateral). La suite RSpec cerró con 61 ejemplos y 0 fallos, cubriendo modelos, request specs de UI y request specs de la API v1 con y sin token.
-
----
-
-## [FEAT-01] Planificación Semanal de Comidas — 2026-07-17
-
-Se construyó el núcleo funcional de DailyMeals: el catálogo de platillos con sus ingredientes y la planificación semanal de comidas. El objetivo fue darle al usuario una forma de registrar qué cocinar cada día (almuerzo y cena) usando un catálogo propio, como paso previo a la generación automática de listas de compras.
-
-Se crearon cuatro tablas: `dishes` (con `name` y `category`), `ingredients` (con `name` y `supermarket_section`), `dish_ingredients` (tabla de unión con `suggested_quantity` y constraint de unicidad compuesta sobre `dish_id` + `ingredient_id`) y `meal_plans` (con `day_of_week` unique, `lunch_dish_id` y `dinner_dish_id` como foreign keys a `dishes`). Los modelos `Dish`, `Ingredient`, `DishIngredient` y `MealPlan` se documentaron con YARD. Se crearon `DishesController`, `IngredientsController` y `MealPlansController` con acciones CRUD completas usando `params.expect` y métodos bang. Las vistas ERB se escribieron en español bajo el tema visual Biteclub (blanco `#ffffff`, verde lima `#9bc024`, azul `#0094e4`, bordes `#e9e9e9`). Toda la UI y los mensajes flash se gestionan via `config/locales/es.yml`.
-
-En paralelo se estableció la infraestructura de agentes: las reglas en `.agents/rules/claude.md` (separación Inglés/Español, TDD, YARD, Rails 8 conventions) y las cuatro skills de workflow `build-spec`, `choose-mockup`, `build-feature` y `review-implementation` bajo `.agents/skills/`.
+The Variant 2 layout (card grid + modal overlay) was selected over Variant 1 (table + side form). All user-facing labels — including `confirm_revoke`, `masked_key_label`, `understand`, and `cancel` — are managed through `config/locales/es.yml`. The RSpec suite closed at 61 examples, 0 failures.
 
 ---
 
-## [FEAT-00] Bootstrap del Proyecto — 2026-07-17
+## [FEAT-01] Weekly Meal Planning Core — 2026-07-17
 
-Se inicializó el proyecto DailyMeals como una aplicación Ruby on Rails 8.0 con PostgreSQL, RSpec y la estructura base del sistema de diseño Biteclub. Se definió la hoja de ruta de producto en `_product/` con especificaciones preliminares para los módulos `meal_planning`, `shopping_list`, `inventory_management`, `dashboard` y `ai_copilot`. Se configuró el archivo de estilos `application.css` con las variables de color y tokens del tema, y se estableció el rol PostgreSQL `dixon` como superuser para el entorno de desarrollo local.
+The functional core of DailyMeals was built: a dish catalog with ingredients and a weekly meal planner. The goal was to give users a way to register what to cook each day (lunch and dinner) from their own catalog, as a prerequisite to automatic shopping list generation.
+
+Four tables were created: `dishes` (with `name` and `category`), `ingredients` (with `name` and `supermarket_section`), `dish_ingredients` (join table with `suggested_quantity` and a composite uniqueness constraint on `dish_id` + `ingredient_id`), and `meal_plans` (with a unique `day_of_week`, and `lunch_dish_id` / `dinner_dish_id` as foreign keys to `dishes`). The models `Dish`, `Ingredient`, `DishIngredient`, and `MealPlan` were documented with YARD. `DishesController`, `IngredientsController`, and `MealPlansController` were created with full CRUD actions using `params.expect` and bang methods. ERB views were written in Spanish under the Biteclub visual theme (white `#ffffff`, lime green `#9bc024`, action blue `#0094e4`, border `#e9e9e9`). All UI text and flash messages are managed via `config/locales/es.yml`.
+
+The agent infrastructure was also established in parallel: coding rules in `.agents/rules/claude.md` (English/Spanish separation, TDD, YARD, Rails 8 conventions) and four workflow skills — `build-spec`, `choose-mockup`, `build-feature`, and `review-implementation` — under `.agents/skills/`.
+
+---
+
+## [FEAT-00] Project Bootstrap — 2026-07-17
+
+DailyMeals was initialized as a Ruby on Rails 8.0 application with PostgreSQL, RSpec, and the Biteclub design system foundation. The product roadmap was defined in `_product/` with preliminary specifications for the `meal_planning`, `shopping_list`, `inventory_management`, `dashboard`, and `ai_copilot` modules. The `application.css` stylesheet was configured with color variables and theme tokens, and the PostgreSQL role `dixon` was created as a superuser for the local development environment.
 
 ---

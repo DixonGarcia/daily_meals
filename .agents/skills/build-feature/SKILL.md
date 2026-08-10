@@ -1,9 +1,9 @@
 ---
 name: build-feature
-description: Guide for implementing a feature in DailyMeals from an existing specification using TDD, Rails 8, English/Spanish separation, and Biteclub styling.
+description: Guide for implementing a DailyMeals feature from an existing specification using TDD, Rails 8, English/Spanish separation, and the Biteclub theme.
 ---
 
-# Implementing a Feature (`build-feature`)
+# Implement a Feature (`build-feature`)
 
 Use this skill to build and implement a feature after its specification files have been created under `_product/<domain>/`.
 
@@ -12,7 +12,7 @@ Use this skill to build and implement a feature after its specification files ha
 ## Workflow Overview
 
 ```
-1. Read Spec Files (_product/<domain>/) ➔ 2. Write Specs (spec/) ➔ 3. Red Phase ➔ 4. Minimal Code (Green) ➔ 5. Refactor & Verify
+1. Read Spec  →  2. Write Specs  →  3. Red Phase  →  4. Green Phase  →  5. Refactor & Verify
 ```
 
 ---
@@ -25,8 +25,8 @@ Use this skill to build and implement a feature after its specification files ha
 2. Identify:
    - Data models and schema migrations (in **English**).
    - Controller actions and routes (in **English**).
-   - UI views (`ERB`) and locale strings (`config/locales/es.yml` in **Spanish**).
-   - Selected mockup variant and styling.
+   - UI views (ERB) and locale strings (`config/locales/es.yml` in **Spanish**).
+   - The selected mockup variant and its styling decisions.
    - Acceptance criteria.
 
 ---
@@ -42,10 +42,10 @@ Create tests in `spec/models/<model_name>_spec.rb`:
 Create tests in `spec/requests/<controller_name>_spec.rb`:
 - Test HTTP status codes and responses.
 - Test parameter handling with `params.expect`.
-- Test database state mutations and flash notices.
+- Test database state mutations and flash messages.
 
 ### 2.3. Run Tests (Red Phase)
-Verify that tests fail prior to writing implementation code:
+Verify that tests fail before writing any implementation code:
 ```bash
 bundle exec rspec spec/models/<model_name>_spec.rb spec/requests/<controller_name>_spec.rb
 ```
@@ -54,22 +54,22 @@ bundle exec rspec spec/models/<model_name>_spec.rb spec/requests/<controller_nam
 
 ## Step 3: Implementation (Green Phase)
 
-Write minimal code to pass all specs:
+Write the minimal code needed to pass all specs.
 
 ### 3.1. Language Separation
-- **Code & DB (English)**: Models, attributes, controllers, service objects, helpers, variable names, and JSON payload keys MUST be in **English**.
-- **UI & Data (Spanish)**: ERB templates, buttons, labels, flash messages MUST use Spanish text via `config/locales/es.yml`. Stored DB content MUST be in **Spanish**.
+- **Code & DB (English)** — Models, attributes, controllers, service objects, helpers, variable names, and JSON payload keys must be in **English**.
+- **UI & Data (Spanish)** — ERB templates, buttons, labels, and flash messages must use Spanish text via `config/locales/es.yml`. Stored database content must also be in **Spanish**.
 
 ### 3.2. Rails 8 Best Practices
-- **Params**: Use `params.expect` (Rails 8+).
-- **Exceptions**: Use bang methods (`save!`, `create!`, `update!`, `destroy!`) to fail loudly unless failure handling is explicitly designed.
-- **Service Objects**: Extract complex calculations (e.g. ingredient consolidation) into `app/services/`.
-- **Transactions**: Wrap multi-record mutations in `ActiveRecord::Base.transaction`.
+- **Params** — Use `params.expect` (Rails 8+).
+- **Exceptions** — Use bang methods (`save!`, `create!`, `update!`, `destroy!`) to fail loudly, unless graceful failure is explicitly designed.
+- **Service Objects** — Extract complex calculations (e.g., ingredient consolidation) into `app/services/`.
+- **Transactions** — Wrap multi-record mutations in `ActiveRecord::Base.transaction`.
 
 ### 3.3. Biteclub Theme & UI Rules
 - Use CSS tokens defined in `app/assets/stylesheets/application.css`.
-- Palette: White `#ffffff`/`#f8f9fa`, Charcoal `#141414`, Lime Green `#9bc024`, Action Blue `#0094e4`.
-- Minimalist style with thin borders (`#e9e9e9`) and soft shadows (`box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05)`).
+- Palette: white `#ffffff`/`#f8f9fa`, Charcoal `#141414`, Lime Green `#9bc024`, Action Blue `#0094e4`.
+- Minimalist style with thin borders (`#e9e9e9`) and soft shadows (`box-shadow: 0 4px 20px rgba(0,0,0,0.05)`).
 - Use vanilla JS clone methods for dynamic form rows.
 
 ---
@@ -80,5 +80,5 @@ Write minimal code to pass all specs:
    ```bash
    bundle exec rspec
    ```
-2. Refactor code for cleanliness and YARD documentation.
+2. Refactor for cleanliness and add YARD documentation to all public methods.
 3. Verify all user-facing text is properly localized in `config/locales/es.yml`.
