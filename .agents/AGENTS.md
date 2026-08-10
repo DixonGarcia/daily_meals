@@ -11,8 +11,16 @@ This document (`.agents/AGENTS.md`) serves as the entry point for all AI agents 
 - **`.agents/`**: Folder dedicated to agent configuration and instruction sets.
   - **`rules/`**: Rules and context instructions.
     - [`claude.md`](file:///home/dixon/Workspace/DailyMeals/daily_meals/.agents/rules/claude.md): Strict styling, language, naming, and TDD guidelines.
+  - **`skills/`**: Workflow skills loaded on-demand by agents.
+    - `build-spec`: Design mockups and write feature specifications before coding.
+    - `choose-mockup`: Present mockup variants and record the user's choice.
+    - `build-feature`: Implement a feature via TDD from an existing spec.
+    - `review-implementation`: Audit code for security, stability, localization, and performance.
+    - `close-feature`: **Mandatory last step** — write `History.md` entry and delete `implementation.md`.
 - **`_product/`**: Directory where feature specifications and requirements are written prior to any coding.
   - Every new feature must start with a spec definition inside a subfolder here.
+  - Each domain folder contains `overview.md` (permanent), `implementation.md` (deleted after close-feature), and `mockups/` (permanent).
+- **`History.md`**: Project development log at the repository root. One entry per logical feature or fix. Never edited manually — always written by the `close-feature` skill.
 - **`app/`**: Standard Rails architecture.
   - `models/`: Models in English (e.g., `Dish`, `Ingredient`, `DishIngredient`, `MealPlan`).
   - `controllers/`: Rails controllers in English.
@@ -40,13 +48,15 @@ If you are an agent modifying or adding code to this project, you **must** adher
 - **Code & Database (Strictly English)**: Database tables/columns, associations, models, controllers, service objects, helpers, variable names, and JSON/API payload keys must be written in **English**.
 - **UI & Database Content (Spanish)**: Views, buttons, forms, labels, flash messages, and select options must be in **Spanish**. The actual stored database records (e.g., dish names, ingredient names) must also be in **Spanish**.
 
-### 2. Test-Driven Development (TDD) Workflow
-Before you write any implementation code, follow this sequence:
-1. Define the specification in a subfolder inside `_product/` (e.g., `_product/feature_name/specification.md`).
-2. Write unit tests in `spec/models/` and request tests in `spec/requests/`.
-3. Verify test failures.
-4. Write minimal code to pass the tests.
-5. Refactor while keeping specs green.
+### 2. Feature Lifecycle (Mandatory Sequence)
+Every feature or fix must follow this strict sequence end-to-end:
+
+1. **Pre-flight**: Read `History.md` and verify no feature is currently `[OPEN]`. Determine the next `FEAT-XX` or `FIX-XX` ID.
+2. **Spec** (`build-spec` skill): Create `_product/<domain>/overview.md`, `implementation.md`, and `mockups/`.
+3. **Design** (`choose-mockup` skill): Present variants to the user and record the chosen one.
+4. **TDD** (`build-feature` skill): Write failing specs first, then implement minimal code to pass them, then refactor.
+5. **Review** (`review-implementation` skill): Audit security, stability, localization, and performance.
+6. **Close** (`close-feature` skill — **CANNOT BE SKIPPED**): Write the `History.md` entry (prose, ISO dates, real names) and delete `_product/<domain>/implementation.md`.
 
 ### 3. CSS/Styling Theme ("Biteclub")
 - Accent colors: White (`#ffffff`/`#f8f9fa`), Charcoal (`#141414`), Lime Green (`#9bc024`), Action Blue (`#0094e4`).
