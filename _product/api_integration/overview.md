@@ -29,3 +29,8 @@ Under the `mockups/` folder, two layout variations are provided for comparison:
 *   **Variant 2 (Tarjetas & Modal)**:
     *   A grid layout displaying API keys as dashboard cards.
     *   A clean popup modal that presents the generated key in plain text with a copy button immediately after creation.
+
+## 6. Selected Variant
+* **Selected Layout**: **Variant 2 (Cards & Modal Overlay)**
+* **Rationale**: Provides a cleaner interface for displaying plain-text Bearer tokens in an isolated pop-up overlay immediately after creation, avoiding plain-text exposure on static side forms.
+
