@@ -28,3 +28,7 @@ Under the `mockups/` folder, two layout variations are provided for comparison:
     *   Replaces the manual JSON sidebar card with an integrated conversational panel featuring quick-toggle parameter pills, a scrollable chat thread, an inline visual card showing the proposed menu with dish names, and a primary **"📥 Cargar Menú en el Calendario"** action button.
 *   **Variant 2 (Espacio de Trabajo en Modal Pantalla Completa)**:
     *   Hides the assistant behind a floating trigger button that opens a full-screen multi-column overlay modal.
+
+## 6. Selected Variant
+* **Selected Layout**: **Variant 1 (Panel de Chat Integrado con Chips de Parámetros y Vista Previa Inline)**
+* **Rationale**: Keeps the conversational assistant, parameter toggles, and proposed weekly menu preview directly visible alongside the weekly calendar and shopping list, avoiding full-screen modal friction on mobile viewports like the Samsung Galaxy S25+ (`412x915`).
