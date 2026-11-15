@@ -4,6 +4,16 @@ Development log for **DailyMeals**. Entries are newest-first. Each entry covers 
 
 ---
 
+## [FEAT-04] Persistent Gemini Pseudo-Chat & Guided Menu Loader — 2026-11-15
+
+An interactive, database-persisted Gemini AI Copilot pseudo-chat was added to the DailyMeals dashboard, replacing the manual JSON copy-paste workflow as the primary meal planning assistant. The goal was to let the owner select structured planning parameters, converse naturally in Spanish with Google Gemini, visually preview the proposed weekly menu with real dish names, and load the approved plan into the weekly calendar with a single tap while keeping `GEMINI_API_KEY` isolated on the server.
+
+Two new tables and models were introduced via `CreateAiChatSessionsAndMessages`: `AiChatSession` (`ai_chat_sessions` storing `title`, `parameters`, `proposed_plan`, and `status`) and `AiChatMessage` (`ai_chat_messages` storing `role`, `content`, and `proposed_plan`). `GeminiClient` handles server-side HTTPS calls to `https://generativelanguage.googleapis.com/v1beta/models/:model:generateContent` using `Net::HTTP` and Gemini Structured Outputs (`responseSchema`), while `AiCopilotService` was expanded with `converse!` (which sanitizes proposed dish IDs against `Dish` records and provides a local development planner fallback when `GEMINI_API_KEY` is unset) and `apply_session_plan!` (which atomically updates `MealPlan` records). `AiChatSessionsController` and `AiChatMessagesController` expose `POST /ai_chat_sessions`, `PATCH /ai_chat_sessions/:id/switch`, `POST /ai_chat_sessions/:id/apply`, `DELETE /ai_chat_sessions/:id`, and rate-limited `POST /ai_chat_sessions/:ai_chat_session_id/ai_chat_messages`.
+
+The Variant 1 layout (integrated sidebar chat with quick parameter chips, inline menu preview card, and collapsible manual JSON fallback) was selected over Variant 2 (full-screen modal workspace) and implemented in `app/views/meal_plans/index.html.erb` and `app/assets/stylesheets/application.css`. Mobile ergonomics were verified via headless Chromium emulation on a Samsung Galaxy S25+ viewport (`412x915`), including responsive two-row navigation, quick-jump pills, and stacked mobile dish cards. All Spanish UI strings are managed in `config/locales/es.yml`, and the RSpec suite closed at 91 examples, 0 failures.
+
+---
+
 ## [FEAT-03] Single-Owner Access Control — 2026-11-15
 
 Single-owner web authentication was added to protect the DailyMeals interface when deployed under a public custom domain and accessed from mobile or desktop browsers. The goal was to prevent unauthorized internet visitors from viewing or mutating dishes, ingredients, weekly meal plans, or API keys without introducing multi-user database complexity.

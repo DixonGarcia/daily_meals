@@ -2,7 +2,7 @@
 class MealPlansController < ApplicationController
   # GET /
   # GET /meal_plans
-  # Renders the dashboard featuring the weekly calendar, shopping list, and AI copilot forms.
+  # Renders the dashboard featuring the weekly calendar, shopping list, and Gemini AI Copilot chat.
   # @return [void]
   def index
     # Load all meal plans in order of the week (eager loading associations to prevent N+1 queries)
@@ -12,8 +12,13 @@ class MealPlansController < ApplicationController
       hash[day] = existing_plans[day] || MealPlan.new(day_of_week: day)
     end
 
-    # Load available dishes for selecting in the form
+    # Load available dishes for selecting in the form and resolving preview names in O(1)
     @dishes = Dish.all.order(:name)
+    @dishes_by_id = @dishes.index_by(&:id)
+
+    # Load persisted AI chat sessions and resolve the active session
+    @chat_sessions = AiChatSession.includes(:ai_chat_messages).order(updated_at: :desc).to_a
+    @active_chat_session = resolve_active_chat_session
 
     # Generate dynamic shopping list
     @shopping_list = ShoppingListGenerator.new.generate
@@ -38,5 +43,27 @@ class MealPlansController < ApplicationController
     else
       redirect_to root_path, alert: t('meal_plans.controller.error_update', day: day_translated, errors: plan.errors.full_messages.join(', '))
     end
+  end
+
+  private
+
+  # Finds the currently selected AiChatSession or creates a default initial session.
+  #
+  # @return [AiChatSession]
+  def resolve_active_chat_session
+    if session[:active_ai_chat_session_id].present?
+      found = @chat_sessions.find { |s| s.id == session[:active_ai_chat_session_id].to_i }
+      return found if found
+    end
+
+    return @chat_sessions.first if @chat_sessions.any?
+
+    created = AiChatSession.create!(
+      title: "#{t('ai_chat_sessions.default_title')} (#{Time.current.strftime('%d/%m')})",
+      parameters: AiChatSession::DEFAULT_PARAMETERS
+    )
+    @chat_sessions = [created]
+    session[:active_ai_chat_session_id] = created.id
+    created
   end
 end

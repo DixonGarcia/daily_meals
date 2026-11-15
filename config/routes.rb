@@ -22,6 +22,14 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :ai_chat_sessions, only: [:create, :destroy] do
+    member do
+      patch :switch
+      post :apply
+    end
+    resources :ai_chat_messages, only: [:create]
+  end
+
   resource :ai_copilot, only: [], controller: 'ai_copilots' do
     get :export
     post :import

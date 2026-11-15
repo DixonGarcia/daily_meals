@@ -10,9 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_22_155513) do
+ActiveRecord::Schema[8.0].define(version: 2026_11_15_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "ai_chat_messages", force: :cascade do |t|
+    t.bigint "ai_chat_session_id", null: false
+    t.string "role", null: false
+    t.text "content", null: false
+    t.jsonb "proposed_plan", default: [], null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ai_chat_session_id"], name: "index_ai_chat_messages_on_ai_chat_session_id"
+  end
+
+  create_table "ai_chat_sessions", force: :cascade do |t|
+    t.string "title", null: false
+    t.jsonb "parameters", default: {}, null: false
+    t.jsonb "proposed_plan", default: [], null: false
+    t.string "status", default: "active", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "api_keys", force: :cascade do |t|
     t.string "name", null: false
@@ -62,6 +81,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_22_155513) do
     t.index ["lunch_dish_id"], name: "index_meal_plans_on_lunch_dish_id"
   end
 
+  add_foreign_key "ai_chat_messages", "ai_chat_sessions", on_delete: :cascade
   add_foreign_key "dish_ingredients", "dishes"
   add_foreign_key "dish_ingredients", "ingredients"
   add_foreign_key "meal_plans", "dishes", column: "dinner_dish_id"
