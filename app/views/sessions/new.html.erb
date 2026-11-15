@@ -1,0 +1,48 @@
+<div class="auth-shell">
+  <div class="card vault-card">
+    <div class="vault-badge"><%= t('sessions.new.badge') %></div>
+    <h1 class="vault-title"><%= t('sessions.new.title') %></h1>
+    <p class="vault-subtitle"><%= t('sessions.new.subtitle') %></p>
+
+    <%= form_with url: session_path, method: :post, local: true, class: "vault-form" do |f| %>
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label class="form-label" for="password"><%= t('sessions.new.password_label') %></label>
+        <div class="password-field-wrapper">
+          <%= f.password_field :password,
+                               id: "password",
+                               class: "form-input password-input",
+                               placeholder: t('sessions.new.password_placeholder'),
+                               required: true,
+                               autofocus: true,
+                               autocomplete: "current-password" %>
+          <button type="button"
+                  id="toggle-password-visibility"
+                  class="password-toggle-btn"
+                  aria-label="<%= t('sessions.new.toggle_password') %>"
+                  title="<%= t('sessions.new.toggle_password') %>">
+            👁️
+          </button>
+        </div>
+      </div>
+
+      <%= f.submit t('sessions.new.submit'), class: "update-day-btn vault-submit-btn" %>
+    <% end %>
+
+    <p class="vault-persistence-note"><%= t('sessions.new.persistence_note') %></p>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("turbo:load", function() {
+    const toggleBtn = document.getElementById("toggle-password-visibility");
+    const passwordInput = document.getElementById("password");
+
+    if (toggleBtn && passwordInput) {
+      toggleBtn.addEventListener("click", function() {
+        const isPassword = passwordInput.type === "password";
+        passwordInput.type = isPassword ? "text" : "password";
+        toggleBtn.textContent = isPassword ? "🙈" : "👁️";
+      });
+    }
+  });
+</script>

@@ -610,4 +610,149 @@ a {
   transform: scale(0.96);
 }
 
+/* Single-Owner Vault Login & Responsive Mobile Navigation (FEAT-03) */
+.auth-shell {
+  min-height: calc(100vh - 150px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 0.5rem;
+}
+
+.vault-card {
+  width: 100%;
+  max-width: 430px;
+  padding: 2.25rem 1.85rem;
+}
+
+.vault-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  margin-bottom: 1rem;
+}
+
+.vault-title {
+  font-size: 1.7rem;
+  font-weight: 800;
+  margin-bottom: 0.45rem;
+  color: var(--color-title);
+}
+
+.vault-subtitle {
+  font-size: 0.9rem;
+  color: var(--color-subtitle);
+  margin-bottom: 1.5rem;
+  line-height: 1.45;
+}
+
+.password-field-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  padding-right: 3rem;
+  font-size: 1rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.65rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.15rem;
+  padding: 0.35rem;
+  line-height: 1;
+  border-radius: 8px;
+}
+
+.password-toggle-btn:hover {
+  background: var(--color-body-alt);
+}
+
+.vault-submit-btn {
+  font-size: 1rem;
+  padding: 0.9rem;
+}
+
+.vault-persistence-note {
+  margin-top: 1.15rem;
+  font-size: 0.8rem;
+  color: var(--color-subtitle);
+  text-align: center;
+}
+
+.nav-logout-wrapper {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-logout-btn {
+  background: var(--color-body-alt);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-family-title);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.nav-logout-btn:hover {
+  background: #fdf2f2;
+  border-color: var(--error-red);
+  color: var(--error-red);
+}
+
+@media (max-width: 768px) {
+  .app-nav {
+    height: auto;
+    padding: 0.6rem 0;
+  }
+
+  .nav-container {
+    padding: 0 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .nav-logo {
+    font-size: 1.35rem;
+    justify-content: center;
+  }
+
+  .nav-links {
+    gap: 0.35rem;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .nav-link {
+    font-size: 0.82rem;
+    padding: 0.45rem 0.4rem;
+    border-bottom-width: 2px;
+  }
+
+  .main-content {
+    padding: 1.25rem 1rem;
+  }
+}
+
+
 

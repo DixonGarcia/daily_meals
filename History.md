@@ -4,6 +4,16 @@ Development log for **DailyMeals**. Entries are newest-first. Each entry covers 
 
 ---
 
+## [FEAT-03] Single-Owner Access Control — 2026-11-15
+
+Single-owner web authentication was added to protect the DailyMeals interface when deployed under a public custom domain and accessed from mobile or desktop browsers. The goal was to prevent unauthorized internet visitors from viewing or mutating dishes, ingredients, weekly meal plans, or API keys without introducing multi-user database complexity.
+
+Authentication is enforced globally in `ApplicationController` via `before_action :require_authentication!` and `authenticated?`, which compares the SHA-256 digest of `ENV["APP_ACCESS_PASSWORD"]` against `cookies.encrypted[:owner_session]` using `ActiveSupport::SecurityUtils.secure_compare` and fails closed when the environment password is blank. `SessionsController` exposes `GET /session/new`, `POST /session` (protected with Rails 8 `rate_limit` at 5 attempts per 15 minutes and `params.expect(:password)`), and `DELETE /session`, issuing a 60-day HTTP-only encrypted cookie so mobile sessions persist seamlessly while rotating `ENV["APP_ACCESS_PASSWORD"]` immediately revokes all active cookies. `config/boot.rb` includes a zero-dependency `.env` loader paired with `.env.example` so secrets never enter Git.
+
+The Variant 1 layout (minimalist vault card with password visibility toggle and responsive mobile navigation bar) was selected over Variant 2 (split hero banner) and implemented in `app/views/sessions/new.html.erb`, `app/views/layouts/application.html.erb`, and `app/assets/stylesheets/application.css`. All Spanish UI text and flash alerts are managed under `sessions` and `layout.logout` in `config/locales/es.yml`. The RSpec suite closed at 72 examples, 0 failures.
+
+---
+
 ## [FEAT-02] API Integration & API Key Management — 2026-07-22
 
 Secure programmatic access was added to DailyMeals via a Bearer token API key system. The goal was to allow external clients — AI agents, scripts, or automation tools — to query the dish catalog and weekly meal plans without going through the web UI. The plain-text token is displayed exactly once upon creation and is never stored in cleartext.
