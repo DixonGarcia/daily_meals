@@ -28,3 +28,7 @@ Under the `mockups/` folder, two layout variations are provided for comparison:
     *   A centered, mobile-first vault card with password visibility toggle, subtle security badge, and compact responsive navigation bar with an integrated logout button.
 *   **Variant 2 (Panel Dividido Hero)**:
     *   A two-column split layout featuring a marketing-style side banner on desktop that collapses on mobile screens.
+
+## 6. Selected Variant
+* **Selected Layout**: **Variant 1 (Tarjeta Bóveda Minimalista)**
+* **Rationale**: Offers immediate above-the-fold focus on mobile viewports like the Samsung Galaxy S25+ (`412x915`) without wasting vertical space on a decorative banner, includes a convenient show/hide password toggle for mobile typing, and aligns cleanly with the Biteclub card aesthetic.

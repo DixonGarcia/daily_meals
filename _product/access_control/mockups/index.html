@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mockups FEAT-03: Control de Acceso Single-Owner</title>
+  <title>Mockup Seleccionado FEAT-03: Control de Acceso Single-Owner</title>
   <style>
     body { margin: 0; font-family: sans-serif; background: #f8f9fa; }
     .switcher-bar {
@@ -14,19 +14,13 @@
       justify-content: space-between;
       align-items: center;
     }
-    .switcher-btns button {
-      background: #343434;
-      color: #fff;
-      border: none;
-      padding: 0.45rem 0.9rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 700;
-      margin-left: 0.5rem;
-    }
-    .switcher-btns button.active {
+    .selected-badge {
       background: #9bc024;
       color: #141414;
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
     }
     iframe {
       width: 100%;
@@ -37,20 +31,9 @@
 </head>
 <body>
   <div class="switcher-bar">
-    <strong>FEAT-03: Control de Acceso — Comparador de Variantes</strong>
-    <div class="switcher-btns">
-      <button id="btn-v1" class="active" onclick="showVariant('variant_1_vault_card.html', 'btn-v1')">Variante 1: Tarjeta Bóveda Minimalista</button>
-      <button id="btn-v2" onclick="showVariant('variant_2_split_pin.html', 'btn-v2')">Variante 2: Panel Dividido Hero</button>
-    </div>
+    <strong>FEAT-03: Control de Acceso — Diseño Seleccionado</strong>
+    <span class="selected-badge">✓ Variante 1: Tarjeta Bóveda Minimalista</span>
   </div>
   <iframe id="preview-frame" src="variant_1_vault_card.html"></iframe>
-  <script>
-    function showVariant(src, btnId) {
-      document.getElementById('preview-frame').src = src;
-      document.getElementById('btn-v1').classList.remove('active');
-      document.getElementById('btn-v2').classList.remove('active');
-      document.getElementById(btnId).classList.add('active');
-    }
-  </script>
 </body>
 </html>
