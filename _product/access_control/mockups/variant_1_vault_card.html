@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DailyMeals — Acceso Privado (Variante 1: Tarjeta Bóveda Minimalista)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #9bc024;
+      --color-secondary: #141414;
+      --grey-box-fill: #eeeeee;
+      --color-body: #ffffff;
+      --color-body-alt: #f8f9fa;
+      --color-border: #e9e9e9;
+      --color-title: #111111;
+      --color-text: #343434;
+      --color-subtitle: #767676;
+      --blue-high: #0094e4;
+      --error-red: #d02e2e;
+      --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--color-body-alt);
+      color: var(--color-text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .app-nav {
+      background: var(--color-body);
+      border-bottom: 1px solid var(--color-border);
+      padding: 0.85rem 1.25rem;
+    }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-logo {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--color-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .auth-shell {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+    }
+    .vault-card {
+      background: var(--color-body);
+      border: 1px solid var(--color-border);
+      border-radius: 18px;
+      padding: 2.25rem 1.75rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow-md);
+    }
+    .vault-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--color-title);
+      margin-bottom: 0.4rem;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--color-subtitle);
+      margin-bottom: 1.5rem;
+      line-height: 1.45;
+    }
+    .form-label {
+      display: block;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--color-subtitle);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+    .password-field-wrapper {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+    .form-input {
+      width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 0.9rem 3rem 0.9rem 1rem;
+      font-size: 1rem;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(155, 192, 36, 0.15);
+    }
+    .toggle-btn {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0.25rem;
+    }
+    .btn-submit {
+      width: 100%;
+      background: var(--color-primary);
+      color: var(--color-secondary);
+      border: none;
+      border-radius: 12px;
+      padding: 0.9rem;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .persistence-note {
+      margin-top: 1.1rem;
+      font-size: 0.8rem;
+      color: var(--color-subtitle);
+      text-align: center;
+    }
+    .flash-alert {
+      display: none;
+      background: #fdf2f2;
+      border: 1px solid var(--error-red);
+      color: #5c0f0f;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="app-nav">
+    <div class="nav-container">
+      <div class="nav-logo"><span>🍳</span><span>DailyMeals</span></div>
+    </div>
+  </nav>
+  <main class="auth-shell">
+    <div class="vault-card">
+      <div class="vault-badge">🔒 Uso Personal Protegido</div>
+      <h1>Acceso Privado</h1>
+      <p class="subtitle">Ingresa tu clave maestra para gestionar tu plan semanal de comidas y lista de compras desde cualquier dispositivo.</p>
+      <div id="alert-box" class="flash-alert">La clave ingresada no es válida.</div>
+      <form id="login-form">
+        <label class="form-label" for="password">Clave de Acceso</label>
+        <div class="password-field-wrapper">
+          <input type="password" id="password" class="form-input" placeholder="Ingresa tu clave secreta..." required>
+          <button type="button" class="toggle-btn" id="toggle-pwd" title="Mostrar u ocultar clave">👁️</button>
+        </div>
+        <button type="submit" class="btn-submit">🔓 Entrar a DailyMeals</button>
+      </form>
+      <p class="persistence-note">📱 Tu sesión se mantendrá activa en este dispositivo por 60 días.</p>
+    </div>
+  </main>
+  <script>
+    const pwd = document.getElementById('password');
+    document.getElementById('toggle-pwd').addEventListener('click', () => {
+      pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    });
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (pwd.value === 'error') {
+        document.getElementById('alert-box').style.display = 'block';
+      } else {
+        alert('Sesión iniciada correctamente (60 días).');
+      }
+    });
+  </script>
+</body>
+</html>
