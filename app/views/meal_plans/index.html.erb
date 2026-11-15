@@ -1,3 +1,8 @@
+<div class="mobile-quick-jumps">
+  <a href="#ai-copilot-panel" class="quick-jump-pill jump-ai"><%= t('ai_chat_sessions.jump_to_chat') %></a>
+  <a href="#shopping-list-panel" class="quick-jump-pill jump-cart"><%= t('ai_chat_sessions.jump_to_shopping') %></a>
+</div>
+
 <div class="dashboard-grid">
   <!-- Left Side: Weekly Calendar -->
   <div>
@@ -38,41 +43,175 @@
     </div>
   </div>
 
-  <!-- Right Side: Sidebar (Shopping List & AI Copilot) -->
+  <!-- Right Side: Sidebar (Gemini Pseudo-Chat & Shopping List) -->
   <div class="sidebar-panel">
-    <!-- AI Copilot Panel -->
-    <div class="card ai-copilot-card">
-      <h3 class="section-title" style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--blue-high);"><%= t('meal_plans.index.ai_copilot') %></h3>
-      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-        <%= t('meal_plans.index.ai_description') %>
-      </p>
-
-      <!-- Export Form -->
-      <div style="margin-bottom: 1.5rem;">
-        <label class="form-label" style="font-size: 0.8rem;"><%= t('meal_plans.index.planning_restrictions') %></label>
-        <input type="text" id="ai-restrictions" class="ai-text-input" placeholder="<%= t('meal_plans.index.ai_placeholder') %>" value="<%= t('meal_plans.index.ai_default_value') %>">
-        
-        <button type="button" id="btn-export" class="btn-ai-violet" style="font-size: 0.85rem;">
-          <%= t('meal_plans.index.generate_json') %>
-        </button>
-
-        <textarea id="ai-export-payload" class="ai-textarea" readonly placeholder="<%= t('meal_plans.index.catalog_placeholder') %>"></textarea>
-        
-        <button type="button" id="btn-copy" class="btn-secondary" style="width: 100%; font-size: 0.85rem; padding: 0.5rem; display: none;">
-          <%= t('meal_plans.index.copy_clipboard') %>
-        </button>
+    <!-- Persistent Gemini AI Copilot Chat Panel -->
+    <div id="ai-copilot-panel" class="card ai-copilot-card">
+      <div class="copilot-header-row">
+        <h3 class="section-title copilot-main-title"><%= t('meal_plans.index.ai_copilot') %></h3>
+        <div class="copilot-session-actions">
+          <%= button_to t('ai_chat_sessions.new_session'),
+                        ai_chat_sessions_path,
+                        method: :post,
+                        class: "btn-session-new" %>
+          <% if @chat_sessions.size > 1 %>
+            <%= button_to t('ai_chat_sessions.delete_session'),
+                          ai_chat_session_path(@active_chat_session),
+                          method: :delete,
+                          class: "btn-session-delete",
+                          form: { data: { turbo_confirm: t('ai_chat_sessions.delete_confirm') } } %>
+          <% end %>
+        </div>
       </div>
 
-      <!-- Import Form -->
-      <%= form_with url: import_ai_copilot_path, method: :post, local: true do |f| %>
-        <label class="form-label" style="font-size: 0.8rem;"><%= t('meal_plans.index.paste_json') %></label>
-        <%= f.text_area :payload, class: "ai-textarea", required: true, placeholder: t('meal_plans.index.paste_placeholder') %>
-        <%= f.submit t('meal_plans.index.import_plan'), class: "btn-ai-violet" %>
+      <% if @chat_sessions.size > 1 %>
+        <div class="session-switcher-box">
+          <label class="form-label" for="session-switcher-select" style="margin-bottom: 0.3rem;"><%= t('ai_chat_sessions.history_label') %></label>
+          <%= form_with url: switch_ai_chat_session_path(@active_chat_session), method: :patch, local: true, id: "session-switch-form" do %>
+            <select id="session-switcher-select" class="meal-dish-selector session-select" onchange="this.form.action = '/ai_chat_sessions/' + this.value + '/switch'; this.form.submit();">
+              <% @chat_sessions.each do |cs| %>
+                <option value="<%= cs.id %>" <%= 'selected' if cs.id == @active_chat_session.id %>>
+                  <%= cs.title %> (<%= cs.ai_chat_messages.size %> msj)
+                </option>
+              <% end %>
+            </select>
+          <% end %>
+        </div>
       <% end %>
+
+      <% active_params = @active_chat_session.effective_parameters %>
+
+      <!-- Message Thread -->
+      <div id="copilot-chat-thread" class="copilot-chat-thread">
+        <% if @active_chat_session.ai_chat_messages.empty? %>
+          <div class="copilot-empty-state">
+            <p><%= t('ai_chat_sessions.empty_chat') %></p>
+            <div class="quick-prompts-list">
+              <button type="button" class="quick-prompt-btn" data-prompt="<%= t('ai_chat_sessions.quick_prompt_1') %>">
+                ✨ <%= t('ai_chat_sessions.quick_prompt_1') %>
+              </button>
+              <button type="button" class="quick-prompt-btn" data-prompt="<%= t('ai_chat_sessions.quick_prompt_2') %>">
+                🥗 <%= t('ai_chat_sessions.quick_prompt_2') %>
+              </button>
+              <button type="button" class="quick-prompt-btn" data-prompt="<%= t('ai_chat_sessions.quick_prompt_3') %>">
+                📆 <%= t('ai_chat_sessions.quick_prompt_3') %>
+              </button>
+            </div>
+          </div>
+        <% else %>
+          <% @active_chat_session.ai_chat_messages.each do |msg| %>
+            <div class="chat-bubble <%= msg.user? ? 'chat-bubble-user' : 'chat-bubble-assistant' %>">
+              <div class="chat-bubble-text"><%= msg.content %></div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- Proposed Weekly Menu Preview & One-Click Load CTA -->
+      <% if @active_chat_session.proposed_plan.present? %>
+        <div class="proposed-menu-preview">
+          <div class="proposed-menu-header">
+            <span class="proposed-menu-title"><%= t('ai_chat_sessions.preview_title') %></span>
+            <span class="proposed-status-badge <%= @active_chat_session.applied? ? 'badge-applied' : 'badge-ready' %>">
+              <%= @active_chat_session.applied? ? t('ai_chat_sessions.status_applied') : t('ai_chat_sessions.status_ready') %>
+            </span>
+          </div>
+
+          <div class="proposed-days-list">
+            <% @active_chat_session.proposed_plan.each do |entry| %>
+              <% day_key = (entry["day"] || entry[:day]).to_s %>
+              <% lunch_dish = @dishes_by_id[(entry["lunch_dish_id"] || entry[:lunch_dish_id]).to_i] %>
+              <% dinner_dish = @dishes_by_id[(entry["dinner_dish_id"] || entry[:dinner_dish_id]).to_i] %>
+              <div class="proposed-day-row">
+                <strong class="proposed-day-name"><%= t("days_of_week.#{day_key.downcase}", default: day_key) %></strong>
+                <div class="proposed-day-dishes">
+                  <span>☀️ <%= lunch_dish&.name || t('meal_plans.index.none') %></span>
+                  <span>🌙 <%= dinner_dish&.name || t('meal_plans.index.none') %></span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <%= button_to t('ai_chat_sessions.apply_button'),
+                        apply_ai_chat_session_path(@active_chat_session),
+                        method: :post,
+                        class: "update-day-btn btn-apply-menu" %>
+        </div>
+      <% end %>
+
+      <!-- Chat Form with Structured Parameters -->
+      <%= form_with scope: :ai_chat_message,
+                    url: ai_chat_session_ai_chat_messages_path(@active_chat_session),
+                    method: :post,
+                    local: true,
+                    id: "copilot-chat-form",
+                    class: "copilot-chat-form" do |f| %>
+        <div class="copilot-params-panel">
+          <span class="copilot-params-title"><%= t('ai_chat_sessions.params_title') %></span>
+          <div class="param-chips-grid">
+            <label class="param-chip">
+              <%= f.radio_button :days_scope, "weekdays", checked: active_params["days_scope"] != "full_week" %>
+              <span><%= t('ai_chat_sessions.days_weekdays') %></span>
+            </label>
+            <label class="param-chip">
+              <%= f.radio_button :days_scope, "full_week", checked: active_params["days_scope"] == "full_week" %>
+              <span><%= t('ai_chat_sessions.days_full_week') %></span>
+            </label>
+            <label class="param-chip">
+              <%= f.check_box :include_lunch, checked: ActiveModel::Type::Boolean.new.cast(active_params["include_lunch"]) %>
+              <span><%= t('ai_chat_sessions.slot_lunch') %></span>
+            </label>
+            <label class="param-chip">
+              <%= f.check_box :include_dinner, checked: ActiveModel::Type::Boolean.new.cast(active_params["include_dinner"]) %>
+              <span><%= t('ai_chat_sessions.slot_dinner') %></span>
+            </label>
+            <label class="param-chip">
+              <%= f.check_box :avoid_repetition, checked: ActiveModel::Type::Boolean.new.cast(active_params["avoid_repetition"]) %>
+              <span><%= t('ai_chat_sessions.avoid_repetition') %></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="copilot-input-row">
+          <%= f.text_field :content,
+                           id: "copilot-message-input",
+                           class: "ai-text-input copilot-message-input",
+                           placeholder: t('ai_chat_sessions.message_placeholder'),
+                           required: true,
+                           autocomplete: "off" %>
+          <%= f.submit t('ai_chat_sessions.send_button'),
+                       id: "copilot-send-btn",
+                       class: "btn-ai-violet copilot-send-btn" %>
+        </div>
+      <% end %>
+
+      <!-- Secondary Manual JSON Fallback Accordion -->
+      <details class="legacy-json-details">
+        <summary><%= t('ai_chat_sessions.manual_json_summary') %></summary>
+        <div class="legacy-json-body">
+          <div style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-size: 0.75rem;"><%= t('meal_plans.index.planning_restrictions') %></label>
+            <input type="text" id="ai-restrictions" class="ai-text-input" placeholder="<%= t('meal_plans.index.ai_placeholder') %>" value="<%= t('meal_plans.index.ai_default_value') %>">
+            <button type="button" id="btn-export" class="btn-secondary" style="width: 100%; font-size: 0.8rem; margin-bottom: 0.5rem;">
+              <%= t('meal_plans.index.generate_json') %>
+            </button>
+            <textarea id="ai-export-payload" class="ai-textarea" readonly placeholder="<%= t('meal_plans.index.catalog_placeholder') %>"></textarea>
+            <button type="button" id="btn-copy" class="btn-secondary" style="width: 100%; font-size: 0.8rem; padding: 0.45rem; display: none;">
+              <%= t('meal_plans.index.copy_clipboard') %>
+            </button>
+          </div>
+
+          <%= form_with url: import_ai_copilot_path, method: :post, local: true do |f| %>
+            <label class="form-label" style="font-size: 0.75rem;"><%= t('meal_plans.index.paste_json') %></label>
+            <%= f.text_area :payload, class: "ai-textarea", required: true, placeholder: t('meal_plans.index.paste_placeholder') %>
+            <%= f.submit t('meal_plans.index.import_plan'), class: "btn-secondary", style: "width: 100%; font-size: 0.8rem;" %>
+          <% end %>
+        </div>
+      </details>
     </div>
 
     <!-- Shopping List Card -->
-    <div class="card shopping-list-card">
+    <div id="shopping-list-panel" class="card shopping-list-card">
       <h3 class="section-title" style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--color-primary);"><%= t('meal_plans.index.shopping_list') %></h3>
       
       <% if @shopping_list.empty? %>
@@ -99,6 +238,33 @@
 
 <script>
   document.addEventListener("turbo:load", function() {
+    // Auto-scroll chat thread to bottom
+    const chatThread = document.getElementById("copilot-chat-thread");
+    if (chatThread) {
+      chatThread.scrollTop = chatThread.scrollHeight;
+    }
+
+    // Quick prompt buttons populate input and submit
+    const messageInput = document.getElementById("copilot-message-input");
+    const chatForm = document.getElementById("copilot-chat-form");
+    const sendBtn = document.getElementById("copilot-send-btn");
+
+    document.querySelectorAll(".quick-prompt-btn").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        if (messageInput && chatForm) {
+          messageInput.value = btn.getAttribute("data-prompt");
+          chatForm.requestSubmit();
+        }
+      });
+    });
+
+    if (chatForm && sendBtn) {
+      chatForm.addEventListener("submit", function() {
+        sendBtn.value = "<%= j t('ai_chat_sessions.sending_button') %>";
+      });
+    }
+
+    // Legacy JSON export/copy handlers
     const btnExport = document.getElementById("btn-export");
     const restrictionsInput = document.getElementById("ai-restrictions");
     const exportTextarea = document.getElementById("ai-export-payload");
