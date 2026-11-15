@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockups FEAT-04: Seudo-Chat con Gemini</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #f8f9fa; }
+    .switcher-bar {
+      background: #141414;
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .switcher-btns button {
+      background: #343434;
+      color: #fff;
+      border: none;
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      margin-left: 0.5rem;
+    }
+    .switcher-btns button.active {
+      background: #9bc024;
+      color: #141414;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100vh - 52px);
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="switcher-bar">
+    <strong>FEAT-04: Seudo-Chat con Gemini — Comparador de Variantes</strong>
+    <div class="switcher-btns">
+      <button id="btn-v1" class="active" onclick="showVariant('variant_1_integrated_chat.html', 'btn-v1')">Variante 1: Panel Integrado</button>
+      <button id="btn-v2" onclick="showVariant('variant_2_modal_workspace.html', 'btn-v2')">Variante 2: Modal Pantalla Completa</button>
+    </div>
+  </div>
+  <iframe id="preview-frame" src="variant_1_integrated_chat.html"></iframe>
+  <script>
+    function showVariant(src, btnId) {
+      document.getElementById('preview-frame').src = src;
+      document.getElementById('btn-v1').classList.remove('active');
+      document.getElementById('btn-v2').classList.remove('active');
+      document.getElementById(btnId).classList.add('active');
+    }
+  </script>
+</body>
+</html>
