@@ -11,6 +11,8 @@ Rails.application.routes.draw do
 
   root "meal_plans#index"
 
+  resource :session, only: [:new, :create, :destroy]
+
   resources :dishes
   resources :ingredients
 

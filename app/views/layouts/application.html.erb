@@ -29,12 +29,17 @@
           <span class="logo-emoji">🍳</span>
           <span class="logo-text">DailyMeals</span>
         </a>
-        <div class="nav-links">
-          <a href="/" class="nav-link <%= 'active' if current_page?(root_path) %>"><%= t('layout.calendar') %></a>
-          <a href="/dishes" class="nav-link <%= 'active' if controller_name == 'dishes' %>"><%= t('layout.dishes') %></a>
-          <a href="/ingredients" class="nav-link <%= 'active' if controller_name == 'ingredients' %>"><%= t('layout.ingredients') %></a>
-          <a href="/api_keys" class="nav-link <%= 'active' if controller_name == 'api_keys' %>"><%= t('layout.api_keys') %></a>
-        </div>
+        <% if authenticated? %>
+          <div class="nav-links">
+            <a href="/" class="nav-link <%= 'active' if current_page?(root_path) %>"><%= t('layout.calendar') %></a>
+            <a href="/dishes" class="nav-link <%= 'active' if controller_name == 'dishes' %>"><%= t('layout.dishes') %></a>
+            <a href="/ingredients" class="nav-link <%= 'active' if controller_name == 'ingredients' %>"><%= t('layout.ingredients') %></a>
+            <a href="/api_keys" class="nav-link <%= 'active' if controller_name == 'api_keys' %>"><%= t('layout.api_keys') %></a>
+            <div class="nav-logout-wrapper">
+              <%= button_to t('layout.logout'), session_path, method: :delete, class: "nav-logout-btn" %>
+            </div>
+          </div>
+        <% end %>
       </div>
     </nav>
 

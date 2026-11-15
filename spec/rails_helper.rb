@@ -35,6 +35,16 @@ rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
 RSpec.configure do |config|
+  # Ensure a deterministic master password is set during the test suite
+  ENV["APP_ACCESS_PASSWORD"] = "test-owner-secret-2026"
+
+  # Authenticate request specs by default unless explicitly testing unauthenticated behavior
+  config.before(:each, type: :request) do |example|
+    next if example.metadata[:unauthenticated]
+
+    post session_path, params: { password: ENV["APP_ACCESS_PASSWORD"] }
+  end
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')

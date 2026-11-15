@@ -1,9 +1,4 @@
 es:
-  layout:
-    title: "Daily Meals"
-    calendar: "📆 Calendario"
-    dishes: "🍽️ Platos"
-    ingredients: "🥕 Ingredientes"
   meal_plans:
     index:
       title: "📆 Calendario Semanal de Comidas"
@@ -139,6 +134,23 @@ es:
     dishes: "🍽️ Platos"
     ingredients: "🥕 Ingredientes"
     api_keys: "🔑 API Keys"
+    logout: "🚪 Salir"
+  sessions:
+    new:
+      badge: "🔒 Uso Personal Protegido"
+      title: "Acceso Privado"
+      subtitle: "Ingresa tu clave maestra para gestionar tu plan semanal y lista de compras."
+      password_label: "Clave de Acceso"
+      password_placeholder: "Ingresa tu clave secreta..."
+      toggle_password: "Mostrar u ocultar clave"
+      submit: "🔓 Entrar a DailyMeals"
+      persistence_note: "📱 Tu sesión se mantendrá activa en este dispositivo por 60 días."
+    controller:
+      signed_in: "¡Bienvenido! Sesión iniciada con éxito."
+      signed_out: "Has cerrado sesión correctamente."
+      invalid_password: "La clave ingresada no es válida."
+      unauthenticated: "Debes iniciar sesión para continuar."
+      rate_limited: "Demasiados intentos fallidos. Espera unos minutos antes de volver a intentar."
   api_keys:
     index:
       title: "🔑 Gestión de Llaves de API"
