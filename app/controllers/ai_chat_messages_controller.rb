@@ -22,10 +22,15 @@ class AiChatMessagesController < ApplicationController
       return
     end
 
+    include_lunch = ActiveModel::Type::Boolean.new.cast(msg_params[:include_lunch])
+    include_dinner = ActiveModel::Type::Boolean.new.cast(msg_params[:include_dinner])
+    days_scope = msg_params[:days_scope].presence || "weekdays"
+    days_scope = "none" if !include_lunch && !include_dinner
+
     parameters = {
-      "days_scope" => msg_params[:days_scope].presence || "weekdays",
-      "include_lunch" => ActiveModel::Type::Boolean.new.cast(msg_params[:include_lunch]),
-      "include_dinner" => ActiveModel::Type::Boolean.new.cast(msg_params[:include_dinner]),
+      "days_scope" => days_scope,
+      "include_lunch" => days_scope == "none" ? false : include_lunch,
+      "include_dinner" => days_scope == "none" ? false : include_dinner,
       "avoid_repetition" => ActiveModel::Type::Boolean.new.cast(msg_params[:avoid_repetition])
     }
 

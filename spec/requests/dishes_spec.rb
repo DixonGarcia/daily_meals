@@ -28,6 +28,21 @@ RSpec.describe "Dishes", type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
+    it "creates a dish with multiple categories via checkboxes" do
+      expect {
+        post dishes_path, params: {
+          dish: {
+            name: 'Pabellón criollo',
+            categories: ['', 'Lunch', 'Dinner']
+          }
+        }
+      }.to change(Dish, :count).by(1)
+
+      created = Dish.find_by!(name: 'Pabellón criollo')
+      expect(created.categories).to eq(['Lunch', 'Dinner'])
+      expect(created.category).to eq('Lunch')
+    end
+
     it "creates a dish and automatically registers brand-new inline ingredients" do
       expect {
         post dishes_path, params: {

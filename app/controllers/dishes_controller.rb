@@ -110,14 +110,15 @@ class DishesController < ApplicationController
       dish: [
         :name,
         :category,
-        dish_ingredients_attributes: [
+        { categories: [] },
+        { dish_ingredients_attributes: [
           :id,
           :ingredient_id,
           :ingredient_name,
           :supermarket_section,
           :suggested_quantity,
           :_destroy
-        ]
+        ] }
       ]
     )
   end
@@ -154,6 +155,12 @@ class DishesController < ApplicationController
           }
         end
         permitted[:dish_ingredients_attributes] = normalized_nested
+      end
+
+      if dish_params[:categories].present? || params.dig(:dish, :categories).is_a?(Array)
+        cleaned_cats = Array(permitted[:categories]).map { |c| c.to_s.strip }.reject(&:blank?).uniq
+        permitted[:categories] = cleaned_cats
+        permitted[:category] = cleaned_cats.first
       end
 
       dish.assign_attributes(permitted)

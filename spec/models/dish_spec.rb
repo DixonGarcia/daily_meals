@@ -27,6 +27,22 @@ RSpec.describe Dish, type: :model do
       duplicate_dish = Dish.new(name: 'Pasta boloñesa', category: 'Dinner')
       expect(duplicate_dish).not_to be_valid
     end
+
+    it 'supports multiple categories and syncs primary category' do
+      dish = Dish.create!(name: 'Carne guisada', categories: ['Lunch', 'Dinner'])
+      expect(dish.categories).to eq(['Lunch', 'Dinner'])
+      expect(dish.category).to eq('Lunch')
+      expect(Dish.for_category('Dinner')).to include(dish)
+      expect(Dish.for_category('Lunch')).to include(dish)
+    end
+
+    it 'rejects empty or invalid categories arrays' do
+      dish_empty = Dish.new(name: 'Plato sin cat', categories: [])
+      expect(dish_empty).not_to be_valid
+
+      dish_invalid = Dish.new(name: 'Plato inválido', categories: ['Lunch', 'Dessert'])
+      expect(dish_invalid).not_to be_valid
+    end
   end
 
   describe 'associations' do

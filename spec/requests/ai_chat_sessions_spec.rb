@@ -105,6 +105,42 @@ RSpec.describe "AiChatSessions & Gemini Pseudo-Chat", type: :request do
       expect(new_dish.dish_ingredients.first.suggested_quantity).to eq("500g")
       expect(MealPlan.find_by(day_of_week: "Friday").dinner_dish).to eq(new_dish)
     end
+
+    it "clears proposed_plan and proposed_dishes after applying and redirects to chat when only dishes were saved" do
+      dish_only_session = AiChatSession.create!(
+        title: "Solo platos nuevos",
+        parameters: { "days_scope" => "none", "include_lunch" => false, "include_dinner" => false },
+        proposed_dishes: [
+          {
+            "name" => "Sopa de lentejas",
+            "categories" => ["Lunch", "Dinner"],
+            "ingredients" => [
+              { "name" => "Lentejas", "supermarket_section" => "Víveres", "suggested_quantity" => "300g" }
+            ]
+          }
+        ],
+        proposed_plan: []
+      )
+
+      post apply_ai_chat_session_path(dish_only_session), params: {
+        dish_overrides: {
+          "0" => {
+            included: "1",
+            name: "Sopa de lentejas",
+            categories: ["Lunch", "Dinner"],
+            ingredients: {
+              "0" => { included: "1", name: "Lentejas", supermarket_section: "Víveres", suggested_quantity: "300g" }
+            }
+          }
+        }
+      }
+
+      expect(response).to redirect_to(root_path(anchor: "ai-copilot-panel"))
+      expect(Dish.find_by!(name: "Sopa de lentejas").categories).to eq(["Lunch", "Dinner"])
+      dish_only_session.reload
+      expect(dish_only_session.proposed_dishes).to eq([])
+      expect(dish_only_session.proposed_plan).to eq([])
+    end
   end
 
   describe "DELETE /ai_chat_sessions/:id" do

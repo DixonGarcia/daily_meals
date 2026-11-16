@@ -47,13 +47,18 @@ class GeminiClient
           type: "OBJECT",
           properties: {
             name: { type: "STRING" },
+            categories: {
+              type: "ARRAY",
+              description: "One or more applicable meal categories from: Breakfast, Lunch, Dinner, Snack, Other.",
+              items: { type: "STRING" }
+            },
             category: { type: "STRING" },
             ingredients: {
               type: "ARRAY",
               items: INGREDIENT_ITEM_SCHEMA
             }
           },
-          required: %w[name category ingredients]
+          required: %w[name categories ingredients]
         }
       },
       meal_plan: {
@@ -78,13 +83,18 @@ class GeminiClient
   DISH_SUGGESTION_SCHEMA = {
     type: "OBJECT",
     properties: {
+      categories: {
+        type: "ARRAY",
+        description: "One or more meal categories from: Breakfast, Lunch, Dinner, Snack, Other.",
+        items: { type: "STRING" }
+      },
       category: { type: "STRING" },
       ingredients: {
         type: "ARRAY",
         items: INGREDIENT_ITEM_SCHEMA
       }
     },
-    required: %w[category ingredients]
+    required: %w[categories ingredients]
   }.freeze
 
   # Initializes the GeminiClient with server-side credentials.
@@ -124,8 +134,8 @@ class GeminiClient
   # @return [Hash] Hash with :category (String) and :ingredients (Array<Hash>).
   def suggest_dish_ingredients(dish_name:, existing_ingredients:)
     system_instruction = <<~PROMPT
-      You are the DailyMeals Culinary Assistant. Given a dish name in Spanish, suggest its meal category and a practical list of supermarket ingredients with quantities for 2 to 4 servings.
-      - Allowed `category` values: #{Dish::CATEGORIES.join(', ')}.
+      You are the DailyMeals Culinary Assistant. Given a dish name in Spanish, suggest its applicable meal categories (one or more from: #{Dish::CATEGORIES.join(', ')}) and a practical list of supermarket ingredients with quantities for 2 to 4 servings.
+      - Include all applicable `categories` (e.g., if a dish works for both Lunch and Dinner, return ["Lunch", "Dinner"]).
       - Allowed `supermarket_section` values: #{Ingredient::SECTIONS.join(', ')}.
       - Whenever an ingredient matches one in EXISTING_INGREDIENTS below, reuse its exact `name` and `supermarket_section`.
       - All ingredient names and quantities must be in Spanish (e.g., "500g", "1 lata", "2 unidades").
@@ -134,12 +144,14 @@ class GeminiClient
       #{existing_ingredients.to_json}
     PROMPT
 
-    messages = [{ role: "user", content: "Sugiere la categoría e ingredientes para el plato: #{dish_name}" }]
+    messages = [{ role: "user", content: "Sugiere las categorías e ingredientes para el plato: #{dish_name}" }]
     payload_json = build_request_body(system_instruction, messages, DISH_SUGGESTION_SCHEMA).to_json
     parsed = execute_structured_request(payload_json)
 
+    cats = Array(parsed["categories"]).presence || [parsed["category"]].compact
     {
-      category: parsed["category"].to_s,
+      categories: cats.map(&:to_s),
+      category: cats.first.to_s,
       ingredients: Array(parsed["ingredients"])
     }
   end

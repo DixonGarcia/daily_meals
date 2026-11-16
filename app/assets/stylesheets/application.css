@@ -1202,11 +1202,52 @@ html {
   background: var(--color-body-alt);
   cursor: pointer;
   user-select: none;
+  transition: all 0.15s ease;
+}
+
+.param-chip:has(input:checked),
+.dish-category-chip:has(input:checked) {
+  background: #f0fdf4;
+  border-color: var(--color-primary);
+  color: #166534;
+}
+
+.param-chip.chip-disabled {
+  opacity: 0.45;
 }
 
 .param-chip input {
-  accent-color: var(--blue-high);
+  accent-color: var(--color-primary);
   margin: 0;
+}
+
+.category-tags-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.category-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.dish-show-header {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.slot-kept-muted {
+  color: var(--color-subtitle);
+  font-style: italic;
+}
+
+@media (max-width: 440px) {
+  .nav-link {
+    font-size: 0.72rem;
+    padding: 0.4rem 0.15rem;
+  }
 }
 
 .copilot-input-row {
