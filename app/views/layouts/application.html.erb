@@ -14,10 +14,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <% base_prefix = root_path == "/" ? "" : root_path.chomp("/") %>
+    <link rel="manifest" href="<%= pwa_manifest_path(format: :json) %>">
+    <link rel="icon" href="<%= base_prefix %>/icon.png" type="image/png">
+    <link rel="icon" href="<%= base_prefix %>/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="<%= base_prefix %>/icon.png">
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   </head>
 
@@ -25,15 +26,15 @@
     <!-- Navbar -->
     <nav class="app-nav">
       <div class="nav-container">
-        <a href="/" class="nav-logo">
+        <a href="<%= root_path %>" class="nav-logo">
           <span class="logo-emoji">🍳</span>
           <span class="logo-text">DailyMeals</span>
         </a>
         <% if authenticated? %>
           <div class="nav-links">
-            <a href="/" class="nav-link <%= 'active' if current_page?(root_path) %>"><%= t('layout.calendar') %></a>
-            <a href="/dishes" class="nav-link <%= 'active' if controller_name == 'dishes' %>"><%= t('layout.dishes') %></a>
-            <a href="/ingredients" class="nav-link <%= 'active' if controller_name == 'ingredients' %>"><%= t('layout.ingredients') %></a>
+            <a href="<%= root_path %>" class="nav-link <%= 'active' if current_page?(root_path) %>"><%= t('layout.calendar') %></a>
+            <a href="<%= dishes_path %>" class="nav-link <%= 'active' if controller_name == 'dishes' %>"><%= t('layout.dishes') %></a>
+            <a href="<%= ingredients_path %>" class="nav-link <%= 'active' if controller_name == 'ingredients' %>"><%= t('layout.ingredients') %></a>
             <a href="<%= settings_path %>" class="nav-link <%= 'active' if %w[settings api_keys meal_plan_histories].include?(controller_name) %>"><%= t('layout.settings') %></a>
             <div class="nav-logout-wrapper">
               <%= button_to t('layout.logout'), session_path, method: :delete, class: "nav-logout-btn" %>

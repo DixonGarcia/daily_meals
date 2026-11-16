@@ -6,6 +6,8 @@ services:
       - .env.production
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-daily_meals} -d $${POSTGRES_DB:-daily_meals_production}"]
       interval: 5s
@@ -24,8 +26,11 @@ services:
       - .env.production
     volumes:
       - rails_storage:/rails/storage
+    networks:
+      - internal
+      - proxy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3000/up || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS \"http://127.0.0.1:3000$${RAILS_RELATIVE_URL_ROOT:-}/up\" || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -42,6 +47,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    networks:
+      - proxy
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -52,3 +59,8 @@ volumes:
   rails_storage:
   caddy_data:
   caddy_config:
+
+networks:
+  internal:
+  proxy:
+    name: daily_meals_proxy

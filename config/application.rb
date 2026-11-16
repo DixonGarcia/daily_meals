@@ -26,6 +26,10 @@ module DailyMeals
     # Set default locale to Spanish
     config.i18n.default_locale = :es
 
+    # Support mounting DailyMeals under a domain subpath (e.g., /daily_meals)
+    relative_url_root = ENV["RAILS_RELATIVE_URL_ROOT"].to_s.strip
+    config.relative_url_root = relative_url_root if relative_url_root.present?
+
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.

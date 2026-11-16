@@ -1,101 +1,96 @@
-# Hetzner Cloud VPS Deployment Guide (Docker Compose + Caddy + PostgreSQL)
+# Hetzner Cloud VPS Deployment Guide (Multi-App Subpath `/daily_meals` + Caddy + PostgreSQL)
 
-This guide deploys **DailyMeals** cleanly onto a fresh **Hetzner Cloud** VPS using [`compose.production.yml`](../compose.production.yml), running Rails 8 + Puma (`web`), PostgreSQL 16 (`db`), and Caddy 2 (`caddy`) on ports `80`/`443`.
-
----
-
-## 1. Recommended Hetzner Cloud Server Specs
-
-- **Type**: Shared vCPU **CX22** (2 vCPU, 4 GB RAM, 40 GB NVMe — Intel/AMD x86) or **CAX11** (2 vCPU, 4 GB RAM, 40 GB NVMe — ARM64)
-- **Location**: `ash` (Ashburn, VA) or `hil` (Hillsboro, OR) if accessing from the Americas, or `nbg1` / `fsn1` (EU)
-- **Image**: **Ubuntu 24.04 LTS**
-- **SSH Key**: Add your local SSH public key (`~/.ssh/id_ed25519.pub` or `~/.ssh/id_rsa.pub`) during server creation in the Hetzner Cloud Console
+This guide deploys **DailyMeals** onto a **Hetzner Cloud** VPS using [`compose.production.yml`](../compose.production.yml) so your main domain (`yourdomain.com`) stays free for your personal website and other services (such as a Python chatbot), while **`https://yourdomain.com/daily_meals`** routes directly to DailyMeals.
 
 ---
 
-## 2. Bootstrap the Fresh VPS
+## 1. Configure GoDaddy DNS
 
-SSH into the new server using its public IPv4 (`<VPS_IP>`):
+In GoDaddy DNS Management for your domain:
+
+1. Edit (or create) the root **`A`** record:
+   - **Type**: `A`
+   - **Name**: `@`
+   - **Value**: `<YOUR_HETZNER_VPS_IP>`
+   - **TTL**: `600` seconds (or shortest available)
+2. Remove any GoDaddy parking/forwarding `A` records pointing to other IPs on `@`.
+3. Optional: add a **`CNAME`** record `www` -> `yourdomain.com` (or `A` record `www` -> `<YOUR_HETZNER_VPS_IP>`).
+
+---
+
+## 2. Bootstrap the Fresh Hetzner VPS (Ubuntu 24.04)
 
 ```bash
-ssh root@<VPS_IP>
-```
-
-Download and run the idempotent bootstrap script:
-
-```bash
+ssh root@<YOUR_HETZNER_VPS_IP>
 curl -fsSL https://raw.githubusercontent.com/DixonGarcia/daily_meals/main/deploy/hetzner-bootstrap.sh -o hetzner-bootstrap.sh
 bash hetzner-bootstrap.sh
 ```
 
-The script automatically:
-1. Installs Docker Engine & Docker Compose plugin.
-2. Creates a 2 GB swapfile (prevents out-of-memory errors while building Ruby gems & precompiling assets).
-3. Enables UFW firewall allowing only ports `22`, `80`, and `443`.
-4. Clones `DixonGarcia/daily_meals` into `/opt/daily_meals` and generates `/opt/daily_meals/.env.production` with random PostgreSQL and `SECRET_KEY_BASE` credentials.
+This installs Docker + Compose, enables UFW (`22`, `80`, `443`), creates a 2 GB swapfile, clones the repo into `/opt/daily_meals`, and generates `/opt/daily_meals/.env.production` with `RAILS_RELATIVE_URL_ROOT=/daily_meals` and random PostgreSQL/`SECRET_KEY_BASE` secrets.
 
 ---
 
-## 3. Set Your App Passwords & Start DailyMeals (IP-Only Mode)
-
-Edit `/opt/daily_meals/.env.production`:
+## 3. Configure `.env.production` and Start
 
 ```bash
 nano /opt/daily_meals/.env.production
 ```
 
-Replace the two placeholders:
-- `APP_ACCESS_PASSWORD=...` (your private login password for `/session/new`)
-- `GEMINI_API_KEY=...` (your Google Gemini key)
+Update:
+- `SITE_ADDRESS=yourdomain.com` (once GoDaddy DNS propagates to your VPS IP)
+- `FORCE_SSL=true` (automatic Let's Encrypt HTTPS via Caddy)
+- `APP_ACCESS_PASSWORD=your-strong-password`
+- `GEMINI_API_KEY=your-gemini-api-key`
 
-Keep `SITE_ADDRESS=:80` and `FORCE_SSL=false` while accessing via raw IP (`http://<VPS_IP>`), then build and boot the stack:
+*(If DNS has not propagated yet, temporarily keep `SITE_ADDRESS=:80` and `FORCE_SSL=false` and visit `http://<YOUR_HETZNER_VPS_IP>/daily_meals`.)*
+
+Start the stack:
 
 ```bash
 cd /opt/daily_meals
 docker compose -f compose.production.yml up -d --build
 ```
 
-Verify containers and healthcheck:
+Verify healthcheck and access:
 
 ```bash
 docker compose -f compose.production.yml ps
-curl -i http://127.0.0.1/up
+curl -i http://127.0.0.1/daily_meals/up
 ```
 
-Open `http://<VPS_IP>` in Chrome/Safari on your phone or desktop and log in with `APP_ACCESS_PASSWORD`.
+Open **`https://yourdomain.com/daily_meals`** in your browser or phone.
 
 ---
 
-## 4. Upgrading to Automatic HTTPS When You Add a Domain
+## 4. Adding Your Main Website & Python Chatbot on the Same VPS
 
-1. Create an `A` DNS record pointing your domain (e.g., `meals.yourdomain.com`) to `<VPS_IP>`.
-2. Edit `/opt/daily_meals/.env.production`:
-   ```env
-   SITE_ADDRESS=meals.yourdomain.com
-   FORCE_SSL=true
+[`compose.production.yml`](../compose.production.yml) exposes the shared Docker network `daily_meals_proxy`.
+
+When you deploy your website or Python chatbot containers on the same VPS:
+1. Attach them to the external network `daily_meals_proxy` in their compose file:
+   ```yaml
+   networks:
+     daily_meals_proxy:
+       external: true
    ```
-3. Recreate Caddy and Rails with the updated environment:
+2. Update `/opt/daily_meals/deploy/Caddyfile` to route `/` to your website container and e.g. `/chatbot*` to your Python bot container, then reload Caddy:
    ```bash
-   cd /opt/daily_meals
-   docker compose -f compose.production.yml up -d
+   docker compose -f /opt/daily_meals/compose.production.yml exec caddy caddy reload --config /etc/caddy/Caddyfile
    ```
-
-Caddy automatically obtains and renews a free Let's Encrypt TLS certificate, and Rails enables HSTS + `Secure` cookies.
 
 ---
 
 ## 5. Day-2 Operations
 
-- **Deploy new commits from `main`**:
+- **Deploy updates from `main`**:
   ```bash
   cd /opt/daily_meals && git pull --ff-only && docker compose -f compose.production.yml up -d --build
   ```
-  (`bin/docker-entrypoint` runs `./bin/rails db:prepare` automatically on container boot.)
-- **Tail application logs**:
+- **Tail Rails logs**:
   ```bash
-  docker compose -f compose.production.yml logs -f web
+  docker compose -f /opt/daily_meals/compose.production.yml logs -f web
   ```
-- **Run a PostgreSQL backup**:
+- **PostgreSQL backup**:
   ```bash
-  docker compose -f compose.production.yml exec -T db pg_dump -U daily_meals daily_meals_production > backup_$(date +%F).sql
+  docker compose -f /opt/daily_meals/compose.production.yml exec -T db pg_dump -U daily_meals daily_meals_production > backup_$(date +%F).sql
   ```

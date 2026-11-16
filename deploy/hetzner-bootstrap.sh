@@ -64,6 +64,7 @@ if [ ! -f .env.production ]; then
   cat > .env.production <<EOF
 SITE_ADDRESS=:80
 FORCE_SSL=false
+RAILS_RELATIVE_URL_ROOT=/daily_meals
 
 POSTGRES_USER=daily_meals
 POSTGRES_PASSWORD=${PG_PASS}

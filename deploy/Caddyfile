@@ -1,7 +1,21 @@
 {$SITE_ADDRESS::80} {
 	encode gzip
 
-	reverse_proxy web:3000 {
-		header_up X-Forwarded-Proto {scheme}
+	# Route DailyMeals cleanly on /daily_meals and /daily_meals/*
+	@daily_meals path /daily_meals /daily_meals/*
+	handle @daily_meals {
+		reverse_proxy web:3000 {
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	# Future Python Chatbot (example): attach its container to Docker network `daily_meals_proxy`
+	# handle /chatbot* {
+	# 	reverse_proxy python_chatbot:8000
+	# }
+
+	# Main personal website on dominio.com (replace `respond` with `reverse_proxy website:80` when ready)
+	handle {
+		respond "Site root active. DailyMeals is available at /daily_meals" 200
 	}
 }
