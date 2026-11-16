@@ -31,7 +31,7 @@ class SessionsController < ApplicationController
         expires: 60.days.from_now,
         httponly: true,
         same_site: :lax,
-        secure: Rails.env.production?
+        secure: request.ssl?
       }
       redirect_to root_path, notice: t("sessions.controller.signed_in")
     else
