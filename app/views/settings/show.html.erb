@@ -1,0 +1,102 @@
+<div class="settings-container">
+  <div class="header-actions" style="margin-bottom: 1rem;">
+    <h2 class="section-title"><%= t('settings.show.title') %></h2>
+  </div>
+
+  <div class="settings-tabs" role="tablist">
+    <a href="<%= settings_path(tab: 'history') %>"
+       role="tab"
+       aria-selected="<%= @active_tab == 'history' %>"
+       class="settings-tab-link <%= 'active' if @active_tab == 'history' %>">
+      <%= t('settings.show.tabs.history') %>
+    </a>
+    <a href="<%= settings_path(tab: 'integrations') %>"
+       role="tab"
+       aria-selected="<%= @active_tab == 'integrations' %>"
+       class="settings-tab-link <%= 'active' if @active_tab == 'integrations' %>">
+      <%= t('settings.show.tabs.integrations') %>
+    </a>
+  </div>
+
+  <% if @active_tab == "history" %>
+    <section class="card settings-panel">
+      <div class="settings-history-header">
+        <div>
+          <h3 class="section-subtitle" style="margin: 0 0 0.35rem 0;"><%= t('settings.show.history_title') %></h3>
+          <p class="settings-subtitle"><%= t('settings.show.history_subtitle') %></p>
+        </div>
+        <div class="settings-snapshot-actions">
+          <%= button_to t('settings.show.snapshot_current'),
+                        snapshot_meal_plan_histories_path,
+                        method: :post,
+                        params: { week_offset: 0 },
+                        class: "btn-action" %>
+          <%= button_to t('settings.show.snapshot_next'),
+                        snapshot_meal_plan_histories_path,
+                        method: :post,
+                        params: { week_offset: 1 },
+                        class: "btn-secondary" %>
+        </div>
+      </div>
+
+      <% if @histories.empty? %>
+        <div class="settings-empty-state">
+          <p><%= t('settings.show.empty_history') %></p>
+        </div>
+      <% else %>
+        <div class="history-cards-list">
+          <% @histories.each_with_index do |history, idx| %>
+            <details class="history-week-card" <%= "open" if idx.zero? %>>
+              <summary class="history-week-summary">
+                <div class="history-week-meta">
+                  <strong><%= t('settings.show.week_label', week: history.week_number, year: history.year) %></strong>
+                  <span class="history-week-dates">
+                    <%= history.week_start_date.strftime("%d/%m") %> - <%= history.week_end_date.strftime("%d/%m") %>
+                  </span>
+                </div>
+                <span class="history-source-badge source-<%= history.source %>">
+                  <%= t("settings.show.source_badges.#{history.source}", default: history.source) %>
+                </span>
+              </summary>
+
+              <div class="history-week-body">
+                <div class="history-days-grid">
+                  <% Array(history.plan_snapshot).each do |day_entry| %>
+                    <% day_key = (day_entry["day"] || day_entry[:day]).to_s %>
+                    <% lunch_name = (day_entry["lunch_dish_name"] || day_entry[:lunch_dish_name]).presence || t('meal_plans.index.none') %>
+                    <% dinner_name = (day_entry["dinner_dish_name"] || day_entry[:dinner_dish_name]).presence || t('meal_plans.index.none') %>
+                    <div class="history-day-row">
+                      <span class="history-day-name"><%= t("days_of_week.#{day_key.downcase}", default: day_key) %></span>
+                      <span class="history-day-slots">☀️ <%= lunch_name %> · 🌙 <%= dinner_name %></span>
+                    </div>
+                  <% end %>
+                </div>
+
+                <div class="history-week-actions">
+                  <%= button_to t('settings.show.restore_button'),
+                                restore_meal_plan_history_path(history),
+                                method: :post,
+                                data: { confirm: t('settings.show.restore_confirm', week: history.week_number) },
+                                class: "btn-action" %>
+                  <%= button_to t('settings.show.delete_button'),
+                                meal_plan_history_path(history),
+                                method: :delete,
+                                data: { confirm: t('settings.show.delete_confirm') },
+                                class: "btn-danger",
+                                aria: { label: t('settings.show.delete_button') } %>
+                </div>
+              </div>
+            </details>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+  <% else %>
+    <section class="card settings-panel">
+      <p class="settings-subtitle" style="margin-bottom: 1.25rem;">
+        <%= t('settings.show.integrations_intro') %>
+      </p>
+      <%= render "api_keys/manager", api_keys: @api_keys, api_key: @api_key, return_to: @return_to %>
+    </section>
+  <% end %>
+</div>

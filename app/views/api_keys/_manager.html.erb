@@ -1,0 +1,177 @@
+<div class="header-actions" style="margin-bottom: 1.5rem;">
+  <h3 class="section-subtitle" style="margin: 0;"><%= t('api_keys.index.title') %></h3>
+  <button type="button" class="btn-action" id="open-generate-modal">
+    + <%= t('api_keys.index.create_key') %>
+  </button>
+</div>
+
+<div class="card" style="padding: 1.5rem;">
+  <h3 style="margin-top: 0; margin-bottom: 1.25rem; font-family: var(--font-family-title); font-size: 1.1rem; font-weight: 800;">
+    <%= t('api_keys.index.keys_title') %>
+  </h3>
+
+  <% if api_keys.empty? %>
+    <p style="text-align: center; color: var(--color-subtitle); padding: 2rem 0;">
+      <%= t('api_keys.index.no_keys') %>
+    </p>
+  <% else %>
+    <div style="overflow-x: auto;">
+      <table class="table-card">
+        <thead>
+          <tr>
+            <th><%= t('api_keys.index.name_label') %></th>
+            <th><%= t('api_keys.index.masked_key_label') %></th>
+            <th><%= t('api_keys.index.status') %></th>
+            <th><%= t('api_keys.index.last_used') %></th>
+            <th style="text-align: right;"><%= t('api_keys.index.actions') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% api_keys.each do |key| %>
+            <tr id="key-row-<%= key.id %>">
+              <td><strong style="color: var(--color-secondary);"><%= key.name %></strong></td>
+              <td><code style="background: var(--color-body); padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.85rem; color: var(--color-subtitle); border: 1px solid var(--color-border);">dmeal_live_...<%= key.token_digest[-4..-1] || "" %></code></td>
+              <td>
+                <% if key.active %>
+                  <span class="status-badge status-active"><%= t('api_keys.index.active') %></span>
+                <% else %>
+                  <span class="status-badge status-inactive"><%= t('api_keys.index.inactive') %></span>
+                <% end %>
+              </td>
+              <td style="font-size: 0.85rem; color: var(--color-subtitle);">
+                <%= key.last_used_at.present? ? key.last_used_at.strftime("%d/%m/%Y %H:%M") : t('meal_plans.index.none') %>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                  <%= button_to key.active ? t('api_keys.index.deactivate_key') : t('api_keys.index.activate_key'),
+                                api_key_path(key),
+                                method: :patch,
+                                params: { return_to: return_to, api_key: { active: !key.active } },
+                                class: "btn-secondary",
+                                style: "padding: 0.35rem 0.75rem; font-size: 0.8rem;",
+                                form: { style: "display: inline;" } %>
+
+                  <%= button_to t('api_keys.index.revoke_key'),
+                                api_key_path(key),
+                                method: :delete,
+                                params: { return_to: return_to },
+                                data: { confirm: t('api_keys.index.confirm_revoke') },
+                                class: "btn-danger",
+                                style: "padding: 0.35rem 0.75rem; font-size: 0.8rem;",
+                                form: { style: "display: inline;" } %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>
+
+<% if flash[:plain_token].present? %>
+  <div id="token-display-modal" class="modal-overlay" style="display: flex;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="margin: 0; font-family: var(--font-family-title); font-weight: 800; color: #166534; display: flex; align-items: center; gap: 0.5rem;">
+          <span>✅</span> <%= t('api_keys.controller.created') %>
+        </h3>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: var(--color-secondary); margin-bottom: 1rem;">
+          <%= t('api_keys.index.copy_warning') %>
+        </p>
+        <div class="token-box" id="plain-token-box">
+          <%= flash[:plain_token] %>
+        </div>
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+          <button type="button" class="btn-secondary" id="copy-token-btn" style="flex: 1; padding: 0.75rem;">
+            <%= t('meal_plans.index.copy_clipboard') %>
+          </button>
+          <button type="button" class="btn-action" id="close-token-modal" style="flex: 1; justify-content: center; padding: 0.75rem;">
+            <%= t('api_keys.index.understand') %>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<div id="generate-key-modal" class="modal-overlay" style="<%= api_key.errors.any? ? 'display: flex;' : 'display: none;' %>">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 style="margin: 0; font-family: var(--font-family-title); font-weight: 800;">
+        <%= t('api_keys.index.generate_title') %>
+      </h3>
+      <button type="button" class="modal-close-btn" id="close-generate-modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <%= form_with model: api_key, url: api_keys_path, method: :post, local: true do |f| %>
+        <%= hidden_field_tag :return_to, return_to if return_to.present? %>
+        <% if api_key.errors.any? %>
+          <div class="error-box" style="margin-bottom: 1rem;">
+            <p><%= api_key.errors.full_messages.to_sentence %></p>
+          </div>
+        <% end %>
+        <div style="margin-bottom: 1.5rem;">
+          <%= f.label :name, t('api_keys.index.name_label'), class: "form-label" %>
+          <%= f.text_field :name, class: "form-input", placeholder: t('api_keys.index.name_placeholder'), required: true %>
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" class="btn-secondary btn-close-modal" style="padding: 0.65rem 1.25rem;"><%= t('api_keys.index.cancel') %></button>
+          <%= f.submit t('api_keys.index.create_key'), class: "btn-action", style: "width: auto; padding: 0.65rem 1.25rem;" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function initApiKeyModals() {
+    const generateModal = document.getElementById("generate-key-modal");
+    const openBtn = document.getElementById("open-generate-modal");
+    const closeBtns = document.querySelectorAll("#close-generate-modal, .btn-close-modal");
+
+    if (openBtn && generateModal) {
+      openBtn.addEventListener("click", function() {
+        generateModal.style.display = "flex";
+        const nameInput = generateModal.querySelector('input[type="text"]');
+        if (nameInput) nameInput.focus();
+      });
+    }
+
+    closeBtns.forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        if (generateModal) generateModal.style.display = "none";
+      });
+    });
+
+    if (generateModal) {
+      generateModal.addEventListener("click", function(e) {
+        if (e.target === generateModal) generateModal.style.display = "none";
+      });
+    }
+
+    const tokenModal = document.getElementById("token-display-modal");
+    const closeTokenBtn = document.getElementById("close-token-modal");
+    const copyTokenBtn = document.getElementById("copy-token-btn");
+    const tokenBox = document.getElementById("plain-token-box");
+
+    if (closeTokenBtn && tokenModal) {
+      closeTokenBtn.addEventListener("click", function() {
+        tokenModal.style.display = "none";
+      });
+    }
+
+    if (copyTokenBtn && tokenBox) {
+      copyTokenBtn.addEventListener("click", function() {
+        navigator.clipboard.writeText(tokenBox.innerText.trim()).then(function() {
+          copyTokenBtn.innerText = "<%= j t('meal_plans.index.copied') %>";
+          setTimeout(function() {
+            copyTokenBtn.innerText = "<%= j t('meal_plans.index.copy_clipboard') %>";
+          }, 2000);
+        });
+      });
+    }
+  })();
+</script>

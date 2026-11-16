@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_11_16_102000) do
+ActiveRecord::Schema[8.0].define(version: 2026_11_16_104500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -72,6 +72,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_16_102000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_ingredients_on_name", unique: true
+  end
+
+  create_table "meal_plan_histories", force: :cascade do |t|
+    t.integer "year", null: false
+    t.integer "week_number", null: false
+    t.date "week_start_date", null: false
+    t.date "week_end_date", null: false
+    t.jsonb "plan_snapshot", default: [], null: false
+    t.string "source", default: "manual", null: false
+    t.string "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["year", "week_number"], name: "index_meal_plan_histories_on_year_and_week_number", unique: true
   end
 
   create_table "meal_plans", force: :cascade do |t|

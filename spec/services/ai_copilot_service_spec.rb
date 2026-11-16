@@ -301,6 +301,19 @@ RSpec.describe AiCopilotService do
       monday = MealPlan.find_by!(day_of_week: 'Monday')
       expect(monday.lunch_dish).to eq(dish1)
       expect(monday.dinner_dish).to eq(dish2)
+      expect(MealPlanHistory.count).to eq(0)
+    end
+
+    it 'records MealPlanHistory with source ai_copilot when applying a calendar plan' do
+      chat_session = AiChatSession.create!(title: 'Menu semana', parameters: AiChatSession::DEFAULT_PARAMETERS)
+      chat_session.update!(
+        proposed_plan: [{ 'day' => 'Monday', 'lunch_dish_id' => dish1.id, 'dinner_dish_id' => dish2.id }],
+        proposed_dishes: []
+      )
+
+      expect(service_with_client.apply_session_plan!(chat_session)).to be true
+      expect(MealPlanHistory.count).to eq(1)
+      expect(MealPlanHistory.last.source).to eq('ai_copilot')
     end
   end
 end

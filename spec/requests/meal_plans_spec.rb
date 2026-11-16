@@ -20,6 +20,7 @@ RSpec.describe "MealPlans", type: :request do
       plan = MealPlan.find_by(day_of_week: 'Monday')
       expect(plan.lunch_dish).to eq(dish)
       expect(plan.dinner_dish).to be_nil
+      expect(MealPlanHistory.count).to eq(1)
     end
   end
 end
