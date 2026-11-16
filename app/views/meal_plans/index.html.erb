@@ -108,7 +108,8 @@
       </div>
 
       <!-- Proposed Weekly Menu & New Dishes Preview with Checkboxes & Editable Quantities -->
-      <% has_plan = @active_chat_session.proposed_plan.present? %>
+      <% active_scope = active_params["days_scope"].to_s %>
+      <% has_plan = active_scope != "none" && @active_chat_session.proposed_plan.present? %>
       <% has_new_dishes = @active_chat_session.proposed_dishes.present? %>
       <% if has_plan || has_new_dishes %>
         <%= form_with url: apply_ai_chat_session_path(@active_chat_session), method: :post, local: true, class: "proposed-menu-preview" do %>
@@ -126,7 +127,8 @@
 
               <% @active_chat_session.proposed_dishes.each_with_index do |dish_entry, d_idx| %>
                 <% d_name = (dish_entry["name"] || dish_entry[:name]).to_s %>
-                <% d_cat = (dish_entry["category"] || dish_entry[:category]).to_s.presence || "Lunch" %>
+                <% raw_cats = Array(dish_entry["categories"] || dish_entry[:categories]).reject(&:blank?) %>
+                <% d_cats = raw_cats.presence || [ (dish_entry["category"] || dish_entry[:category]).to_s.presence || "Lunch" ] %>
                 <% d_ings = Array(dish_entry["ingredients"] || dish_entry[:ingredients]) %>
                 <div class="proposed-dish-card">
                   <div class="proposed-dish-header">
@@ -135,12 +137,19 @@
                       <input type="checkbox" name="dish_overrides[<%= d_idx %>][included]" value="1" checked>
                       <strong><%= d_name %></strong>
                     </label>
-                    <span class="proposed-dish-cat-badge">
-                      <%= t("dish_categories.#{d_cat.downcase}", default: d_cat) %>
-                    </span>
+                    <div class="category-tags-group">
+                      <% d_cats.each do |cat_name| %>
+                        <span class="proposed-dish-cat-badge">
+                          <%= t("dish_categories.#{cat_name.downcase}", default: cat_name) %>
+                        </span>
+                      <% end %>
+                    </div>
                   </div>
                   <input type="hidden" name="dish_overrides[<%= d_idx %>][name]" value="<%= d_name %>">
-                  <input type="hidden" name="dish_overrides[<%= d_idx %>][category]" value="<%= d_cat %>">
+                  <input type="hidden" name="dish_overrides[<%= d_idx %>][category]" value="<%= d_cats.first %>">
+                  <% d_cats.each do |cat_name| %>
+                    <input type="hidden" name="dish_overrides[<%= d_idx %>][categories][]" value="<%= cat_name %>">
+                  <% end %>
 
                   <div class="proposed-ing-list">
                     <% d_ings.each_with_index do |ing_entry, i_idx| %>
@@ -170,21 +179,34 @@
           <% end %>
 
           <% if has_plan %>
+            <% include_lunch_flag = ActiveModel::Type::Boolean.new.cast(active_params["include_lunch"]) %>
+            <% include_dinner_flag = ActiveModel::Type::Boolean.new.cast(active_params["include_dinner"]) %>
             <div class="proposed-days-list">
               <% @active_chat_session.proposed_plan.each do |entry| %>
                 <% day_key = (entry["day"] || entry[:day]).to_s %>
+                <% existing_day = @meal_plans[day_key] %>
                 <% lunch_dish = @dishes_by_id[(entry["lunch_dish_id"] || entry[:lunch_dish_id]).to_i] %>
                 <% dinner_dish = @dishes_by_id[(entry["dinner_dish_id"] || entry[:dinner_dish_id]).to_i] %>
                 <% lunch_new = (entry["lunch_new_dish_name"] || entry[:lunch_new_dish_name]).to_s.presence %>
                 <% dinner_new = (entry["dinner_new_dish_name"] || entry[:dinner_new_dish_name]).to_s.presence %>
+                <% lunch_targeted = include_lunch_flag && (lunch_dish.present? || lunch_new.present?) %>
+                <% dinner_targeted = include_dinner_flag && (dinner_dish.present? || dinner_new.present?) %>
                 <div class="proposed-day-row">
                   <strong class="proposed-day-name"><%= t("days_of_week.#{day_key.downcase}", default: day_key) %></strong>
                   <div class="proposed-day-dishes">
                     <span>
-                      ☀️ <%= lunch_dish&.name || (lunch_new ? "🆕 #{lunch_new}" : t('meal_plans.index.none')) %>
+                      ☀️ <% if lunch_targeted %>
+                        <%= lunch_dish&.name || "🆕 #{lunch_new}" %>
+                      <% else %>
+                        <span class="slot-kept-muted"><%= existing_day&.lunch_dish&.name || t('ai_chat_sessions.slot_kept') %></span>
+                      <% end %>
                     </span>
                     <span>
-                      🌙 <%= dinner_dish&.name || (dinner_new ? "🆕 #{dinner_new}" : t('meal_plans.index.none')) %>
+                      🌙 <% if dinner_targeted %>
+                        <%= dinner_dish&.name || "🆕 #{dinner_new}" %>
+                      <% else %>
+                        <span class="slot-kept-muted"><%= existing_day&.dinner_dish&.name || t('ai_chat_sessions.slot_kept') %></span>
+                      <% end %>
                     </span>
                   </div>
                 </div>
@@ -193,7 +215,13 @@
           <% end %>
 
           <button type="submit" class="update-day-btn btn-apply-menu">
-            <%= has_new_dishes ? t('ai_chat_sessions.apply_with_dishes_button') : t('ai_chat_sessions.apply_button') %>
+            <% if has_new_dishes && !has_plan %>
+              <%= t('ai_chat_sessions.apply_dishes_only_button') %>
+            <% elsif has_new_dishes %>
+              <%= t('ai_chat_sessions.apply_with_dishes_button') %>
+            <% else %>
+              <%= t('ai_chat_sessions.apply_button') %>
+            <% end %>
           </button>
         <% end %>
       <% end %>
@@ -209,22 +237,26 @@
           <span class="copilot-params-title"><%= t('ai_chat_sessions.params_title') %></span>
           <div class="param-chips-grid">
             <label class="param-chip">
-              <%= f.radio_button :days_scope, "weekdays", checked: active_params["days_scope"] != "full_week" %>
+              <%= f.radio_button :days_scope, "weekdays", checked: !%w[full_week none].include?(active_scope) %>
               <span><%= t('ai_chat_sessions.days_weekdays') %></span>
             </label>
             <label class="param-chip">
-              <%= f.radio_button :days_scope, "full_week", checked: active_params["days_scope"] == "full_week" %>
+              <%= f.radio_button :days_scope, "full_week", checked: active_scope == "full_week" %>
               <span><%= t('ai_chat_sessions.days_full_week') %></span>
             </label>
             <label class="param-chip">
-              <%= f.check_box :include_lunch, checked: ActiveModel::Type::Boolean.new.cast(active_params["include_lunch"]) %>
+              <%= f.radio_button :days_scope, "none", checked: active_scope == "none" %>
+              <span><%= t('ai_chat_sessions.days_none') %></span>
+            </label>
+            <label class="param-chip" id="chip-include-lunch">
+              <%= f.check_box :include_lunch, checked: active_scope != "none" && ActiveModel::Type::Boolean.new.cast(active_params["include_lunch"]) %>
               <span><%= t('ai_chat_sessions.slot_lunch') %></span>
             </label>
-            <label class="param-chip">
-              <%= f.check_box :include_dinner, checked: ActiveModel::Type::Boolean.new.cast(active_params["include_dinner"]) %>
+            <label class="param-chip" id="chip-include-dinner">
+              <%= f.check_box :include_dinner, checked: active_scope != "none" && ActiveModel::Type::Boolean.new.cast(active_params["include_dinner"]) %>
               <span><%= t('ai_chat_sessions.slot_dinner') %></span>
             </label>
-            <label class="param-chip">
+            <label class="param-chip" id="chip-avoid-repetition">
               <%= f.check_box :avoid_repetition, checked: ActiveModel::Type::Boolean.new.cast(active_params["avoid_repetition"]) %>
               <span><%= t('ai_chat_sessions.avoid_repetition') %></span>
             </label>
@@ -305,6 +337,55 @@
     const messageInput = document.getElementById("copilot-message-input");
     const chatForm = document.getElementById("copilot-chat-form");
     const sendBtn = document.getElementById("copilot-send-btn");
+
+    const scopeRadios = document.querySelectorAll('input[name="ai_chat_message[days_scope]"]');
+    const lunchCheckbox = document.querySelector('input[type="checkbox"][name="ai_chat_message[include_lunch]"]');
+    const dinnerCheckbox = document.querySelector('input[type="checkbox"][name="ai_chat_message[include_dinner]"]');
+    const avoidCheckbox = document.querySelector('input[type="checkbox"][name="ai_chat_message[avoid_repetition]"]');
+
+    function syncCopilotScopeControls() {
+      const checkedScope = document.querySelector('input[name="ai_chat_message[days_scope]"]:checked');
+      const isNone = checkedScope && checkedScope.value === "none";
+      [lunchCheckbox, dinnerCheckbox, avoidCheckbox].forEach(function(cb) {
+        if (!cb) return;
+        const chip = cb.closest(".param-chip");
+        if (isNone) {
+          if (cb !== avoidCheckbox) cb.checked = false;
+          if (chip) chip.classList.add("chip-disabled");
+        } else {
+          if (chip) chip.classList.remove("chip-disabled");
+        }
+      });
+    }
+
+    scopeRadios.forEach(function(radio) {
+      radio.addEventListener("change", function() {
+        if (radio.value !== "none" && lunchCheckbox && dinnerCheckbox && !lunchCheckbox.checked && !dinnerCheckbox.checked) {
+          lunchCheckbox.checked = true;
+          dinnerCheckbox.checked = true;
+        }
+        syncCopilotScopeControls();
+      });
+    });
+
+    [lunchCheckbox, dinnerCheckbox].forEach(function(cb) {
+      if (!cb) return;
+      cb.addEventListener("change", function() {
+        if (!lunchCheckbox.checked && !dinnerCheckbox.checked) {
+          const noneRadio = document.querySelector('input[name="ai_chat_message[days_scope]"][value="none"]');
+          if (noneRadio) noneRadio.checked = true;
+        } else {
+          const checkedScope = document.querySelector('input[name="ai_chat_message[days_scope]"]:checked');
+          if (checkedScope && checkedScope.value === "none") {
+            const weekdaysRadio = document.querySelector('input[name="ai_chat_message[days_scope]"][value="weekdays"]');
+            if (weekdaysRadio) weekdaysRadio.checked = true;
+          }
+        }
+        syncCopilotScopeControls();
+      });
+    });
+
+    syncCopilotScopeControls();
 
     document.querySelectorAll(".quick-prompt-btn").forEach(function(btn) {
       btn.addEventListener("click", function() {

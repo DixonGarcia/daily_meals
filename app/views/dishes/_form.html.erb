@@ -26,11 +26,21 @@
   </div>
 
   <div class="form-group">
-    <%= f.label :category, t('dishes.form.category_label'), class: "form-label" %>
-    <%= f.select :category,
-                 Dish::CATEGORIES.map { |c| [t("dish_categories.#{c.downcase}", default: c), c] },
-                 { include_blank: t('dishes.form.category_placeholder') },
-                 { id: "dish-category-select", class: "form-input" } %>
+    <span class="form-label"><%= t('dishes.form.category_label') %></span>
+    <input type="hidden" name="dish[categories][]" value="">
+    <div class="category-chips-grid" id="dish-categories-group">
+      <% selected_cats = dish.effective_categories %>
+      <% Dish::CATEGORIES.each do |cat| %>
+        <label class="param-chip dish-category-chip">
+          <input type="checkbox"
+                 name="dish[categories][]"
+                 value="<%= cat %>"
+                 class="dish-category-checkbox"
+                 <%= 'checked' if selected_cats.include?(cat) %>>
+          <span><%= t("dish_categories.#{cat.downcase}", default: cat) %></span>
+        </label>
+      <% end %>
+    </div>
   </div>
 
   <div class="form-group" style="margin-top: 2rem;">
@@ -137,7 +147,7 @@
     const inlineTemplate = document.getElementById("inline-new-ingredient-row-template");
     const suggestBtn = document.getElementById("btn-ai-suggest-dish");
     const nameInput = document.getElementById("dish-name-input");
-    const categorySelect = document.getElementById("dish-category-select");
+    const categoryCheckboxes = document.querySelectorAll(".dish-category-checkbox");
     const alertBox = document.getElementById("ai-suggest-alert");
 
     if (!container || !addBtn || !template) return;
@@ -223,8 +233,11 @@
             return;
           }
 
-          if (result.data.category && categorySelect) {
-            categorySelect.value = result.data.category;
+          const aiCategories = result.data.categories || (result.data.category ? [result.data.category] : []);
+          if (aiCategories.length > 0 && categoryCheckboxes.length > 0) {
+            categoryCheckboxes.forEach(function(cb) {
+              cb.checked = aiCategories.includes(cb.value);
+            });
           }
 
           // Clear blank initial rows before appending AI suggestions

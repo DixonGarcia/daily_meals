@@ -13,8 +13,8 @@ RSpec.describe AiCopilotService do
       expect(result[:dish_catalog]).to be_an(Array)
       expect(result[:dish_catalog].size).to eq(2)
       expect(result[:dish_catalog]).to include(
-        { id: dish1.id, name: 'Carne molida con papas', category: 'Lunch' },
-        { id: dish2.id, name: 'Pasta boloñesa', category: 'Dinner' }
+        { id: dish1.id, name: 'Carne molida con papas', category: 'Lunch', categories: [ 'Lunch' ] },
+        { id: dish2.id, name: 'Pasta boloñesa', category: 'Dinner', categories: [ 'Dinner' ] }
       )
     end
   end
@@ -207,10 +207,100 @@ RSpec.describe AiCopilotService do
 
       result = service_with_client.suggest_ingredients_for_dish('Tacos de carne')
       expect(result[:category]).to eq('Dinner')
+      expect(result[:categories]).to eq(['Dinner'])
       expect(result[:ingredients].first[:ingredient_id]).to eq(existing.id)
       expect(result[:ingredients].first[:name]).to eq('Carne molida')
       expect(result[:ingredients].last[:ingredient_id]).to be_nil
       expect(result[:ingredients].last[:name]).to eq('Tortillas de maíz')
+    end
+  end
+
+  describe 'FEAT-06 slot preservation, duplicate-day merging, none scope & multi-category' do
+    let(:gemini_client) { instance_double(GeminiClient) }
+    let(:service_with_client) { described_class.new(gemini_client: gemini_client) }
+
+    it 'merges duplicate day entries returned by Gemini and preserves existing lunch when updating only dinner' do
+      MealPlan.create!(day_of_week: 'Monday', lunch_dish: dish1, dinner_dish: nil)
+      chat_session = AiChatSession.create!(
+        title: 'Solo cenas',
+        parameters: { 'days_scope' => 'weekdays', 'include_lunch' => false, 'include_dinner' => true, 'avoid_repetition' => true }
+      )
+
+      allow(gemini_client).to receive(:generate_plan_response).and_return({
+        reply: 'Cenas listas sin tocar almuerzos.',
+        new_dishes: [
+          {
+            'name' => 'Hígado encebollado',
+            'categories' => ['Lunch', 'Dinner'],
+            'ingredients' => [
+              { 'name' => 'Hígado', 'supermarket_section' => 'Carnicería', 'suggested_quantity' => '250g' }
+            ]
+          }
+        ],
+        meal_plan: [
+          { 'day' => 'Monday', 'lunch_dish_id' => dish1.id, 'dinner_dish_id' => nil },
+          { 'day' => 'Monday', 'lunch_dish_id' => nil, 'dinner_new_dish_name' => 'Hígado encebollado' }
+        ]
+      })
+
+      service_with_client.converse!(
+        session: chat_session,
+        user_message: 'Crea cenas nuevas sin borrar mi almuerzo',
+        parameters: { 'days_scope' => 'weekdays', 'include_lunch' => false, 'include_dinner' => true }
+      )
+
+      chat_session.reload
+      expect(chat_session.proposed_plan.size).to eq(1)
+      expect(chat_session.proposed_dishes.first['categories']).to eq(['Lunch', 'Dinner'])
+
+      expect(service_with_client.apply_session_plan!(chat_session)).to be true
+
+      monday = MealPlan.find_by!(day_of_week: 'Monday')
+      expect(monday.lunch_dish).to eq(dish1)
+      expect(monday.dinner_dish.name).to eq('Hígado encebollado')
+      expect(monday.dinner_dish.categories).to eq(['Lunch', 'Dinner'])
+
+      chat_session.reload
+      expect(chat_session.proposed_plan).to eq([])
+      expect(chat_session.proposed_dishes).to eq([])
+    end
+
+    it 'forces proposed_plan to empty when days_scope is none and creates dishes without touching MealPlan' do
+      MealPlan.create!(day_of_week: 'Monday', lunch_dish: dish1, dinner_dish: dish2)
+      chat_session = AiChatSession.create!(
+        title: 'Solo platos',
+        proposed_plan: [{ 'day' => 'Monday', 'lunch_dish_id' => dish2.id }]
+      )
+
+      allow(gemini_client).to receive(:generate_plan_response).and_return({
+        reply: 'Aquí tienes el plato nuevo para tu catálogo.',
+        new_dishes: [
+          {
+            'name' => 'Pescado al vapor',
+            'categories' => ['Lunch', 'Dinner'],
+            'ingredients' => [
+              { 'name' => 'Pescado', 'supermarket_section' => 'Carnicería', 'suggested_quantity' => '300g' }
+            ]
+          }
+        ],
+        meal_plan: [{ 'day' => 'Monday', 'lunch_dish_id' => nil, 'dinner_dish_id' => nil }]
+      })
+
+      service_with_client.converse!(
+        session: chat_session,
+        user_message: 'Agrega Pescado al vapor al catálogo',
+        parameters: { 'days_scope' => 'none', 'include_lunch' => false, 'include_dinner' => false }
+      )
+
+      chat_session.reload
+      expect(chat_session.proposed_plan).to eq([])
+      expect(chat_session.proposed_dishes.size).to eq(1)
+
+      expect(service_with_client.apply_session_plan!(chat_session)).to be true
+      expect(Dish.find_by(name: 'Pescado al vapor').categories).to eq(['Lunch', 'Dinner'])
+      monday = MealPlan.find_by!(day_of_week: 'Monday')
+      expect(monday.lunch_dish).to eq(dish1)
+      expect(monday.dinner_dish).to eq(dish2)
     end
   end
 end

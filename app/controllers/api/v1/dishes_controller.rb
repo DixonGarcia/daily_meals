@@ -18,7 +18,11 @@ class Api::V1::DishesController < Api::V1::BaseController
     ActiveRecord::Base.transaction do
       dishes_payload.each do |dish_data|
         dish = Dish.find_or_initialize_by(name: dish_data[:name])
-        dish.category = dish_data[:category]
+        if dish_data[:categories].is_a?(Array)
+          dish.categories = dish_data[:categories]
+        else
+          dish.category = dish_data[:category]
+        end
 
         unless dish.save
           success = false

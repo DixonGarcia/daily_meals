@@ -7,18 +7,22 @@
 </div>
 
 <div class="card" style="max-width: 600px; margin: 0 auto;">
-  <div class="day-header" style="border-bottom: 2px solid var(--color-primary); margin-bottom: 1.5rem;">
+  <div class="day-header dish-show-header" style="border-bottom: 2px solid var(--color-primary); margin-bottom: 1.5rem;">
     <span><%= @dish.name %></span>
-    <% category_class = case @dish.category
-                      when 'Breakfast' then 'tag-breakfast'
-                      when 'Lunch' then 'tag-lunch'
-                      when 'Dinner' then 'tag-dinner'
-                      when 'Snack' then 'tag-snack'
-                      else 'tag-other'
-                      end %>
-    <span class="category-tag <%= category_class %>" style="font-size: 0.9rem; padding: 0.3rem 0.8rem;">
-      <%= t("dish_categories.#{@dish.category.downcase}", default: @dish.category) %>
-    </span>
+    <div class="category-tags-group">
+      <% @dish.effective_categories.each do |cat| %>
+        <% category_class = case cat
+                          when 'Breakfast' then 'tag-breakfast'
+                          when 'Lunch' then 'tag-lunch'
+                          when 'Dinner' then 'tag-dinner'
+                          when 'Snack' then 'tag-snack'
+                          else 'tag-other'
+                          end %>
+        <span class="category-tag <%= category_class %>" style="font-size: 0.85rem; padding: 0.25rem 0.7rem;">
+          <%= t("dish_categories.#{cat.downcase}", default: cat) %>
+        </span>
+      <% end %>
+    </div>
   </div>
 
   <h3 class="form-label" style="margin-bottom: 1rem; color: var(--color-secondary);"><%= t('dishes.show.ingredients_title') %></h3>

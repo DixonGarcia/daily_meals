@@ -26,12 +26,18 @@ class AiChatSessionsController < ApplicationController
   end
 
   # POST /ai_chat_sessions/:id/apply
-  # Atomically loads the session's proposed menu and any proposed new dishes into the weekly calendar.
+  # Atomically loads the session's proposed menu and/or proposed new dishes and redirects appropriately.
   #
   # @return [void]
   def apply
+    had_plan = @chat_session.proposed_plan.present? && @chat_session.effective_parameters["days_scope"] != "none"
+
     if AiCopilotService.new.apply_session_plan!(@chat_session, dish_overrides: params[:dish_overrides])
-      redirect_to root_path, notice: t("ai_chat_sessions.controller.applied")
+      if had_plan
+        redirect_to root_path, notice: t("ai_chat_sessions.controller.applied")
+      else
+        redirect_to root_path(anchor: "ai-copilot-panel"), notice: t("ai_chat_sessions.controller.dishes_saved")
+      end
     else
       redirect_to root_path(anchor: "ai-copilot-panel"), alert: t("ai_chat_sessions.controller.apply_error")
     end
