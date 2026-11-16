@@ -4,6 +4,14 @@ Development log for **DailyMeals**. Entries are newest-first. Each entry covers 
 
 ---
 
+## [FIX-02] ActiveRecord Schema Cache Refresh & Gemini Timeout Headroom — 2026-11-15
+
+An `ActiveModel::UnknownAttributeError` (`unknown attribute 'proposed_dishes' for AiChatMessage`) occurred in long-running development server processes that had booted prior to the `FEAT-05` migration (`AddProposedDishesToAiChat`).
+
+`AiCopilotService` was updated to call `ensure_latest_schema_cache!` at the entry points of `converse!` and `apply_session_plan!`, clearing `ActiveRecord::ConnectionAdapters::SchemaCache` and invoking `reset_column_information` on `AiChatSession` and `AiChatMessage` whenever `proposed_dishes` is missing from their cached column list. Additionally, `GeminiClient#post_generate_content` increased `open_timeout` from 5s to 10s and `read_timeout` from 25s to 45s to accommodate detailed nutritional and multi-dish planning prompts. The RSpec suite closed at 100 examples, 0 failures.
+
+---
+
 ## [FEAT-05] Hybrid AI Dish & Ingredient Creation — 2026-11-15
 
 A hybrid AI dish and ingredient creation workflow was added across both the weekly calendar chat and the dish catalog form so the owner can dynamically feed new recipes and supermarket ingredients into DailyMeals without leaving their active planning flow.
