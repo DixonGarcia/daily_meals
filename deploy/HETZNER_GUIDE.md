@@ -1,20 +1,20 @@
-# Hetzner Cloud VPS Deployment Guide (Multi-App Subpath `/daily_meals` + Caddy + PostgreSQL)
+# Hetzner Cloud VPS Deployment Guide (Subdomain `meals.yourdomain.com` + Caddy + PostgreSQL)
 
-This guide deploys **DailyMeals** onto a **Hetzner Cloud** VPS using [`compose.production.yml`](../compose.production.yml) so your main domain (`yourdomain.com`) stays free for your personal website and other services (such as a Python chatbot), while **`https://yourdomain.com/daily_meals`** routes directly to DailyMeals.
+This guide deploys **DailyMeals** onto a **Hetzner Cloud** VPS using [`compose.production.yml`](../compose.production.yml) on a dedicated subdomain (**`https://meals.yourdomain.com`**), keeping your apex domain (`yourdomain.com`) free for your personal website and separate subdomains (such as `bot.yourdomain.com`) for your Python chatbot.
 
 ---
 
 ## 1. Configure GoDaddy DNS
 
-In GoDaddy DNS Management for your domain:
+In GoDaddy DNS Management for your domain, create **`A`** records pointing to your Hetzner VPS IPv4 (`<YOUR_HETZNER_VPS_IP>`):
 
-1. Edit (or create) the root **`A`** record:
-   - **Type**: `A`
-   - **Name**: `@`
-   - **Value**: `<YOUR_HETZNER_VPS_IP>`
-   - **TTL**: `600` seconds (or shortest available)
-2. Remove any GoDaddy parking/forwarding `A` records pointing to other IPs on `@`.
-3. Optional: add a **`CNAME`** record `www` -> `yourdomain.com` (or `A` record `www` -> `<YOUR_HETZNER_VPS_IP>`).
+| Type | Name | Value | TTL | Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| `A` | `meals` | `<YOUR_HETZNER_VPS_IP>` | `600` | DailyMeals (`meals.yourdomain.com`) |
+| `A` | `@` | `<YOUR_HETZNER_VPS_IP>` | `600` | Future main website (`yourdomain.com`) |
+| `A` | `bot` | `<YOUR_HETZNER_VPS_IP>` | `600` | Future Python chatbot (`bot.yourdomain.com`) |
+
+*(You can create `meals` now and add `@` / `bot` whenever you are ready to deploy those services.)*
 
 ---
 
@@ -26,7 +26,7 @@ curl -fsSL https://raw.githubusercontent.com/DixonGarcia/daily_meals/main/deploy
 bash hetzner-bootstrap.sh
 ```
 
-This installs Docker + Compose, enables UFW (`22`, `80`, `443`), creates a 2 GB swapfile, clones the repo into `/opt/daily_meals`, and generates `/opt/daily_meals/.env.production` with `RAILS_RELATIVE_URL_ROOT=/daily_meals` and random PostgreSQL/`SECRET_KEY_BASE` secrets.
+This installs Docker + Compose, enables UFW (`22`, `80`, `443`), creates a 2 GB swapfile, clones the repo into `/opt/daily_meals`, and initializes `/opt/daily_meals/.env.production` with random PostgreSQL and `SECRET_KEY_BASE` secrets.
 
 ---
 
@@ -36,47 +36,49 @@ This installs Docker + Compose, enables UFW (`22`, `80`, `443`), creates a 2 GB 
 nano /opt/daily_meals/.env.production
 ```
 
-Update:
-- `SITE_ADDRESS=yourdomain.com` (once GoDaddy DNS propagates to your VPS IP)
-- `FORCE_SSL=true` (automatic Let's Encrypt HTTPS via Caddy)
+Set:
+- `SITE_ADDRESS=meals.yourdomain.com`
+- `FORCE_SSL=true`
 - `APP_ACCESS_PASSWORD=your-strong-password`
 - `GEMINI_API_KEY=your-gemini-api-key`
 
-*(If DNS has not propagated yet, temporarily keep `SITE_ADDRESS=:80` and `FORCE_SSL=false` and visit `http://<YOUR_HETZNER_VPS_IP>/daily_meals`.)*
+*(If DNS has not propagated yet, temporarily keep `SITE_ADDRESS=:80` and `FORCE_SSL=false` and test at `http://<YOUR_HETZNER_VPS_IP>`.)*
 
-Start the stack:
+Build and start the stack:
 
 ```bash
 cd /opt/daily_meals
 docker compose -f compose.production.yml up -d --build
 ```
 
-Verify healthcheck and access:
+Verify containers and healthcheck:
 
 ```bash
 docker compose -f compose.production.yml ps
-curl -i http://127.0.0.1/daily_meals/up
+curl -i http://127.0.0.1:3000/up || docker compose -f compose.production.yml exec web curl -i http://127.0.0.1:3000/up
 ```
 
-Open **`https://yourdomain.com/daily_meals`** in your browser or phone.
+Open **`https://meals.yourdomain.com`** in your browser or phone.
 
 ---
 
 ## 4. Adding Your Main Website & Python Chatbot on the Same VPS
 
-[`compose.production.yml`](../compose.production.yml) exposes the shared Docker network `daily_meals_proxy`.
+[`compose.production.yml`](../compose.production.yml) creates the shared Docker network `daily_meals_proxy`.
 
-When you deploy your website or Python chatbot containers on the same VPS:
+When you deploy your website or Python chatbot on the same VPS:
 1. Attach them to the external network `daily_meals_proxy` in their compose file:
    ```yaml
    networks:
      daily_meals_proxy:
        external: true
    ```
-2. Update `/opt/daily_meals/deploy/Caddyfile` to route `/` to your website container and e.g. `/chatbot*` to your Python bot container, then reload Caddy:
+2. Uncomment and customize the `yourdomain.com` / `bot.yourdomain.com` blocks in `/opt/daily_meals/deploy/Caddyfile`, then reload Caddy:
    ```bash
    docker compose -f /opt/daily_meals/compose.production.yml exec caddy caddy reload --config /etc/caddy/Caddyfile
    ```
+
+Caddy automatically obtains and renews separate Let's Encrypt TLS certificates for each subdomain.
 
 ---
 
