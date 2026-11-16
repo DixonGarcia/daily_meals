@@ -34,7 +34,7 @@
             <a href="/" class="nav-link <%= 'active' if current_page?(root_path) %>"><%= t('layout.calendar') %></a>
             <a href="/dishes" class="nav-link <%= 'active' if controller_name == 'dishes' %>"><%= t('layout.dishes') %></a>
             <a href="/ingredients" class="nav-link <%= 'active' if controller_name == 'ingredients' %>"><%= t('layout.ingredients') %></a>
-            <a href="/api_keys" class="nav-link <%= 'active' if controller_name == 'api_keys' %>"><%= t('layout.api_keys') %></a>
+            <a href="<%= settings_path %>" class="nav-link <%= 'active' if %w[settings api_keys meal_plan_histories].include?(controller_name) %>"><%= t('layout.settings') %></a>
             <div class="nav-logout-wrapper">
               <%= button_to t('layout.logout'), session_path, method: :delete, class: "nav-logout-btn" %>
             </div>

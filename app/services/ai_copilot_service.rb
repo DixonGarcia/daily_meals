@@ -148,6 +148,7 @@ class AiCopilotService
       if session.proposed_plan.present? && !calendar_disabled?(params)
         resolved_plan = resolve_plan_dish_ids(session.proposed_plan, created_dishes_by_name)
         apply_selective_meal_plan!(resolved_plan, allow_lunch: allow_lunch, allow_dinner: allow_dinner)
+        MealPlanHistory.record_current_week!(target_date: Date.current, source: "ai_copilot")
       end
 
       session.update!(status: "applied", proposed_plan: [], proposed_dishes: [])

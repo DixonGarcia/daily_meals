@@ -185,7 +185,35 @@ es:
     dishes: "🍽️ Platos"
     ingredients: "🥕 Ingredientes"
     api_keys: "🔑 API Keys"
+    settings: "⚙️ Configuración"
     logout: "🚪 Salir"
+  settings:
+    show:
+      title: "⚙️ Configuración"
+      tabs:
+        history: "📚 Historial"
+        integrations: "🔌 Integraciones"
+      history_title: "Historial de Menús Semanales"
+      history_subtitle: "Tus semanas planificadas se guardan automáticamente cada vez que actualizas el calendario o aplicas un menú de Gemini. Puedes guardar la semana actual o restaurar semanas pasadas con un toque."
+      snapshot_current: "📸 Guardar semana actual"
+      snapshot_next: "⏭️ Guardar como próxima semana"
+      empty_history: "Aún no hay semanas guardadas en tu historial. Planifica un día en el calendario o toca «Guardar semana actual»."
+      week_label: "Semana %{week} · %{year}"
+      source_badges:
+        manual: "✍️ Manual"
+        ai_copilot: "🤖 Gemini"
+        restore: "♻️ Restaurada"
+      restore_button: "♻️ Restaurar al calendario"
+      restore_confirm: "¿Restaurar el menú de la semana %{week} en tu calendario semanal actual?"
+      delete_button: "🗑️"
+      delete_confirm: "¿Eliminar esta semana del historial?"
+      integrations_intro: "Conecta atajos de iPhone (Siri), Home Assistant o scripts externos usando tokens Bearer en la API REST (/api/v1/dishes, /api/v1/meal_plans)."
+  meal_plan_histories:
+    controller:
+      snapshot_saved: "Semana %{week} (%{year}) guardada en tu historial."
+      restored: "¡Semana %{week} (%{year}) restaurada en tu calendario!"
+      restored_with_skips: "Semana %{week} (%{year}) restaurada. Algunos platos ya no existen en tu catálogo: %{skipped}."
+      deleted: "Semana eliminada del historial."
   sessions:
     new:
       badge: "🔒 Uso Personal Protegido"

@@ -40,6 +40,15 @@ Rails.application.routes.draw do
   end
 
   resources :api_keys, only: [:index, :create, :destroy, :update]
+  get "settings", to: "settings#show"
+  resources :meal_plan_histories, only: [:destroy] do
+    collection do
+      post :snapshot
+    end
+    member do
+      post :restore
+    end
+  end
 
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
