@@ -4,6 +4,16 @@ Development log for **DailyMeals**. Entries are newest-first. Each entry covers 
 
 ---
 
+## [FEAT-05] Hybrid AI Dish & Ingredient Creation — 2026-11-15
+
+A hybrid AI dish and ingredient creation workflow was added across both the weekly calendar chat and the dish catalog form so the owner can dynamically feed new recipes and supermarket ingredients into DailyMeals without leaving their active planning flow.
+
+The migration `AddProposedDishesToAiChat` added the `proposed_dishes` JSONB column to `ai_chat_sessions` and `ai_chat_messages`. `GeminiClient` expanded `RESPONSE_SCHEMA` with `new_dishes` and `lunch_new_dish_name` / `dinner_new_dish_name`, and introduced `DISH_SUGGESTION_SCHEMA` alongside `suggest_dish_ingredients`. `AiCopilotService` removed the legacy offline simulator in favor of live Gemini execution, added `sanitize_proposed_dishes` and `suggest_ingredients_for_dish`, and upgraded `apply_session_plan!` to accept `dish_overrides` from the preview card so only user-checked (`☑️`) dishes and ingredients (with user-edited `suggested_quantity` values) are persisted inside `ActiveRecord::Base.transaction` while matching existing `Ingredient` records case-insensitively. `DishesController` added `POST /dishes/suggest_ingredients` and updated `create` and `update` to support inline brand-new ingredient creation (`ingredient_name` and `supermarket_section`).
+
+The Variant 1 layout (inline ingredient checkboxes and quantity inputs inside the calendar chat preview card paired with an AI autocomplete button in `/dishes/new` and `/dishes/:id/edit`) was selected over Variant 2 (secondary modal editor) and implemented in `app/views/meal_plans/index.html.erb`, `app/views/dishes/_form.html.erb`, and `app/assets/stylesheets/application.css`. End-to-end verification was executed against live Google Gemini on a Samsung Galaxy S25+ viewport (`412x915`), and the RSpec suite closed at 100 examples, 0 failures.
+
+---
+
 ## [FIX-01] Gemini Model Aliasing, Fallback & Transactional Chat Persistence — 2026-11-15
 
 A `404 Not Found` error occurred when querying the Google Gemini REST API with `GEMINI_MODEL=gemini-3.1-flash` or legacy `gemini-2.5-flash` on newer API keys, and failed API calls left orphaned user messages in `ai_chat_messages`.

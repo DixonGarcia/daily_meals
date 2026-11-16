@@ -1,5 +1,19 @@
-# Service to handle conversational AI Copilot planning with Gemini as well as JSON import/export.
+# Service to handle conversational AI Copilot planning with Gemini, on-the-fly dish and ingredient creation,
+# dish ingredient autocomplete, and JSON import/export.
 class AiCopilotService
+  CATEGORY_MAP = {
+    "breakfast" => "Breakfast",
+    "desayuno" => "Breakfast",
+    "lunch" => "Lunch",
+    "almuerzo" => "Lunch",
+    "dinner" => "Dinner",
+    "cena" => "Dinner",
+    "snack" => "Snack",
+    "merienda" => "Snack",
+    "other" => "Other",
+    "otro" => "Other"
+  }.freeze
+
   # Initializes the service with an optional GeminiClient dependency.
   #
   # @param gemini_client [GeminiClient, nil]
@@ -60,7 +74,7 @@ class AiCopilotService
   end
 
   # Conducts a conversational turn with Gemini, persisting both the user message and the
-  # assistant reply alongside any sanitized weekly menu proposal.
+  # assistant reply alongside any sanitized weekly menu proposal and proposed new dishes.
   #
   # @param session [AiChatSession] The active chat session.
   # @param user_message [String] Natural language prompt from the owner.
@@ -75,17 +89,12 @@ class AiCopilotService
     end
     history << { role: "user", content: cleaned_message }
 
-    response = begin
-      client.generate_plan_response(
-        system_instruction: build_system_instruction(merged_params),
-        messages: history
-      )
-    rescue GeminiClient::ConfigurationError
-      raise unless Rails.env.development?
+    response = client.generate_plan_response(
+      system_instruction: build_system_instruction(merged_params),
+      messages: history
+    )
 
-      build_local_development_response(cleaned_message, merged_params)
-    end
-
+    sanitized_dishes = sanitize_proposed_dishes(response[:new_dishes])
     sanitized_plan = sanitize_proposed_plan(response[:meal_plan])
 
     assistant_message = nil
@@ -100,35 +109,85 @@ class AiCopilotService
       assistant_message = session.ai_chat_messages.create!(
         role: "assistant",
         content: response[:reply].presence || "He actualizado la propuesta de menú.",
-        proposed_plan: sanitized_plan
+        proposed_plan: sanitized_plan,
+        proposed_dishes: sanitized_dishes
       )
 
-      if sanitized_plan.any?
-        session.update!(proposed_plan: sanitized_plan, status: "active")
-      end
+      updates = { status: "active" }
+      updates[:proposed_plan] = sanitized_plan if sanitized_plan.any?
+      updates[:proposed_dishes] = sanitized_dishes if sanitized_dishes.any? || sanitized_plan.any?
+      session.update!(updates)
     end
 
     assistant_message
   end
 
-  # Atomically loads the session's proposed_plan into the weekly MealPlan schedule
-  # and marks the session as applied.
+  # Atomically creates any included proposed_dishes (and their checked ingredients with overridden quantities),
+  # resolves new dish names in proposed_plan to their newly created IDs, and loads the schedule into MealPlan.
   #
   # @param session [AiChatSession]
+  # @param dish_overrides [Hash, ActionController::Parameters, nil] Optional user overrides for checkboxes and quantities.
   # @return [Boolean] true if applied successfully.
-  def apply_session_plan!(session)
-    return false if session.proposed_plan.blank?
+  def apply_session_plan!(session, dish_overrides: nil)
+    return false if session.proposed_plan.blank? && session.proposed_dishes.blank?
 
     applied = false
     ActiveRecord::Base.transaction do
-      if import_plan({ meal_plan: session.proposed_plan })
-        session.update!(status: "applied")
-        applied = true
-      else
-        raise ActiveRecord::Rollback
+      created_dishes_by_name = persist_proposed_dishes!(session.proposed_dishes, dish_overrides)
+
+      if session.proposed_plan.present?
+        resolved_plan = resolve_plan_dish_ids(session.proposed_plan, created_dishes_by_name)
+        unless import_plan({ meal_plan: resolved_plan })
+          raise ActiveRecord::Rollback
+        end
       end
+
+      session.update!(status: "applied")
+      applied = true
     end
     applied
+  rescue ActiveRecord::RecordInvalid
+    false
+  end
+
+  # Suggests a normalized dish category and ingredient list for a dish name using Gemini,
+  # matching existing ingredients case-insensitively.
+  #
+  # @param dish_name [String]
+  # @return [Hash] Hash with :category and :ingredients.
+  def suggest_ingredients_for_dish(dish_name)
+    existing_ingredients = Ingredient.order(:name).to_a
+    existing_by_downcase = existing_ingredients.index_by { |i| i.name.downcase.strip }
+
+    raw = client.suggest_dish_ingredients(
+      dish_name: dish_name.to_s.strip,
+      existing_ingredients: existing_ingredients.map { |i| { name: i.name, supermarket_section: i.supermarket_section } }
+    )
+
+    normalized_category = normalize_category(raw[:category])
+    ingredients = Array(raw[:ingredients]).filter_map do |item|
+      next unless item.is_a?(Hash)
+
+      raw_name = (item["name"] || item[:name]).to_s.strip
+      next if raw_name.blank?
+
+      matched = existing_by_downcase[raw_name.downcase]
+      section = matched ? matched.supermarket_section : normalize_section(item["supermarket_section"] || item[:supermarket_section])
+      qty = (item["suggested_quantity"] || item[:suggested_quantity]).to_s.strip.presence || "1 unidad"
+
+      {
+        ingredient_id: matched&.id,
+        name: matched ? matched.name : raw_name,
+        supermarket_section: section,
+        suggested_quantity: qty,
+        is_new: matched.nil?
+      }
+    end
+
+    {
+      category: normalized_category,
+      ingredients: ingredients
+    }
   end
 
   private
@@ -140,26 +199,32 @@ class AiCopilotService
     @gemini_client ||= GeminiClient.new
   end
 
-  # Constructs the system prompt with the current Dish catalog, active MealPlan, and user parameters.
+  # Constructs the system prompt with the current Dish catalog, Ingredient catalog, active MealPlan, and parameters.
   #
   # @param params [Hash]
   # @return [String]
   def build_system_instruction(params)
     catalog = Dish.order(:name).map { |d| { id: d.id, name: d.name, category: d.category } }
+    ingredients = Ingredient.order(:name).map { |i| { name: i.name, supermarket_section: i.supermarket_section } }
     current_schedule = MealPlan.all.map do |mp|
       { day: mp.day_of_week, lunch_dish_id: mp.lunch_dish_id, dinner_dish_id: mp.dinner_dish_id }
     end
 
     days_rule = params["days_scope"] == "full_week" ? "Monday through Sunday (all 7 days)" : "Monday through Friday (5 weekdays)"
     slots_rule = []
-    slots_rule << "Lunch (lunch_dish_id)" if ActiveModel::Type::Boolean.new.cast(params["include_lunch"])
-    slots_rule << "Dinner (dinner_dish_id)" if ActiveModel::Type::Boolean.new.cast(params["include_dinner"])
+    slots_rule << "Lunch (lunch_dish_id / lunch_new_dish_name)" if ActiveModel::Type::Boolean.new.cast(params["include_lunch"])
+    slots_rule << "Dinner (dinner_dish_id / dinner_new_dish_name)" if ActiveModel::Type::Boolean.new.cast(params["include_dinner"])
     repetition_rule = ActiveModel::Type::Boolean.new.cast(params["avoid_repetition"]) ? "Avoid repeating the same dish on consecutive days." : "Repetition is allowed."
 
     <<~PROMPT
       You are the DailyMeals AI Culinary Copilot. Always write your `reply` in friendly, concise Spanish.
-      Use ONLY the dish IDs provided in DISH_CATALOG below. Never invent dish IDs.
       Valid day names for `meal_plan` are strictly: #{MealPlan::DAYS_OF_WEEK.join(', ')}.
+      Allowed dish `category` values: #{Dish::CATEGORIES.join(', ')}.
+      Allowed ingredient `supermarket_section` values: #{Ingredient::SECTIONS.join(', ')}.
+
+      HOW TO HANDLE EXISTING VS. NEW DISHES:
+      1. If a dish already exists in DISH_CATALOG, set `lunch_dish_id` or `dinner_dish_id` to its integer `id` and leave `lunch_new_dish_name` / `dinner_new_dish_name` null.
+      2. If the user asks for a dish NOT in DISH_CATALOG, or asks you to invent/suggest new dishes, add each new dish to `new_dishes` with its `name` (in Spanish), `category`, and `ingredients` (reusing exact names from EXISTING_INGREDIENTS whenever applicable, with realistic quantities in Spanish like "500g", "1 lata", "2 unidades"). Then reference that exact dish `name` in `lunch_new_dish_name` or `dinner_new_dish_name` on the scheduled day!
 
       ACTIVE PLANNING PARAMETERS:
       - Target days: #{days_rule}
@@ -169,9 +234,48 @@ class AiCopilotService
       DISH_CATALOG (JSON):
       #{catalog.to_json}
 
+      EXISTING_INGREDIENTS (JSON):
+      #{ingredients.to_json}
+
       CURRENT_WEEKLY_SCHEDULE (JSON):
       #{current_schedule.to_json}
     PROMPT
+  end
+
+  # Sanitizes proposed new dishes and their ingredients.
+  #
+  # @param raw_dishes [Array<Hash>]
+  # @return [Array<Hash>]
+  def sanitize_proposed_dishes(raw_dishes)
+    return [] unless raw_dishes.is_a?(Array)
+
+    raw_dishes.filter_map do |dish|
+      next unless dish.is_a?(Hash)
+
+      name = (dish["name"] || dish[:name]).to_s.strip
+      next if name.blank?
+
+      category = normalize_category(dish["category"] || dish[:category])
+      raw_ings = dish["ingredients"] || dish[:ingredients]
+      ingredients = Array(raw_ings).filter_map do |ing|
+        next unless ing.is_a?(Hash)
+
+        ing_name = (ing["name"] || ing[:name]).to_s.strip
+        next if ing_name.blank?
+
+        {
+          "name" => ing_name,
+          "supermarket_section" => normalize_section(ing["supermarket_section"] || ing[:supermarket_section]),
+          "suggested_quantity" => (ing["suggested_quantity"] || ing[:suggested_quantity]).to_s.strip.presence || "1 unidad"
+        }
+      end
+
+      {
+        "name" => name,
+        "category" => category,
+        "ingredients" => ingredients
+      }
+    end
   end
 
   # Filters and sanitizes Gemini's meal_plan output against valid days and existing Dish IDs.
@@ -196,52 +300,156 @@ class AiCopilotService
       lunch_id = raw_lunch.present? && valid_dish_ids.include?(raw_lunch.to_i) ? raw_lunch.to_i : nil
       dinner_id = raw_dinner.present? && valid_dish_ids.include?(raw_dinner.to_i) ? raw_dinner.to_i : nil
 
-      {
+      lunch_new_name = (entry["lunch_new_dish_name"] || entry[:lunch_new_dish_name]).to_s.strip.presence
+      dinner_new_name = (entry["dinner_new_dish_name"] || entry[:dinner_new_dish_name]).to_s.strip.presence
+
+      row = {
         "day" => day,
+        "lunch_dish_id" => lunch_id,
+        "dinner_dish_id" => dinner_id
+      }
+      row["lunch_new_dish_name"] = lunch_new_name if lunch_new_name.present?
+      row["dinner_new_dish_name"] = dinner_new_name if dinner_new_name.present?
+      row
+    end
+  end
+
+  # Persists included proposed dishes and their checked ingredients, returning a map of downcased dish name => dish.id.
+  #
+  # @param proposed_dishes [Array<Hash>]
+  # @param dish_overrides [Hash, ActionController::Parameters, nil]
+  # @return [Hash<String, Integer>]
+  def persist_proposed_dishes!(proposed_dishes, dish_overrides)
+    created_map = {}
+    dishes_source = extract_dishes_to_persist(proposed_dishes, dish_overrides)
+
+    dishes_source.each do |dish_data|
+      next unless dish_data[:included]
+
+      dish_name = dish_data[:name].to_s.strip
+      next if dish_name.blank?
+
+      dish = Dish.where("LOWER(name) = ?", dish_name.downcase).first || Dish.new(name: dish_name)
+      dish.category = normalize_category(dish_data[:category])
+      dish.save!
+
+      dish_data[:ingredients].each do |ing_data|
+        next unless ing_data[:included]
+
+        ing_name = ing_data[:name].to_s.strip
+        next if ing_name.blank?
+
+        ingredient = Ingredient.where("LOWER(name) = ?", ing_name.downcase).first
+        unless ingredient
+          ingredient = Ingredient.create!(
+            name: ing_name,
+            supermarket_section: normalize_section(ing_data[:supermarket_section])
+          )
+        end
+
+        di = DishIngredient.find_or_initialize_by(dish: dish, ingredient: ingredient)
+        di.suggested_quantity = ing_data[:suggested_quantity].to_s.strip.presence || "1 unidad"
+        di.save!
+      end
+
+      created_map[dish_name.downcase] = dish.id
+      created_map[dish.name.downcase] = dish.id
+    end
+
+    created_map
+  end
+
+  # Merges session.proposed_dishes with optional user form overrides.
+  #
+  # @param proposed_dishes [Array<Hash>]
+  # @param dish_overrides [Hash, ActionController::Parameters, nil]
+  # @return [Array<Hash>]
+  def extract_dishes_to_persist(proposed_dishes, dish_overrides)
+    if dish_overrides.present?
+      raw_hash = dish_overrides.respond_to?(:to_unsafe_h) ? dish_overrides.to_unsafe_h : dish_overrides.to_h
+      raw_hash.values.map do |d_val|
+        d = d_val.with_indifferent_access
+        raw_ings = (d[:ingredients] || {}).values
+        {
+          included: ActiveModel::Type::Boolean.new.cast(d.fetch(:included, "1")),
+          name: d[:name],
+          category: d[:category],
+          ingredients: raw_ings.map do |i_val|
+            i = i_val.with_indifferent_access
+            {
+              included: ActiveModel::Type::Boolean.new.cast(i.fetch(:included, "1")),
+              name: i[:name],
+              supermarket_section: i[:supermarket_section],
+              suggested_quantity: i[:suggested_quantity]
+            }
+          end
+        }
+      end
+    else
+      Array(proposed_dishes).map do |d|
+        {
+          included: true,
+          name: d["name"] || d[:name],
+          category: d["category"] || d[:category],
+          ingredients: Array(d["ingredients"] || d[:ingredients]).map do |i|
+            {
+              included: true,
+              name: i["name"] || i[:name],
+              supermarket_section: i["supermarket_section"] || i[:supermarket_section],
+              suggested_quantity: i["suggested_quantity"] || i[:suggested_quantity]
+            }
+          end
+        }
+      end
+    end
+  end
+
+  # Resolves lunch_new_dish_name and dinner_new_dish_name in proposed_plan to actual Dish IDs.
+  #
+  # @param proposed_plan [Array<Hash>]
+  # @param created_dishes_by_name [Hash<String, Integer>]
+  # @return [Array<Hash>]
+  def resolve_plan_dish_ids(proposed_plan, created_dishes_by_name)
+    Array(proposed_plan).map do |entry|
+      lunch_id = entry["lunch_dish_id"] || entry[:lunch_dish_id]
+      dinner_id = entry["dinner_dish_id"] || entry[:dinner_dish_id]
+      lunch_new = (entry["lunch_new_dish_name"] || entry[:lunch_new_dish_name]).to_s.strip
+      dinner_new = (entry["dinner_new_dish_name"] || entry[:dinner_new_dish_name]).to_s.strip
+
+      if lunch_id.blank? && lunch_new.present?
+        lunch_id = created_dishes_by_name[lunch_new.downcase] || Dish.where("LOWER(name) = ?", lunch_new.downcase).pick(:id)
+      end
+
+      if dinner_id.blank? && dinner_new.present?
+        dinner_id = created_dishes_by_name[dinner_new.downcase] || Dish.where("LOWER(name) = ?", dinner_new.downcase).pick(:id)
+      end
+
+      {
+        "day" => entry["day"] || entry[:day],
         "lunch_dish_id" => lunch_id,
         "dinner_dish_id" => dinner_id
       }
     end
   end
 
-  # Generates a deterministic, parameter-aware menu proposal from the local Dish catalog
-  # when running in local development without GEMINI_API_KEY configured yet.
+  # Normalizes a raw category string to one of Dish::CATEGORIES.
   #
-  # @param user_message [String]
-  # @param params [Hash]
-  # @return [Hash] Hash with :reply and :meal_plan.
-  def build_local_development_response(user_message, params)
-    dishes = Dish.order(:id).to_a
-    if dishes.empty?
-      return {
-        reply: "Aún no tienes platos registrados en tu catálogo. Agrega algunos en la sección «🍽️ Platos» para poder armar tu menú semanal.",
-        meal_plan: []
-      }
-    end
+  # @param raw_category [String, nil]
+  # @return [String]
+  def normalize_category(raw_category)
+    key = raw_category.to_s.strip
+    return key if Dish::CATEGORIES.include?(key)
 
-    target_days = params["days_scope"] == "full_week" ? MealPlan::DAYS_OF_WEEK : MealPlan::DAYS_OF_WEEK.first(5)
-    include_lunch = ActiveModel::Type::Boolean.new.cast(params["include_lunch"])
-    include_dinner = ActiveModel::Type::Boolean.new.cast(params["include_dinner"])
+    CATEGORY_MAP.fetch(key.downcase, "Lunch")
+  end
 
-    lunch_pool = dishes.select { |d| d.category.to_s.downcase == "lunch" }.presence || dishes
-    dinner_pool = dishes.select { |d| d.category.to_s.downcase == "dinner" }.presence || dishes.reverse
-
-    plan = target_days.each_with_index.map do |day, idx|
-      lunch_id = include_lunch ? lunch_pool[idx % lunch_pool.size]&.id : nil
-      dinner_idx = (lunch_pool == dinner_pool && dishes.size > 1) ? (idx + 1) : idx
-      dinner_id = include_dinner ? dinner_pool[dinner_idx % dinner_pool.size]&.id : nil
-
-      {
-        "day" => day,
-        "lunch_dish_id" => lunch_id,
-        "dinner_dish_id" => dinner_id
-      }
-    end
-
-    scope_label = params["days_scope"] == "full_week" ? "lunes a domingo" : "lunes a viernes"
-    {
-      reply: "He preparado una propuesta de menú de #{scope_label} basada en tu catálogo actual y tus parámetros («#{user_message.to_s.truncate(50)}»). Revisa la vista previa abajo y toca «Cargar este Menú en el Calendario» cuando estés conforme. (Nota: modo local activo; agrega GEMINI_API_KEY en .env para usar Gemini en la nube).",
-      meal_plan: plan
-    }
+  # Normalizes a raw supermarket section string to one of Ingredient::SECTIONS.
+  #
+  # @param raw_section [String, nil]
+  # @return [String]
+  def normalize_section(raw_section)
+    sec = raw_section.to_s.strip
+    matched = Ingredient::SECTIONS.find { |s| s.casecmp?(sec) }
+    matched || "Otros"
   end
 end

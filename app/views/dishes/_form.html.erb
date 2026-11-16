@@ -1,4 +1,4 @@
-<%= form_with model: dish, local: true, class: "card", style: "max-width: 600px; margin: 0 auto;" do |f| %>
+<%= form_with model: dish, local: true, class: "card", style: "max-width: 680px; margin: 0 auto;" do |f| %>
   <% if dish.errors.any? %>
     <div class="flash flash-alert" style="margin-bottom: 1.5rem;">
       <h4 style="margin-bottom: 0.5rem;"><%= t('dishes.form.errors_title') %></h4>
@@ -12,20 +12,38 @@
 
   <div class="form-group">
     <%= f.label :name, t('dishes.form.name_label'), class: "form-label" %>
-    <%= f.text_field :name, class: "form-input", placeholder: t('dishes.form.name_placeholder') %>
+    <div class="dish-name-ai-row">
+      <%= f.text_field :name,
+                       id: "dish-name-input",
+                       class: "form-input",
+                       placeholder: t('dishes.form.name_placeholder') %>
+      <button type="button" id="btn-ai-suggest-dish" class="btn-ai-autocomplete">
+        <%= t('dishes.form.ai_autocomplete_btn') %>
+      </button>
+    </div>
+    <p class="ai-autocomplete-hint"><%= t('dishes.form.ai_autocomplete_hint') %></p>
+    <div id="ai-suggest-alert" class="flash flash-alert" style="display: none; margin-top: 0.75rem; padding: 0.65rem 1rem; font-size: 0.85rem;"></div>
   </div>
 
   <div class="form-group">
     <%= f.label :category, t('dishes.form.category_label'), class: "form-label" %>
-    <%= f.select :category, Dish::CATEGORIES.map { |c| [t("dish_categories.#{c.downcase}", default: c), c] }, { include_blank: t('dishes.form.category_placeholder') }, { class: "form-input" } %>
+    <%= f.select :category,
+                 Dish::CATEGORIES.map { |c| [t("dish_categories.#{c.downcase}", default: c), c] },
+                 { include_blank: t('dishes.form.category_placeholder') },
+                 { id: "dish-category-select", class: "form-input" } %>
   </div>
 
   <div class="form-group" style="margin-top: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div class="ingredients-header-bar">
       <h3 class="form-label" style="margin-bottom: 0; color: var(--color-secondary);"><%= t('dishes.form.ingredients_label') %></h3>
-      <button type="button" id="add-ingredient-btn" class="btn-action" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
-        <%= t('dishes.form.add_ingredient') %>
-      </button>
+      <div class="ingredients-add-btns">
+        <button type="button" id="add-ingredient-btn" class="btn-secondary" style="font-size: 0.78rem; padding: 0.4rem 0.75rem;">
+          <%= t('dishes.form.add_ingredient') %>
+        </button>
+        <button type="button" id="add-new-inline-ingredient-btn" class="btn-action" style="font-size: 0.78rem; padding: 0.4rem 0.75rem;">
+          <%= t('dishes.form.add_new_inline_ingredient') %>
+        </button>
+      </div>
     </div>
 
     <!-- Container for dynamic ingredients -->
@@ -37,12 +55,14 @@
           <%= di.select :ingredient_id, 
                         options_from_collection_for_select(@ingredients, :id, :name, di.object.ingredient_id), 
                         { include_blank: t('dishes.form.select_ingredient') }, 
-                        { class: "meal-dish-selector", style: "width: 50%;" } %>
+                        { class: "meal-dish-selector", style: "flex: 2; min-width: 150px;" } %>
           
-          <%= di.text_field :suggested_quantity, class: "form-input", placeholder: t('dishes.form.quantity_placeholder'), style: "width: 35%;" %>
+          <%= di.text_field :suggested_quantity,
+                            class: "form-input",
+                            placeholder: t('dishes.form.quantity_placeholder'),
+                            style: "flex: 1; min-width: 110px;" %>
           
-          <!-- Destroy checkbox wrapper -->
-          <div style="width: 15%; text-align: center;">
+          <div>
             <%= di.hidden_field :_destroy, class: "destroy-flag" %>
             <button type="button" class="btn-danger remove-existing-row-btn">❌</button>
           </div>
@@ -51,46 +71,91 @@
     </div>
   </div>
 
-  <div style="display: flex; gap: 1rem; margin-top: 2.5rem;">
-    <%= f.submit dish.new_record? ? t('dishes.form.submit_create') : t('dishes.form.submit_update'), class: "btn-action", style: "flex: 1;" %>
+  <div style="display: flex; gap: 1rem; margin-top: 2.5rem; flex-wrap: wrap;">
+    <%= f.submit dish.new_record? ? t('dishes.form.submit_create') : t('dishes.form.submit_update'), class: "btn-action", style: "flex: 1; justify-content: center;" %>
     <a href="<%= dishes_path %>" class="btn-secondary" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;"><%= t('dishes.form.cancel') %></a>
   </div>
 <% end %>
 
-<!-- Hidden row template for adding new ingredients via Javascript -->
+<!-- Hidden row template for selecting existing catalog ingredients -->
 <div id="ingredient-row-template" style="display: none;">
   <div class="nested-fields ingredient-row new-row">
-    <select name="dish[dish_ingredients_attributes][__NEW_INDEX__][ingredient_id]" class="meal-dish-selector" style="width: 50%;">
+    <select name="dish[dish_ingredients_attributes][__NEW_INDEX__][ingredient_id]" class="meal-dish-selector" style="flex: 2; min-width: 150px;">
       <option value=""><%= t('dishes.form.select_ingredient') %></option>
       <% @ingredients.each do |ing| %>
         <option value="<%= ing.id %>"><%= ing.name %></option>
       <% end %>
     </select>
     
-    <input type="text" name="dish[dish_ingredients_attributes][__NEW_INDEX__][suggested_quantity]" class="form-input" placeholder="<%= t('dishes.form.quantity_placeholder') %>" style="width: 35%;">
+    <input type="text"
+           name="dish[dish_ingredients_attributes][__NEW_INDEX__][suggested_quantity]"
+           class="form-input"
+           placeholder="<%= t('dishes.form.quantity_placeholder') %>"
+           style="flex: 1; min-width: 110px;">
     
-    <div style="width: 15%; text-align: center;">
+    <div>
+      <button type="button" class="btn-danger remove-new-row-btn">❌</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden row template for creating a brand-new ingredient inline -->
+<div id="inline-new-ingredient-row-template" style="display: none;">
+  <div class="nested-fields ingredient-row new-row inline-new-ing-row">
+    <input type="text"
+           name="dish[dish_ingredients_attributes][__NEW_INDEX__][ingredient_name]"
+           class="form-input inline-ing-name"
+           placeholder="<%= t('dishes.form.new_ingredient_placeholder') %>"
+           style="flex: 2; min-width: 140px;">
+
+    <select name="dish[dish_ingredients_attributes][__NEW_INDEX__][supermarket_section]"
+            class="meal-dish-selector inline-ing-section"
+            style="flex: 1.3; min-width: 120px;">
+      <% Ingredient::SECTIONS.each do |sec| %>
+        <option value="<%= sec %>"><%= sec %></option>
+      <% end %>
+    </select>
+
+    <input type="text"
+           name="dish[dish_ingredients_attributes][__NEW_INDEX__][suggested_quantity]"
+           class="form-input inline-ing-qty"
+           placeholder="<%= t('dishes.form.quantity_placeholder') %>"
+           style="flex: 1; min-width: 100px;">
+
+    <div>
       <button type="button" class="btn-danger remove-new-row-btn">❌</button>
     </div>
   </div>
 </div>
 
 <script>
-  document.addEventListener("turbo:load", function() {
+  (function() {
     const container = document.getElementById("ingredients-container");
     const addBtn = document.getElementById("add-ingredient-btn");
+    const addNewInlineBtn = document.getElementById("add-new-inline-ingredient-btn");
     const template = document.getElementById("ingredient-row-template");
+    const inlineTemplate = document.getElementById("inline-new-ingredient-row-template");
+    const suggestBtn = document.getElementById("btn-ai-suggest-dish");
+    const nameInput = document.getElementById("dish-name-input");
+    const categorySelect = document.getElementById("dish-category-select");
+    const alertBox = document.getElementById("ai-suggest-alert");
 
     if (!container || !addBtn || !template) return;
 
-    // Remove new rows directly from DOM
+    function createRowFromTemplate(tpl) {
+      const uniqueIndex = "new_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+      const html = tpl.innerHTML.replace(/__NEW_INDEX__/g, uniqueIndex);
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = html.trim();
+      return tempDiv.firstChild;
+    }
+
     container.addEventListener("click", function(e) {
       if (e.target && e.target.classList.contains("remove-new-row-btn")) {
         e.preventDefault();
         e.target.closest(".ingredient-row").remove();
       }
 
-      // Mark existing rows as destroyed, and hide them
       if (e.target && e.target.classList.contains("remove-existing-row-btn")) {
         e.preventDefault();
         const row = e.target.closest(".ingredient-row");
@@ -102,18 +167,103 @@
       }
     });
 
-    // Add new row from template
     addBtn.addEventListener("click", function(e) {
       e.preventDefault();
-      const uniqueIndex = "new_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
-      let html = template.innerHTML;
-      html = html.replace(/__NEW_INDEX__/g, uniqueIndex);
-      
-      const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = html.trim();
-      const newRow = tempDiv.firstChild;
-      
-      container.appendChild(newRow);
+      container.appendChild(createRowFromTemplate(template));
     });
-  });
+
+    if (addNewInlineBtn && inlineTemplate) {
+      addNewInlineBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        container.appendChild(createRowFromTemplate(inlineTemplate));
+      });
+    }
+
+    if (suggestBtn && nameInput) {
+      suggestBtn.addEventListener("click", function() {
+        const dishName = nameInput.value.trim();
+        if (alertBox) alertBox.style.display = "none";
+
+        if (!dishName) {
+          if (alertBox) {
+            alertBox.textContent = "<%= j t('dishes.form.ai_blank_name') %>";
+            alertBox.style.display = "block";
+          }
+          return;
+        }
+
+        const originalText = suggestBtn.textContent;
+        suggestBtn.textContent = "<%= j t('dishes.form.ai_autocompleting') %>";
+        suggestBtn.disabled = true;
+
+        const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content") || "";
+
+        fetch("<%= suggest_ingredients_dishes_path %>", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken
+          },
+          body: JSON.stringify({ dish_name: dishName })
+        })
+        .then(function(res) {
+          return res.json().then(function(data) {
+            return { ok: res.ok, data: data };
+          });
+        })
+        .then(function(result) {
+          suggestBtn.textContent = originalText;
+          suggestBtn.disabled = false;
+
+          if (!result.ok) {
+            if (alertBox) {
+              alertBox.textContent = result.data.error || "Error al consultar a Gemini.";
+              alertBox.style.display = "block";
+            }
+            return;
+          }
+
+          if (result.data.category && categorySelect) {
+            categorySelect.value = result.data.category;
+          }
+
+          // Clear blank initial rows before appending AI suggestions
+          container.querySelectorAll(".ingredient-row").forEach(function(row) {
+            const idField = row.querySelector("input[name*='[id]']");
+            if (!idField || !idField.value) {
+              row.remove();
+            }
+          });
+
+          (result.data.ingredients || []).forEach(function(ing) {
+            if (ing.ingredient_id) {
+              const row = createRowFromTemplate(template);
+              const sel = row.querySelector("select");
+              const qty = row.querySelector("input[type='text']");
+              if (sel) sel.value = String(ing.ingredient_id);
+              if (qty) qty.value = ing.suggested_quantity || "";
+              container.appendChild(row);
+            } else if (inlineTemplate) {
+              const row = createRowFromTemplate(inlineTemplate);
+              const nameEl = row.querySelector(".inline-ing-name");
+              const secEl = row.querySelector(".inline-ing-section");
+              const qtyEl = row.querySelector(".inline-ing-qty");
+              if (nameEl) nameEl.value = ing.name || "";
+              if (secEl && ing.supermarket_section) secEl.value = ing.supermarket_section;
+              if (qtyEl) qtyEl.value = ing.suggested_quantity || "";
+              container.appendChild(row);
+            }
+          });
+        })
+        .catch(function(_err) {
+          suggestBtn.textContent = originalText;
+          suggestBtn.disabled = false;
+          if (alertBox) {
+            alertBox.textContent = "No se pudo conectar con Gemini.";
+            alertBox.style.display = "block";
+          }
+        });
+      });
+    }
+  })();
 </script>

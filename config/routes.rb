@@ -13,7 +13,11 @@ Rails.application.routes.draw do
 
   resource :session, only: [:new, :create, :destroy]
 
-  resources :dishes
+  resources :dishes do
+    collection do
+      post :suggest_ingredients
+    end
+  end
   resources :ingredients
 
   resources :meal_plans, only: [:index] do

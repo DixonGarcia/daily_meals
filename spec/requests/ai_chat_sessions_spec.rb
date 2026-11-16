@@ -66,6 +66,45 @@ RSpec.describe "AiChatSessions & Gemini Pseudo-Chat", type: :request do
       expect(plan.dinner_dish).to eq(dish2)
       expect(chat_session.reload.applied?).to be true
     end
+
+    it "creates proposed new dishes with user-checked ingredients and edited quantities when applying" do
+      session_with_new_dish = AiChatSession.create!(
+        title: "Sesión con Plato Nuevo",
+        proposed_dishes: [
+          {
+            "name" => "Arepas con perico",
+            "category" => "Breakfast",
+            "ingredients" => [
+              { "name" => "Harina de maíz", "supermarket_section" => "Víveres", "suggested_quantity" => "300g" },
+              { "name" => "Huevos", "supermarket_section" => "Lácteos", "suggested_quantity" => "4 unidades" }
+            ]
+          }
+        ],
+        proposed_plan: [
+          { "day" => "Friday", "lunch_dish_id" => dish1.id, "dinner_new_dish_name" => "Arepas con perico" }
+        ]
+      )
+
+      expect {
+        post apply_ai_chat_session_path(session_with_new_dish), params: {
+          dish_overrides: {
+            "0" => {
+              included: "1",
+              name: "Arepas con perico",
+              category: "Breakfast",
+              ingredients: {
+                "0" => { included: "1", name: "Harina de maíz", supermarket_section: "Víveres", suggested_quantity: "500g" },
+                "1" => { included: "0", name: "Huevos", supermarket_section: "Lácteos", suggested_quantity: "4 unidades" }
+              }
+            }
+          }
+        }
+      }.to change(Dish, :count).by(1).and change(Ingredient, :count).by(1)
+
+      new_dish = Dish.find_by!(name: "Arepas con perico")
+      expect(new_dish.dish_ingredients.first.suggested_quantity).to eq("500g")
+      expect(MealPlan.find_by(day_of_week: "Friday").dinner_dish).to eq(new_dish)
+    end
   end
 
   describe "DELETE /ai_chat_sessions/:id" do

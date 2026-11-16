@@ -107,9 +107,11 @@
         <% end %>
       </div>
 
-      <!-- Proposed Weekly Menu Preview & One-Click Load CTA -->
-      <% if @active_chat_session.proposed_plan.present? %>
-        <div class="proposed-menu-preview">
+      <!-- Proposed Weekly Menu & New Dishes Preview with Checkboxes & Editable Quantities -->
+      <% has_plan = @active_chat_session.proposed_plan.present? %>
+      <% has_new_dishes = @active_chat_session.proposed_dishes.present? %>
+      <% if has_plan || has_new_dishes %>
+        <%= form_with url: apply_ai_chat_session_path(@active_chat_session), method: :post, local: true, class: "proposed-menu-preview" do %>
           <div class="proposed-menu-header">
             <span class="proposed-menu-title"><%= t('ai_chat_sessions.preview_title') %></span>
             <span class="proposed-status-badge <%= @active_chat_session.applied? ? 'badge-applied' : 'badge-ready' %>">
@@ -117,26 +119,83 @@
             </span>
           </div>
 
-          <div class="proposed-days-list">
-            <% @active_chat_session.proposed_plan.each do |entry| %>
-              <% day_key = (entry["day"] || entry[:day]).to_s %>
-              <% lunch_dish = @dishes_by_id[(entry["lunch_dish_id"] || entry[:lunch_dish_id]).to_i] %>
-              <% dinner_dish = @dishes_by_id[(entry["dinner_dish_id"] || entry[:dinner_dish_id]).to_i] %>
-              <div class="proposed-day-row">
-                <strong class="proposed-day-name"><%= t("days_of_week.#{day_key.downcase}", default: day_key) %></strong>
-                <div class="proposed-day-dishes">
-                  <span>☀️ <%= lunch_dish&.name || t('meal_plans.index.none') %></span>
-                  <span>🌙 <%= dinner_dish&.name || t('meal_plans.index.none') %></span>
-                </div>
-              </div>
-            <% end %>
-          </div>
+          <% if has_new_dishes %>
+            <div class="proposed-new-dishes-box">
+              <div class="proposed-new-dishes-title"><%= t('ai_chat_sessions.proposed_dishes_title') %></div>
+              <p class="proposed-new-dishes-hint"><%= t('ai_chat_sessions.proposed_dishes_hint') %></p>
 
-          <%= button_to t('ai_chat_sessions.apply_button'),
-                        apply_ai_chat_session_path(@active_chat_session),
-                        method: :post,
-                        class: "update-day-btn btn-apply-menu" %>
-        </div>
+              <% @active_chat_session.proposed_dishes.each_with_index do |dish_entry, d_idx| %>
+                <% d_name = (dish_entry["name"] || dish_entry[:name]).to_s %>
+                <% d_cat = (dish_entry["category"] || dish_entry[:category]).to_s.presence || "Lunch" %>
+                <% d_ings = Array(dish_entry["ingredients"] || dish_entry[:ingredients]) %>
+                <div class="proposed-dish-card">
+                  <div class="proposed-dish-header">
+                    <label class="proposed-dish-check-label">
+                      <input type="hidden" name="dish_overrides[<%= d_idx %>][included]" value="0">
+                      <input type="checkbox" name="dish_overrides[<%= d_idx %>][included]" value="1" checked>
+                      <strong><%= d_name %></strong>
+                    </label>
+                    <span class="proposed-dish-cat-badge">
+                      <%= t("dish_categories.#{d_cat.downcase}", default: d_cat) %>
+                    </span>
+                  </div>
+                  <input type="hidden" name="dish_overrides[<%= d_idx %>][name]" value="<%= d_name %>">
+                  <input type="hidden" name="dish_overrides[<%= d_idx %>][category]" value="<%= d_cat %>">
+
+                  <div class="proposed-ing-list">
+                    <% d_ings.each_with_index do |ing_entry, i_idx| %>
+                      <% i_name = (ing_entry["name"] || ing_entry[:name]).to_s %>
+                      <% i_sec = (ing_entry["supermarket_section"] || ing_entry[:supermarket_section]).to_s.presence || "Otros" %>
+                      <% i_qty = (ing_entry["suggested_quantity"] || ing_entry[:suggested_quantity]).to_s.presence || "1 unidad" %>
+                      <div class="proposed-ing-row">
+                        <label class="proposed-ing-check-label">
+                          <input type="hidden" name="dish_overrides[<%= d_idx %>][ingredients][<%= i_idx %>][included]" value="0">
+                          <input type="checkbox" name="dish_overrides[<%= d_idx %>][ingredients][<%= i_idx %>][included]" value="1" checked>
+                          <span class="proposed-ing-name"><%= i_name %></span>
+                          <small class="proposed-ing-sec">(<%= i_sec %>)</small>
+                        </label>
+                        <input type="hidden" name="dish_overrides[<%= d_idx %>][ingredients][<%= i_idx %>][name]" value="<%= i_name %>">
+                        <input type="hidden" name="dish_overrides[<%= d_idx %>][ingredients][<%= i_idx %>][supermarket_section]" value="<%= i_sec %>">
+                        <input type="text"
+                               name="dish_overrides[<%= d_idx %>][ingredients][<%= i_idx %>][suggested_quantity]"
+                               value="<%= i_qty %>"
+                               class="proposed-qty-input"
+                               aria-label="Cantidad de <%= i_name %>">
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if has_plan %>
+            <div class="proposed-days-list">
+              <% @active_chat_session.proposed_plan.each do |entry| %>
+                <% day_key = (entry["day"] || entry[:day]).to_s %>
+                <% lunch_dish = @dishes_by_id[(entry["lunch_dish_id"] || entry[:lunch_dish_id]).to_i] %>
+                <% dinner_dish = @dishes_by_id[(entry["dinner_dish_id"] || entry[:dinner_dish_id]).to_i] %>
+                <% lunch_new = (entry["lunch_new_dish_name"] || entry[:lunch_new_dish_name]).to_s.presence %>
+                <% dinner_new = (entry["dinner_new_dish_name"] || entry[:dinner_new_dish_name]).to_s.presence %>
+                <div class="proposed-day-row">
+                  <strong class="proposed-day-name"><%= t("days_of_week.#{day_key.downcase}", default: day_key) %></strong>
+                  <div class="proposed-day-dishes">
+                    <span>
+                      ☀️ <%= lunch_dish&.name || (lunch_new ? "🆕 #{lunch_new}" : t('meal_plans.index.none')) %>
+                    </span>
+                    <span>
+                      🌙 <%= dinner_dish&.name || (dinner_new ? "🆕 #{dinner_new}" : t('meal_plans.index.none')) %>
+                    </span>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <button type="submit" class="update-day-btn btn-apply-menu">
+            <%= has_new_dishes ? t('ai_chat_sessions.apply_with_dishes_button') : t('ai_chat_sessions.apply_button') %>
+          </button>
+        <% end %>
       <% end %>
 
       <!-- Chat Form with Structured Parameters -->
@@ -237,14 +296,12 @@
 </div>
 
 <script>
-  document.addEventListener("turbo:load", function() {
-    // Auto-scroll chat thread to bottom
+  (function() {
     const chatThread = document.getElementById("copilot-chat-thread");
     if (chatThread) {
       chatThread.scrollTop = chatThread.scrollHeight;
     }
 
-    // Quick prompt buttons populate input and submit
     const messageInput = document.getElementById("copilot-message-input");
     const chatForm = document.getElementById("copilot-chat-form");
     const sendBtn = document.getElementById("copilot-send-btn");
@@ -264,7 +321,6 @@
       });
     }
 
-    // Legacy JSON export/copy handlers
     const btnExport = document.getElementById("btn-export");
     const restrictionsInput = document.getElementById("ai-restrictions");
     const exportTextarea = document.getElementById("ai-export-payload");
@@ -308,5 +364,5 @@
         }, 2000);
       });
     }
-  });
+  })();
 </script>
