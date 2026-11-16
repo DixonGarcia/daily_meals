@@ -81,6 +81,7 @@ class AiCopilotService
   # @param parameters [Hash] Planning parameters selected in the UI.
   # @return [AiChatMessage] The persisted assistant message.
   def converse!(session:, user_message:, parameters: {})
+    ensure_latest_schema_cache!
     merged_params = session.effective_parameters.merge(parameters.to_h.stringify_keys)
     cleaned_message = user_message.to_s.strip
 
@@ -129,6 +130,7 @@ class AiCopilotService
   # @param dish_overrides [Hash, ActionController::Parameters, nil] Optional user overrides for checkboxes and quantities.
   # @return [Boolean] true if applied successfully.
   def apply_session_plan!(session, dish_overrides: nil)
+    ensure_latest_schema_cache!
     return false if session.proposed_plan.blank? && session.proposed_dishes.blank?
 
     applied = false
@@ -191,6 +193,20 @@ class AiCopilotService
   end
 
   private
+
+  # Refreshes ActiveRecord column cache if a migration added proposed_dishes while the dev server was running.
+  #
+  # @return [void]
+  def ensure_latest_schema_cache!
+    unless AiChatSession.column_names.include?("proposed_dishes")
+      AiChatSession.connection.schema_cache.clear!
+      AiChatSession.reset_column_information
+    end
+    unless AiChatMessage.column_names.include?("proposed_dishes")
+      AiChatMessage.connection.schema_cache.clear!
+      AiChatMessage.reset_column_information
+    end
+  end
 
   # Lazily instantiates the GeminiClient.
   #

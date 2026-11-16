@@ -179,8 +179,8 @@ class GeminiClient
     uri = URI.parse("#{API_BASE_URL}/#{target_model}:generateContent")
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
-    http.open_timeout = 5
-    http.read_timeout = 25
+    http.open_timeout = 10
+    http.read_timeout = 45
 
     request = Net::HTTP::Post.new(uri.request_uri)
     request["Content-Type"] = "application/json"
