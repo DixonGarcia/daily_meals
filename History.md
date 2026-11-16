@@ -4,6 +4,16 @@ Development log for **DailyMeals**. Entries are newest-first. Each entry covers 
 
 ---
 
+## [FEAT-07] Consolidated Settings (`Configuración`), Meal Plan History & Integrations — 2026-11-16
+
+The top-level `🔑 API Keys` navigation link was replaced with a consolidated **`⚙️ Configuración`** entry (`/settings`) to house both weekly menu archiving and external API token integrations without exceeding four items in the mobile navigation bar on Samsung Galaxy S25+ (`412x915`). Prior to this change, weekly `MealPlan` assignments had no archival history and the rarely visited `API Keys` link lacked explanatory context.
+
+Database migration `CreateMealPlanHistories` created `meal_plan_histories` (`year`, `week_number`, `week_start_date`, `week_end_date`, `plan_snapshot` JSONB, `source`, `notes`, and a unique index on `[:year, :week_number]`). `MealPlanHistory` implements `record_current_week!` for idempotent ISO-week snapshotting (automatically triggered by `MealPlansController#update_day` and `AiCopilotService#apply_session_plan!`) and transactional `restore_to_calendar!` with ID-first and case-insensitive name-fallback resolution that safely skips deleted dishes. `SettingsController#show` (`GET /settings`) renders two tabs (`📚 Historial` by default and `🔌 Integraciones`), `MealPlanHistoriesController` handles `POST /meal_plan_histories/snapshot`, `POST /meal_plan_histories/:id/restore`, and `DELETE /meal_plan_histories/:id`, and `ApiKeysController` plus `app/views/api_keys/_manager.html.erb` preserve `/api_keys` compatibility while redirecting form submissions initiated from `/settings` back to `/settings?tab=integrations`.
+
+During closing, `_product/settings_and_history/implementation.md` and `_product/settings_and_history/mockups/` were removed while keeping `_product/settings_and_history/overview.md`. The RSpec suite closed at 117 examples, 0 failures, and Brakeman reported 0 code security warnings.
+
+---
+
 ## [FEAT-06] Copilot Flow Safeguards & Multi-Category Dishes — 2026-11-16
 
 Several usability and data-loss flaws in the Gemini AI Copilot planning flow and dish catalog were resolved. Previously, duplicate day objects in Gemini responses overwrote earlier slots, unchecking `Almuerzo` (`include_lunch`) or unchecking a proposed new dish could blank out existing calendar assignments, stale proposal previews lingered in `AiChatSession` after clicking apply, users had no structured option to generate dish recipes without touching the weekly calendar, and `Dish` records could belong to only a single category (`Lunch`, `Dinner`, or `Both`).
