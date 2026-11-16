@@ -4,6 +4,14 @@ Development log for **DailyMeals**. Entries are newest-first. Each entry covers 
 
 ---
 
+## [FIX-01] Gemini Model Aliasing, Fallback & Transactional Chat Persistence — 2026-11-15
+
+A `404 Not Found` error occurred when querying the Google Gemini REST API with `GEMINI_MODEL=gemini-3.1-flash` or legacy `gemini-2.5-flash` on newer API keys, and failed API calls left orphaned user messages in `ai_chat_messages`.
+
+`GeminiClient` was updated to set `DEFAULT_MODEL` to `gemini-3.1-flash-lite`, alias `gemini-3.1-flash` to `gemini-3.1-flash-lite`, strip optional `models/` prefixes, prioritize live `.env` values in development, force UTF-8 encoding on response bodies, and automatically retry across `FALLBACK_MODELS` (`gemini-3.1-flash-lite`, `gemini-flash-latest`, `gemini-flash-lite-latest`, `gemini-3.8-flash`, `gemini-2.5-flash`) when an endpoint returns HTTP `404`, `429`, or `503`. `AiCopilotService#converse!` was refactored so the user `AiChatMessage` and assistant `AiChatMessage` are persisted together inside a single `ActiveRecord::Base.transaction` only after `GeminiClient#generate_plan_response` succeeds. The RSpec suite closed at 93 examples, 0 failures.
+
+---
+
 ## [FEAT-04] Persistent Gemini Pseudo-Chat & Guided Menu Loader — 2026-11-15
 
 An interactive, database-persisted Gemini AI Copilot pseudo-chat was added to the DailyMeals dashboard, replacing the manual JSON copy-paste workflow as the primary meal planning assistant. The goal was to let the owner select structured planning parameters, converse naturally in Spanish with Google Gemini, visually preview the proposed weekly menu with real dish names, and load the approved plan into the weekly calendar with a single tap while keeping `GEMINI_API_KEY` isolated on the server.
