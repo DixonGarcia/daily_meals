@@ -1,32 +1,35 @@
-# Feature Overview: Hybrid AI Dish & Ingredient Creation (`FEAT-05`)
+# Feature Overview: Multi-Category Dishes & Copilot Flow Safeguards (`FEAT-06`)
 
 ## 1. Business Logic & Domain Context
-Building upon the Persistent Gemini Pseudo-Chat (`FEAT-04`), **`FEAT-05`** removes the limitation where the assistant could only schedule dishes that already existed in the catalog. In real-world meal planning, the owner frequently thinks of new dishes while planning the weekly calendar or wants to quickly add a new dish in `/dishes/new` without manually typing every ingredient and supermarket aisle. This hybrid workflow enables:
-1. **On-the-Fly Dish & Ingredient Creation in the Calendar Chat (`/`)**: When the owner asks Gemini for a dish not yet in the catalog (or asks Gemini to suggest new dishes for the week), Gemini returns both the `meal_plan` schedule and a structured `new_dishes` array containing each new dish's category and ingredients (`name`, `supermarket_section`, `suggested_quantity`). The owner can uncheck (`☑️`) unwanted ingredients or edit quantities directly in the inline preview card before saving and loading the menu in one tap.
-2. **Magic Ingredient Autocomplete & Inline New Ingredients in the Dish Form (`/dishes/new` & `/dishes/:id/edit`)**: When creating or editing a dish manually, the owner can tap **"✨ Autocompletar con IA"** next to the dish name to have Gemini populate the category and ingredient rows, and can also register brand-new ingredients inline within the dish form without leaving `/dishes/new`.
+Real-world meal planning revealed four UX and data integrity gaps in DailyMeals:
+1. Many dishes fit multiple meal times (e.g., `"Carne molida con papas"` or `"Pasta de calabacín"` work for both `Lunch` and `Dinner`). Limiting `Dish` to a single `category` forces artificial choices.
+2. When asking Gemini for a dinner-only update (`include_lunch: false, include_dinner: true`), Gemini sometimes returned separate day entries or `nil` lunch values, accidentally wiping out existing lunches when applied.
+3. After clicking **"📥 Guardar Platos Nuevos y Cargar Menú"**, the preview card remained visible and accumulated across turns.
+4. Planning parameters forced a day-scope radio (`weekdays` or `full_week`), making it impossible to use the chat solely to consult or create new dishes without modifying the weekly calendar.
 
 ## 2. Concepts & Domain Terminology
-*   **Proposed New Dish (Plato Nuevo Propuesto)**: A structured recipe (`name`, `category`, `ingredients`) proposed by Gemini inside an `AiChatSession` (`proposed_dishes` JSONB column) that does not yet exist in `dishes`.
-*   **Ingredient Override (Ajuste de Ingrediente en Vista Previa)**: User-controlled checkbox (`included`) and editable quantity input (`suggested_quantity`) submitted when applying a session's proposal so only checked ingredients with the user's preferred quantities are persisted.
-*   **Case-Insensitive Ingredient Reuse (Reutilización de Ingredientes)**: Automatic matching (`LOWER(name) = LOWER(?)`) against existing `Ingredient` records so existing ingredients are linked without duplication while truly new ingredients are created with their valid `Ingredient::SECTIONS`.
-*   **Dish Form AI Autocomplete (Autocompletado de Ingredientes con IA)**: An endpoint (`POST /dishes/suggest_ingredients`) that queries Gemini for a given dish name and populates editable ingredient rows directly inside `/dishes/new` and `/dishes/:id/edit`.
+*   **Multi-Category Dish (Plato Multicategoría)**: A `Dish` holding an array of valid meal categories (`categories`, e.g., `["Lunch", "Dinner"]`) while maintaining `category` synchronized to `categories.first` for backward compatibility.
+*   **No-Calendar Scope (`days_scope: "none"`)**: A planning mode where the user chats or creates new dishes without modifying any `MealPlan` schedule rows.
+*   **Selective Slot Preservation (Preservación Selectiva de Turnos)**: Applying a Gemini proposal merges duplicate day objects by `day` and only overwrites `lunch_dish_id` or `dinner_dish_id` when the slot is both targeted by active parameters and resolved to an existing/created dish ID.
+*   **Post-Apply Preview Reset (Limpieza Post-Guardado)**: Applying a session clears `proposed_plan` and `proposed_dishes` on `AiChatSession` so the green preview card disappears cleanly.
 
 ## 3. Core Business Rules
-*   **Live Gemini Integration Only**: The legacy local offline simulator is removed; all AI requests execute live against Google Gemini via `GeminiClient`.
-*   **Transactional Upsert**: Applying a chat session (`AiCopilotService#apply_session_plan!`) or saving a dish with inline new ingredients (`DishesController`) executes inside `ActiveRecord::Base.transaction`.
-*   **Valid Categories & Supermarket Sections**: All proposed dish categories are normalized to `Dish::CATEGORIES` (`Breakfast`, `Lunch`, `Dinner`, `Snack`, `Other`), and all ingredient sections are normalized to `Ingredient::SECTIONS` (defaulting to `'Otros'` if unrecognized).
-*   **Selective Ingredient Persistence**: Unchecked ingredients (`included != "1"`) in the preview card are excluded when creating the dish's `DishIngredient` records.
+*   A `Dish` must have at least one valid category from `Dish::CATEGORIES`.
+*   Unchecking both `Almuerzo` and `Cena` in the chat automatically switches `days_scope` to `"none"`; selecting `Lun a Vie` or `Lun a Dom` re-enables `Almuerzo` and `Cena` if both were off.
+*   In `proposed-days-list`, untouched slots display `"Se mantiene actual"` (or the current scheduled dish name) instead of `"Ninguno"`.
+*   Applying `proposed_dishes` without `proposed_plan` saves dishes/ingredients and redirects back to the chat panel (`#ai-copilot-panel`) without touching `MealPlan`.
 
 ## 4. User Stories
-*   **User Story 1**: As the application owner planning my week in `/`, I want to ask Gemini to include a dish that is not in my catalog yet, review its proposed ingredients with checkboxes and editable quantities, and save both the new dish/ingredients and the weekly schedule in one tap.
-*   **User Story 2**: As the application owner on `/dishes/new`, I want to type a dish name and tap **"✨ Autocompletar con IA"** so Gemini fills in the category and ingredient rows automatically, including any new ingredients not yet in my database.
+*   **User Story 1**: As the application owner, I want to tag a dish as both `Almuerzo` and `Cena` so Gemini and my catalog reflect dishes usable across multiple meal times.
+*   **User Story 2**: As the application owner, I want to ask Gemini to update only my dinners without risking my existing lunches, and see the preview clear automatically once saved.
+*   **User Story 3**: As the application owner, I want to select `🚫 Sin calendario` (or uncheck all meal slots) to create dishes or chat without changing the weekly calendar.
 
 ## 5. Mockup Variations Overview
-*   **Variant 1 (Híbrido Inline: Checkboxes en Vista Previa del Chat + Botón Mágico en Formulario)**:
-    *   Displays proposed new dishes and their ingredient checkboxes/quantity inputs directly inside the Calendar Chat preview card, and adds an inline **"✨ Autocompletar con IA"** bar + new-ingredient row support in `/dishes/new`.
-*   **Variant 2 (Editor en Modal Separado)**:
-    *   Opens a secondary popup modal to edit proposed dishes before returning to the chat.
+*   **Variant 1 (Píldoras Multicategoría + Alcance de 3 Opciones Sincronizado)**:
+    *   Replaces the single `<select>` with Biteclub pill checkboxes in `/dishes/new`, adds a 3rd `🚫 Sin calendario` chip in the chat, and shows `"Se mantiene actual"` for preserved slots.
+*   **Variant 2 (Selector Múltiple Nativo + Toggle Colapsable)**:
+    *   Uses a standard `<select multiple>` box and a separate checkbox to disable calendar mode.
 
 ## 6. Selected Variant
-* **Selected Layout**: **Variant 1 (Híbrido Inline: Checkboxes en Vista Previa del Chat + Botón Mágico en Formulario)**
-* **Rationale**: Allows the user to uncheck ingredients and edit quantities inline inside the Calendar Chat preview card and autocomplete ingredients directly inside `/dishes/new` without opening secondary modals.
+* **Selected Layout**: **Variant 1 (Píldoras Multicategoría + Alcance de 3 Opciones Sincronizado)**
+* **Rationale**: Touch-friendly pill toggles are dramatically faster and clearer on a 412px Samsung Galaxy S25+ screen than multi-select dropdowns.
