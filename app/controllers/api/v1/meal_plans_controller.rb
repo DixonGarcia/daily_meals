@@ -5,7 +5,7 @@ class Api::V1::MealPlansController < Api::V1::BaseController
   # @return [void]
   def index
     plans = MealPlan.includes(:lunch_dish, :dinner_dish).all
-    render json: plans.as_json(only: [:id, :day_of_week, :lunch_dish_id, :dinner_dish_id])
+    render json: plans.as_json(only: [ :id, :day_of_week, :lunch_dish_id, :dinner_dish_id ])
   end
 
   # POST /api/v1/meal_plans/import
@@ -33,9 +33,9 @@ class Api::V1::MealPlansController < Api::V1::BaseController
     end
 
     if success
-      render json: { status: 'success' }, status: :ok
+      render json: { status: "success" }, status: :ok
     else
-      render json: { error: 'Failed to import meal plan' }, status: :unprocessable_entity
+      render json: { error: "Failed to import meal plan" }, status: :unprocessable_entity
     end
   end
 end

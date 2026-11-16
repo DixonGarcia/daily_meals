@@ -7,7 +7,7 @@ class ShoppingListGenerator
   #   to arrays of consolidated ingredient details, e.g. { "Produce" => [{ ingredient: <Ingredient>, quantity: "500g" }] }
   def generate
     # Collect all dishes from active meal plans (eager-loading to prevent N+1 queries)
-    dishes = MealPlan.includes(:lunch_dish, :dinner_dish).all.flat_map { |plan| [plan.lunch_dish, plan.dinner_dish] }.compact
+    dishes = MealPlan.includes(:lunch_dish, :dinner_dish).all.flat_map { |plan| [ plan.lunch_dish, plan.dinner_dish ] }.compact
 
     # Get all dish_ingredients for those dishes
     dish_ingredients = DishIngredient.where(dish: dishes).includes(:ingredient)

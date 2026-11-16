@@ -6,14 +6,14 @@
 # @attr [Array<String>] categories Multi-select meal categories from Dish::CATEGORIES.
 class Dish < ApplicationRecord
   # Allowed meal categories for a dish.
-  CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Other'].freeze
+  CATEGORIES = [ "Breakfast", "Lunch", "Dinner", "Snack", "Other" ].freeze
 
   has_many :dish_ingredients, dependent: :destroy
   has_many :ingredients, through: :dish_ingredients
 
   accepts_nested_attributes_for :dish_ingredients, allow_destroy: true, reject_if: :all_blank
 
-  scope :for_category, ->(cat) { where("categories @> ?", [cat].to_json) }
+  scope :for_category, ->(cat) { where("categories @> ?", [ cat ].to_json) }
 
   before_validation :sync_categories_and_primary_category
 
@@ -38,7 +38,7 @@ class Dish < ApplicationRecord
     list = Array(categories).reject(&:blank?)
     return list if list.any?
 
-    category.present? ? [category] : []
+    category.present? ? [ category ] : []
   end
 
   private
@@ -50,11 +50,11 @@ class Dish < ApplicationRecord
     cleaned = Array(categories).map { |v| v.to_s.strip }.reject(&:blank?).uniq
 
     if cleaned.empty? && category.present? && !@categories_explicitly_set_empty
-      cleaned = [category.to_s.strip]
+      cleaned = [ category.to_s.strip ]
     end
 
     if attributes_changed_only_category? && category.present?
-      cleaned = [category.to_s.strip]
+      cleaned = [ category.to_s.strip ]
     end
 
     self[:categories] = cleaned

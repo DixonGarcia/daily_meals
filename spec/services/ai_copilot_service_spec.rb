@@ -207,7 +207,7 @@ RSpec.describe AiCopilotService do
 
       result = service_with_client.suggest_ingredients_for_dish('Tacos de carne')
       expect(result[:category]).to eq('Dinner')
-      expect(result[:categories]).to eq(['Dinner'])
+      expect(result[:categories]).to eq([ 'Dinner' ])
       expect(result[:ingredients].first[:ingredient_id]).to eq(existing.id)
       expect(result[:ingredients].first[:name]).to eq('Carne molida')
       expect(result[:ingredients].last[:ingredient_id]).to be_nil
@@ -231,7 +231,7 @@ RSpec.describe AiCopilotService do
         new_dishes: [
           {
             'name' => 'Hígado encebollado',
-            'categories' => ['Lunch', 'Dinner'],
+            'categories' => [ 'Lunch', 'Dinner' ],
             'ingredients' => [
               { 'name' => 'Hígado', 'supermarket_section' => 'Carnicería', 'suggested_quantity' => '250g' }
             ]
@@ -251,14 +251,14 @@ RSpec.describe AiCopilotService do
 
       chat_session.reload
       expect(chat_session.proposed_plan.size).to eq(1)
-      expect(chat_session.proposed_dishes.first['categories']).to eq(['Lunch', 'Dinner'])
+      expect(chat_session.proposed_dishes.first['categories']).to eq([ 'Lunch', 'Dinner' ])
 
       expect(service_with_client.apply_session_plan!(chat_session)).to be true
 
       monday = MealPlan.find_by!(day_of_week: 'Monday')
       expect(monday.lunch_dish).to eq(dish1)
       expect(monday.dinner_dish.name).to eq('Hígado encebollado')
-      expect(monday.dinner_dish.categories).to eq(['Lunch', 'Dinner'])
+      expect(monday.dinner_dish.categories).to eq([ 'Lunch', 'Dinner' ])
 
       chat_session.reload
       expect(chat_session.proposed_plan).to eq([])
@@ -269,7 +269,7 @@ RSpec.describe AiCopilotService do
       MealPlan.create!(day_of_week: 'Monday', lunch_dish: dish1, dinner_dish: dish2)
       chat_session = AiChatSession.create!(
         title: 'Solo platos',
-        proposed_plan: [{ 'day' => 'Monday', 'lunch_dish_id' => dish2.id }]
+        proposed_plan: [ { 'day' => 'Monday', 'lunch_dish_id' => dish2.id } ]
       )
 
       allow(gemini_client).to receive(:generate_plan_response).and_return({
@@ -277,13 +277,13 @@ RSpec.describe AiCopilotService do
         new_dishes: [
           {
             'name' => 'Pescado al vapor',
-            'categories' => ['Lunch', 'Dinner'],
+            'categories' => [ 'Lunch', 'Dinner' ],
             'ingredients' => [
               { 'name' => 'Pescado', 'supermarket_section' => 'Carnicería', 'suggested_quantity' => '300g' }
             ]
           }
         ],
-        meal_plan: [{ 'day' => 'Monday', 'lunch_dish_id' => nil, 'dinner_dish_id' => nil }]
+        meal_plan: [ { 'day' => 'Monday', 'lunch_dish_id' => nil, 'dinner_dish_id' => nil } ]
       })
 
       service_with_client.converse!(
@@ -297,7 +297,7 @@ RSpec.describe AiCopilotService do
       expect(chat_session.proposed_dishes.size).to eq(1)
 
       expect(service_with_client.apply_session_plan!(chat_session)).to be true
-      expect(Dish.find_by(name: 'Pescado al vapor').categories).to eq(['Lunch', 'Dinner'])
+      expect(Dish.find_by(name: 'Pescado al vapor').categories).to eq([ 'Lunch', 'Dinner' ])
       monday = MealPlan.find_by!(day_of_week: 'Monday')
       expect(monday.lunch_dish).to eq(dish1)
       expect(monday.dinner_dish).to eq(dish2)
@@ -307,7 +307,7 @@ RSpec.describe AiCopilotService do
     it 'records MealPlanHistory with source ai_copilot when applying a calendar plan' do
       chat_session = AiChatSession.create!(title: 'Menu semana', parameters: AiChatSession::DEFAULT_PARAMETERS)
       chat_session.update!(
-        proposed_plan: [{ 'day' => 'Monday', 'lunch_dish_id' => dish1.id, 'dinner_dish_id' => dish2.id }],
+        proposed_plan: [ { 'day' => 'Monday', 'lunch_dish_id' => dish1.id, 'dinner_dish_id' => dish2.id } ],
         proposed_dishes: []
       )
 

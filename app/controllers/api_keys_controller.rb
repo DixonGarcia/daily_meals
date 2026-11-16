@@ -1,6 +1,6 @@
 # Handles requests for managing API keys in the settings page.
 class ApiKeysController < ApplicationController
-  before_action :set_api_key, only: [:update, :destroy]
+  before_action :set_api_key, only: [ :update, :destroy ]
 
   # GET /api_keys
   # Lists all API keys.
@@ -19,7 +19,7 @@ class ApiKeysController < ApplicationController
     if @api_key.save
       # Store the plain token temporarily in the flash session so the user can copy it once
       flash[:plain_token] = @api_key.token
-      redirect_to post_action_redirect_path, notice: t('api_keys.controller.created')
+      redirect_to post_action_redirect_path, notice: t("api_keys.controller.created")
     else
       @api_keys = ApiKey.all.order(created_at: :desc)
       render_validation_error
@@ -31,7 +31,7 @@ class ApiKeysController < ApplicationController
   # @return [void]
   def update
     if @api_key.update(api_key_params)
-      redirect_to post_action_redirect_path, notice: t('api_keys.controller.updated', default: "Estado actualizado.")
+      redirect_to post_action_redirect_path, notice: t("api_keys.controller.updated", default: "Estado actualizado.")
     else
       @api_keys = ApiKey.all.order(created_at: :desc)
       render_validation_error
@@ -43,7 +43,7 @@ class ApiKeysController < ApplicationController
   # @return [void]
   def destroy
     @api_key.destroy!
-    redirect_to post_action_redirect_path, notice: t('api_keys.controller.revoked')
+    redirect_to post_action_redirect_path, notice: t("api_keys.controller.revoked")
   end
 
   private
@@ -76,6 +76,6 @@ class ApiKeysController < ApplicationController
   # Permitted parameters for API keys.
   # @return [ActionController::Parameters]
   def api_key_params
-    params.expect(api_key: [:name, :active])
+    params.expect(api_key: [ :name, :active ])
   end
 end

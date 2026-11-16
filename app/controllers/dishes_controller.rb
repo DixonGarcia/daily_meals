@@ -1,8 +1,8 @@
 # Handles request routing and parameters for the Dish model.
 # Supports CRUD operations, inline ingredient creation, and AI ingredient suggestions.
 class DishesController < ApplicationController
-  before_action :set_dish, only: [:show, :edit, :update, :destroy]
-  before_action :set_ingredients, only: [:new, :edit, :create, :update]
+  before_action :set_dish, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_ingredients, only: [ :new, :edit, :create, :update ]
 
   rate_limit to: 15, within: 5.minutes, only: :suggest_ingredients, with: -> {
     render json: { error: t("ai_chat_messages.controller.rate_limited") }, status: :too_many_requests
@@ -41,7 +41,7 @@ class DishesController < ApplicationController
   def create
     @dish = Dish.new
     if save_dish_with_inline_ingredients!(@dish)
-      redirect_to dishes_path, notice: t('dishes.controller.created')
+      redirect_to dishes_path, notice: t("dishes.controller.created")
     else
       set_ingredients
       render :new, status: :unprocessable_entity
@@ -53,7 +53,7 @@ class DishesController < ApplicationController
   # @return [void]
   def update
     if save_dish_with_inline_ingredients!(@dish)
-      redirect_to dishes_path, notice: t('dishes.controller.updated')
+      redirect_to dishes_path, notice: t("dishes.controller.updated")
     else
       set_ingredients
       render :edit, status: :unprocessable_entity
@@ -65,7 +65,7 @@ class DishesController < ApplicationController
   # @return [void]
   def destroy
     @dish.destroy!
-    redirect_to dishes_path, notice: t('dishes.controller.deleted')
+    redirect_to dishes_path, notice: t("dishes.controller.deleted")
   end
 
   # POST /dishes/suggest_ingredients
@@ -74,18 +74,18 @@ class DishesController < ApplicationController
   def suggest_ingredients
     dish_name = params.expect(:dish_name).to_s.strip
     if dish_name.blank?
-      render json: { error: t('dishes.form.ai_blank_name') }, status: :unprocessable_content
+      render json: { error: t("dishes.form.ai_blank_name") }, status: :unprocessable_content
       return
     end
 
     suggestion = AiCopilotService.new.suggest_ingredients_for_dish(dish_name)
     render json: suggestion, status: :ok
   rescue ActionController::ParameterMissing
-    render json: { error: t('dishes.form.ai_blank_name') }, status: :unprocessable_content
+    render json: { error: t("dishes.form.ai_blank_name") }, status: :unprocessable_content
   rescue GeminiClient::ConfigurationError
-    render json: { error: t('ai_chat_messages.controller.missing_api_key') }, status: :unprocessable_content
+    render json: { error: t("ai_chat_messages.controller.missing_api_key") }, status: :unprocessable_content
   rescue GeminiClient::ApiError
-    render json: { error: t('ai_chat_messages.controller.api_error') }, status: :bad_gateway
+    render json: { error: t("ai_chat_messages.controller.api_error") }, status: :bad_gateway
   end
 
   private

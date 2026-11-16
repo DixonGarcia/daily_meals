@@ -113,7 +113,7 @@ RSpec.describe "AiChatSessions & Gemini Pseudo-Chat", type: :request do
         proposed_dishes: [
           {
             "name" => "Sopa de lentejas",
-            "categories" => ["Lunch", "Dinner"],
+            "categories" => [ "Lunch", "Dinner" ],
             "ingredients" => [
               { "name" => "Lentejas", "supermarket_section" => "Víveres", "suggested_quantity" => "300g" }
             ]
@@ -127,7 +127,7 @@ RSpec.describe "AiChatSessions & Gemini Pseudo-Chat", type: :request do
           "0" => {
             included: "1",
             name: "Sopa de lentejas",
-            categories: ["Lunch", "Dinner"],
+            categories: [ "Lunch", "Dinner" ],
             ingredients: {
               "0" => { included: "1", name: "Lentejas", supermarket_section: "Víveres", suggested_quantity: "300g" }
             }
@@ -136,7 +136,7 @@ RSpec.describe "AiChatSessions & Gemini Pseudo-Chat", type: :request do
       }
 
       expect(response).to redirect_to(root_path(anchor: "ai-copilot-panel"))
-      expect(Dish.find_by!(name: "Sopa de lentejas").categories).to eq(["Lunch", "Dinner"])
+      expect(Dish.find_by!(name: "Sopa de lentejas").categories).to eq([ "Lunch", "Dinner" ])
       dish_only_session.reload
       expect(dish_only_session.proposed_dishes).to eq([])
       expect(dish_only_session.proposed_plan).to eq([])

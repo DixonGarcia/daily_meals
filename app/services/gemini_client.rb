@@ -144,11 +144,11 @@ class GeminiClient
       #{existing_ingredients.to_json}
     PROMPT
 
-    messages = [{ role: "user", content: "Sugiere las categorías e ingredientes para el plato: #{dish_name}" }]
+    messages = [ { role: "user", content: "Sugiere las categorías e ingredientes para el plato: #{dish_name}" } ]
     payload_json = build_request_body(system_instruction, messages, DISH_SUGGESTION_SCHEMA).to_json
     parsed = execute_structured_request(payload_json)
 
-    cats = Array(parsed["categories"]).presence || [parsed["category"]].compact
+    cats = Array(parsed["categories"]).presence || [ parsed["category"] ].compact
     {
       categories: cats.map(&:to_s),
       category: cats.first.to_s,
@@ -165,7 +165,7 @@ class GeminiClient
   def execute_structured_request(payload_json)
     raise ConfigurationError, "GEMINI_API_KEY is missing" if @api_key.blank?
 
-    candidate_models = ([@model] + FALLBACK_MODELS).uniq
+    candidate_models = ([ @model ] + FALLBACK_MODELS).uniq
 
     response = nil
     candidate_models.each do |candidate|
@@ -213,13 +213,13 @@ class GeminiClient
       role = msg[:role].to_s == "assistant" ? "model" : "user"
       {
         role: role,
-        parts: [{ text: msg[:content].to_s }]
+        parts: [ { text: msg[:content].to_s } ]
       }
     end
 
     {
       systemInstruction: {
-        parts: [{ text: system_instruction }]
+        parts: [ { text: system_instruction } ]
       },
       contents: contents,
       generationConfig: {

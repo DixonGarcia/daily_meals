@@ -30,9 +30,9 @@ RSpec.describe ApiKey, type: :model do
       # Note: We expect the class to have an accessor `token` or a way to access the generated plain token
       key = ApiKey.new(name: 'Assitant Key')
       expect(key.token_digest).to be_blank
-      
+
       key.save!
-      
+
       expect(key.token).to be_present
       expect(key.token).to start_with('dmeal_live_')
       expect(key.token_digest).to eq(Digest::SHA256.hexdigest(key.token))

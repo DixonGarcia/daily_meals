@@ -40,9 +40,9 @@ class MealPlansController < ApplicationController
 
     if plan.save
       MealPlanHistory.record_current_week!(target_date: Date.current, source: "manual")
-      redirect_to root_path, notice: t('meal_plans.controller.updated', day: day_translated)
+      redirect_to root_path, notice: t("meal_plans.controller.updated", day: day_translated)
     else
-      redirect_to root_path, alert: t('meal_plans.controller.error_update', day: day_translated, errors: plan.errors.full_messages.join(', '))
+      redirect_to root_path, alert: t("meal_plans.controller.error_update", day: day_translated, errors: plan.errors.full_messages.join(", "))
     end
   end
 
@@ -63,7 +63,7 @@ class MealPlansController < ApplicationController
       title: "#{t('ai_chat_sessions.default_title')} (#{Time.current.strftime('%d/%m')})",
       parameters: AiChatSession::DEFAULT_PARAMETERS
     )
-    @chat_sessions = [created]
+    @chat_sessions = [ created ]
     session[:active_ai_chat_session_id] = created.id
     created
   end

@@ -33,13 +33,13 @@ RSpec.describe "Dishes", type: :request do
         post dishes_path, params: {
           dish: {
             name: 'Pabellón criollo',
-            categories: ['', 'Lunch', 'Dinner']
+            categories: [ '', 'Lunch', 'Dinner' ]
           }
         }
       }.to change(Dish, :count).by(1)
 
       created = Dish.find_by!(name: 'Pabellón criollo')
-      expect(created.categories).to eq(['Lunch', 'Dinner'])
+      expect(created.categories).to eq([ 'Lunch', 'Dinner' ])
       expect(created.category).to eq('Lunch')
     end
 

@@ -15,9 +15,9 @@ class AiCopilotsController < ApplicationController
   def import
     payload = params.expect(:payload)
     if AiCopilotService.new.import_plan(payload)
-      redirect_to root_path, notice: t('ai_copilots.controller.imported')
+      redirect_to root_path, notice: t("ai_copilots.controller.imported")
     else
-      redirect_to root_path, alert: t('ai_copilots.controller.error_import')
+      redirect_to root_path, alert: t("ai_copilots.controller.error_import")
     end
   end
 end

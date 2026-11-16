@@ -40,10 +40,10 @@ RSpec.describe "ApiKeys UI Management", type: :request do
 
     it "toggles the active status of the key" do
       expect(api_key.active).to be true
-      
+
       patch api_key_path(api_key), params: { api_key: { active: false } }
       expect(response).to redirect_to(api_keys_path)
-      
+
       api_key.reload
       expect(api_key.active).to be false
     end

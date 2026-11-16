@@ -11,7 +11,7 @@ Rails.application.routes.draw do
 
   root "meal_plans#index"
 
-  resource :session, only: [:new, :create, :destroy]
+  resource :session, only: [ :new, :create, :destroy ]
 
   resources :dishes do
     collection do
@@ -20,28 +20,28 @@ Rails.application.routes.draw do
   end
   resources :ingredients
 
-  resources :meal_plans, only: [:index] do
+  resources :meal_plans, only: [ :index ] do
     collection do
       patch :update_day
     end
   end
 
-  resources :ai_chat_sessions, only: [:create, :destroy] do
+  resources :ai_chat_sessions, only: [ :create, :destroy ] do
     member do
       patch :switch
       post :apply
     end
-    resources :ai_chat_messages, only: [:create]
+    resources :ai_chat_messages, only: [ :create ]
   end
 
-  resource :ai_copilot, only: [], controller: 'ai_copilots' do
+  resource :ai_copilot, only: [], controller: "ai_copilots" do
     get :export
     post :import
   end
 
-  resources :api_keys, only: [:index, :create, :destroy, :update]
+  resources :api_keys, only: [ :index, :create, :destroy, :update ]
   get "settings", to: "settings#show"
-  resources :meal_plan_histories, only: [:destroy] do
+  resources :meal_plan_histories, only: [ :destroy ] do
     collection do
       post :snapshot
     end
@@ -52,12 +52,12 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
-      resources :dishes, only: [:index] do
+      resources :dishes, only: [ :index ] do
         collection do
           post :import
         end
       end
-      resources :meal_plans, only: [:index] do
+      resources :meal_plans, only: [ :index ] do
         collection do
           post :import
         end

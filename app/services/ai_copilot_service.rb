@@ -541,7 +541,7 @@ class AiCopilotService
       CATEGORY_MAP[key.downcase]
     end.uniq
 
-    normalized.presence || ["Lunch"]
+    normalized.presence || [ "Lunch" ]
   end
 
   # Normalizes a raw supermarket section string to one of Ingredient::SECTIONS.

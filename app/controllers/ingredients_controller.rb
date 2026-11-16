@@ -1,7 +1,7 @@
 # Handles request routing and parameters for the Ingredient model.
 # Supports CRUD operations for managing ingredients in the system.
 class IngredientsController < ApplicationController
-  before_action :set_ingredient, only: [:show, :edit, :update, :destroy]
+  before_action :set_ingredient, only: [ :show, :edit, :update, :destroy ]
 
   # GET /ingredients
   # Lists all ingredients ordered by name.
@@ -35,7 +35,7 @@ class IngredientsController < ApplicationController
   def create
     @ingredient = Ingredient.new(ingredient_params)
     if @ingredient.save
-      redirect_to ingredients_path, notice: t('ingredients.controller.created')
+      redirect_to ingredients_path, notice: t("ingredients.controller.created")
     else
       render :new, status: :unprocessable_entity
     end
@@ -46,7 +46,7 @@ class IngredientsController < ApplicationController
   # @return [void]
   def update
     if @ingredient.update(ingredient_params)
-      redirect_to ingredients_path, notice: t('ingredients.controller.updated')
+      redirect_to ingredients_path, notice: t("ingredients.controller.updated")
     else
       render :edit, status: :unprocessable_entity
     end
@@ -57,7 +57,7 @@ class IngredientsController < ApplicationController
   # @return [void]
   def destroy
     @ingredient.destroy!
-    redirect_to ingredients_path, notice: t('ingredients.controller.deleted')
+    redirect_to ingredients_path, notice: t("ingredients.controller.deleted")
   end
 
   private
@@ -72,6 +72,6 @@ class IngredientsController < ApplicationController
   # Permit and validate strong parameters for Ingredient.
   # @return [ActionController::Parameters]
   def ingredient_params
-    params.expect(ingredient: [:name, :supermarket_section])
+    params.expect(ingredient: [ :name, :supermarket_section ])
   end
 end

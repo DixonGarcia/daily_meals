@@ -5,7 +5,7 @@ RSpec.describe GeminiClient do
     it "raises ConfigurationError when GEMINI_API_KEY is blank" do
       client = described_class.new(api_key: "")
       expect {
-        client.generate_plan_response(system_instruction: "System", messages: [{ role: "user", content: "Hola" }])
+        client.generate_plan_response(system_instruction: "System", messages: [ { role: "user", content: "Hola" } ])
       }.to raise_error(GeminiClient::ConfigurationError)
     end
 
@@ -42,11 +42,11 @@ RSpec.describe GeminiClient do
       client = described_class.new(api_key: "test-gemini-key", model: "gemini-2.5-flash")
       result = client.generate_plan_response(
         system_instruction: "Eres un asistente culinario.",
-        messages: [{ role: "user", content: "Planifica lunes" }]
+        messages: [ { role: "user", content: "Planifica lunes" } ]
       )
 
       expect(result[:reply]).to eq("Aquí tienes tu menú de lunes a viernes.")
-      expect(result[:meal_plan]).to eq([{ "day" => "Monday", "lunch_dish_id" => 1, "dinner_dish_id" => 2 }])
+      expect(result[:meal_plan]).to eq([ { "day" => "Monday", "lunch_dish_id" => 1, "dinner_dish_id" => 2 } ])
     end
 
     it "raises ApiError when the HTTP response is unsuccessful" do
@@ -62,7 +62,7 @@ RSpec.describe GeminiClient do
 
       client = described_class.new(api_key: "test-gemini-key")
       expect {
-        client.generate_plan_response(system_instruction: "Sys", messages: [{ role: "user", content: "Hola" }])
+        client.generate_plan_response(system_instruction: "Sys", messages: [ { role: "user", content: "Hola" } ])
       }.to raise_error(GeminiClient::ApiError)
     end
 
@@ -97,7 +97,7 @@ RSpec.describe GeminiClient do
       allow(http_double).to receive(:request).and_return(not_found_response, ok_response)
 
       client = described_class.new(api_key: "test-gemini-key", model: "gemini-legacy-404-model")
-      result = client.generate_plan_response(system_instruction: "Sys", messages: [{ role: "user", content: "Hola" }])
+      result = client.generate_plan_response(system_instruction: "Sys", messages: [ { role: "user", content: "Hola" } ])
 
       expect(result[:reply]).to eq("Respuesta usando modelo de respaldo.")
     end

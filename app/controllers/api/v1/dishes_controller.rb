@@ -5,7 +5,7 @@ class Api::V1::DishesController < Api::V1::BaseController
   # @return [void]
   def index
     dishes = Dish.includes(:ingredients).order(:name)
-    render json: dishes.as_json(include: { ingredients: { only: [:id, :name, :supermarket_section] } })
+    render json: dishes.as_json(include: { ingredients: { only: [ :id, :name, :supermarket_section ] } })
   end
 
   # POST /api/v1/dishes/import
@@ -52,9 +52,9 @@ class Api::V1::DishesController < Api::V1::BaseController
     end
 
     if success
-      render json: { status: 'success' }, status: :ok
+      render json: { status: "success" }, status: :ok
     else
-      render json: { error: 'Failed to import dishes catalog' }, status: :unprocessable_entity
+      render json: { error: "Failed to import dishes catalog" }, status: :unprocessable_entity
     end
   end
 end

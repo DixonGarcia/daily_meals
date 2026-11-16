@@ -7,7 +7,7 @@ RSpec.describe "AiCopilots", type: :request do
     it "exports the catalog with restrictions" do
       get export_ai_copilot_path, params: { restrictions: 'Avoid meat' }
       expect(response).to have_http_status(:success)
-      
+
       json = JSON.parse(response.body)
       expect(json['dish_catalog']).to be_present
       expect(json['restrictions']).to eq('Avoid meat')

@@ -5,7 +5,7 @@
 # @attr [String] supermarket_section The supermarket aisle/section where this ingredient is found.
 class Ingredient < ApplicationRecord
   # Allowed supermarket sections for sorting shopping lists.
-  SECTIONS = ['Carnicería', 'Verdulería', 'Víveres', 'Despensa', 'Lácteos', 'Panadería', 'Congelados', 'Bebidas', 'Limpieza', 'Otros'].freeze
+  SECTIONS = [ "Carnicería", "Verdulería", "Víveres", "Despensa", "Lácteos", "Panadería", "Congelados", "Bebidas", "Limpieza", "Otros" ].freeze
 
   has_many :dish_ingredients, dependent: :destroy
   has_many :dishes, through: :dish_ingredients
