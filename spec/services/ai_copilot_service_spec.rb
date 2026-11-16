@@ -92,6 +92,37 @@ RSpec.describe AiCopilotService do
 
       expect(chat_session.ai_chat_messages.count).to eq(0)
     end
+
+    it 'sanitizes and persists proposed new_dishes alongside meal_plan' do
+      allow(gemini_client).to receive(:generate_plan_response).and_return({
+        reply: 'Te propongo Pollo al curry para el miércoles.',
+        new_dishes: [
+          {
+            'name' => 'Pollo al curry',
+            'category' => 'Lunch',
+            'ingredients' => [
+              { 'name' => 'Pechuga de pollo', 'supermarket_section' => 'Carnicería', 'suggested_quantity' => '500g' },
+              { 'name' => 'Leche de coco', 'supermarket_section' => 'Sección inventada', 'suggested_quantity' => '1 lata' }
+            ]
+          }
+        ],
+        meal_plan: [
+          { 'day' => 'Wednesday', 'lunch_dish_id' => nil, 'lunch_new_dish_name' => 'Pollo al curry', 'dinner_dish_id' => dish2.id }
+        ]
+      })
+
+      service_with_client.converse!(
+        session: chat_session,
+        user_message: 'Pon Pollo al curry el miércoles',
+        parameters: {}
+      )
+
+      chat_session.reload
+      expect(chat_session.proposed_dishes.size).to eq(1)
+      expect(chat_session.proposed_dishes.first['name']).to eq('Pollo al curry')
+      expect(chat_session.proposed_dishes.first['ingredients'].last['supermarket_section']).to eq('Otros')
+      expect(chat_session.proposed_plan.first['lunch_new_dish_name']).to eq('Pollo al curry')
+    end
   end
 
   describe '#apply_session_plan!' do
@@ -109,6 +140,77 @@ RSpec.describe AiCopilotService do
       wednesday = MealPlan.find_by(day_of_week: 'Wednesday')
       expect(wednesday.lunch_dish).to eq(dish1)
       expect(wednesday.dinner_dish).to eq(dish2)
+    end
+
+    it 'creates new dishes and checked ingredients with overridden quantities and links them to MealPlan' do
+      existing_ing = Ingredient.create!(name: 'Pechuga de pollo', supermarket_section: 'Carnicería')
+
+      chat_session = AiChatSession.create!(
+        title: 'Plan con Platos Nuevos',
+        proposed_dishes: [
+          {
+            'name' => 'Pollo al curry',
+            'category' => 'Lunch',
+            'ingredients' => [
+              { 'name' => 'pechuga de pollo', 'supermarket_section' => 'Carnicería', 'suggested_quantity' => '500g' },
+              { 'name' => 'Leche de coco', 'supermarket_section' => 'Víveres', 'suggested_quantity' => '1 lata' },
+              { 'name' => 'Cilantro', 'supermarket_section' => 'Verdulería', 'suggested_quantity' => '1 manojo' }
+            ]
+          }
+        ],
+        proposed_plan: [
+          { 'day' => 'Thursday', 'lunch_dish_id' => nil, 'lunch_new_dish_name' => 'Pollo al curry', 'dinner_dish_id' => dish2.id }
+        ]
+      )
+
+      overrides = {
+        '0' => {
+          'included' => '1',
+          'name' => 'Pollo al curry',
+          'category' => 'Lunch',
+          'ingredients' => {
+            '0' => { 'included' => '1', 'name' => 'pechuga de pollo', 'supermarket_section' => 'Carnicería', 'suggested_quantity' => '750g' },
+            '1' => { 'included' => '1', 'name' => 'Leche de coco', 'supermarket_section' => 'Víveres', 'suggested_quantity' => '2 latas' },
+            '2' => { 'included' => '0', 'name' => 'Cilantro', 'supermarket_section' => 'Verdulería', 'suggested_quantity' => '1 manojo' }
+          }
+        }
+      }
+
+      expect {
+        expect(service.apply_session_plan!(chat_session, dish_overrides: overrides)).to be true
+      }.to change(Dish, :count).by(1).and change(Ingredient, :count).by(1)
+
+      new_dish = Dish.find_by!(name: 'Pollo al curry')
+      expect(new_dish.ingredients).to contain_exactly(existing_ing, Ingredient.find_by!(name: 'Leche de coco'))
+      expect(new_dish.dish_ingredients.find_by(ingredient: existing_ing).suggested_quantity).to eq('750g')
+      expect(Ingredient.find_by(name: 'Cilantro')).to be_nil
+
+      thursday = MealPlan.find_by(day_of_week: 'Thursday')
+      expect(thursday.lunch_dish).to eq(new_dish)
+      expect(thursday.dinner_dish).to eq(dish2)
+    end
+  end
+
+  describe '#suggest_ingredients_for_dish' do
+    let(:gemini_client) { instance_double(GeminiClient) }
+    let(:service_with_client) { described_class.new(gemini_client: gemini_client) }
+
+    it 'returns normalized category and ingredients with existing ingredient IDs matched' do
+      existing = Ingredient.create!(name: 'Carne molida', supermarket_section: 'Carnicería')
+      allow(gemini_client).to receive(:suggest_dish_ingredients).and_return({
+        category: 'Dinner',
+        ingredients: [
+          { 'name' => 'carne molida', 'supermarket_section' => 'Carnicería', 'suggested_quantity' => '400g' },
+          { 'name' => 'Tortillas de maíz', 'supermarket_section' => 'Panadería', 'suggested_quantity' => '1 paquete' }
+        ]
+      })
+
+      result = service_with_client.suggest_ingredients_for_dish('Tacos de carne')
+      expect(result[:category]).to eq('Dinner')
+      expect(result[:ingredients].first[:ingredient_id]).to eq(existing.id)
+      expect(result[:ingredients].first[:name]).to eq('Carne molida')
+      expect(result[:ingredients].last[:ingredient_id]).to be_nil
+      expect(result[:ingredients].last[:name]).to eq('Tortillas de maíz')
     end
   end
 end

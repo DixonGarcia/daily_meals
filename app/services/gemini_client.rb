@@ -23,28 +23,68 @@ class GeminiClient
     "gemini-3.1-flash" => "gemini-3.1-flash-lite"
   }.freeze
 
+  INGREDIENT_ITEM_SCHEMA = {
+    type: "OBJECT",
+    properties: {
+      name: { type: "STRING" },
+      supermarket_section: { type: "STRING" },
+      suggested_quantity: { type: "STRING" }
+    },
+    required: %w[name supermarket_section suggested_quantity]
+  }.freeze
+
   RESPONSE_SCHEMA = {
     type: "OBJECT",
     properties: {
       reply: {
         type: "STRING",
-        description: "Conversational response in Spanish explaining the menu proposal or answering the user."
+        description: "Conversational response in Spanish explaining the menu proposal, new dishes, or answering the user."
+      },
+      new_dishes: {
+        type: "ARRAY",
+        description: "New dishes with their ingredients to be created in the catalog if they do not exist yet.",
+        items: {
+          type: "OBJECT",
+          properties: {
+            name: { type: "STRING" },
+            category: { type: "STRING" },
+            ingredients: {
+              type: "ARRAY",
+              items: INGREDIENT_ITEM_SCHEMA
+            }
+          },
+          required: %w[name category ingredients]
+        }
       },
       meal_plan: {
         type: "ARRAY",
-        description: "Proposed weekly schedule using dish IDs from the catalog.",
+        description: "Proposed weekly schedule using existing dish IDs or new dish names.",
         items: {
           type: "OBJECT",
           properties: {
             day: { type: "STRING" },
             lunch_dish_id: { type: "INTEGER", nullable: true },
-            dinner_dish_id: { type: "INTEGER", nullable: true }
+            dinner_dish_id: { type: "INTEGER", nullable: true },
+            lunch_new_dish_name: { type: "STRING", nullable: true },
+            dinner_new_dish_name: { type: "STRING", nullable: true }
           },
           required: %w[day]
         }
       }
     },
-    required: %w[reply meal_plan]
+    required: %w[reply new_dishes meal_plan]
+  }.freeze
+
+  DISH_SUGGESTION_SCHEMA = {
+    type: "OBJECT",
+    properties: {
+      category: { type: "STRING" },
+      ingredients: {
+        type: "ARRAY",
+        items: INGREDIENT_ITEM_SCHEMA
+      }
+    },
+    required: %w[category ingredients]
   }.freeze
 
   # Initializes the GeminiClient with server-side credentials.
@@ -63,13 +103,56 @@ class GeminiClient
   #
   # @param system_instruction [String] System prompt containing dish catalog and planning parameters.
   # @param messages [Array<Hash>] Array of message hashes with :role ("user" or "assistant") and :content.
-  # @return [Hash] Parsed hash with :reply (String) and :meal_plan (Array<Hash>).
+  # @return [Hash] Parsed hash with :reply (String), :new_dishes (Array<Hash>), and :meal_plan (Array<Hash>).
   # @raise [ConfigurationError] if GEMINI_API_KEY is not configured.
   # @raise [ApiError] if the HTTP request fails or returns malformed output.
   def generate_plan_response(system_instruction:, messages:)
+    payload_json = build_request_body(system_instruction, messages, RESPONSE_SCHEMA).to_json
+    parsed = execute_structured_request(payload_json)
+
+    {
+      reply: parsed["reply"].to_s,
+      new_dishes: Array(parsed["new_dishes"]),
+      meal_plan: Array(parsed["meal_plan"])
+    }
+  end
+
+  # Requests an AI-generated category and ingredient list for a given dish name.
+  #
+  # @param dish_name [String] The Spanish name of the dish.
+  # @param existing_ingredients [Array<Hash>] Existing ingredients with :name and :supermarket_section.
+  # @return [Hash] Hash with :category (String) and :ingredients (Array<Hash>).
+  def suggest_dish_ingredients(dish_name:, existing_ingredients:)
+    system_instruction = <<~PROMPT
+      You are the DailyMeals Culinary Assistant. Given a dish name in Spanish, suggest its meal category and a practical list of supermarket ingredients with quantities for 2 to 4 servings.
+      - Allowed `category` values: #{Dish::CATEGORIES.join(', ')}.
+      - Allowed `supermarket_section` values: #{Ingredient::SECTIONS.join(', ')}.
+      - Whenever an ingredient matches one in EXISTING_INGREDIENTS below, reuse its exact `name` and `supermarket_section`.
+      - All ingredient names and quantities must be in Spanish (e.g., "500g", "1 lata", "2 unidades").
+
+      EXISTING_INGREDIENTS:
+      #{existing_ingredients.to_json}
+    PROMPT
+
+    messages = [{ role: "user", content: "Sugiere la categoría e ingredientes para el plato: #{dish_name}" }]
+    payload_json = build_request_body(system_instruction, messages, DISH_SUGGESTION_SCHEMA).to_json
+    parsed = execute_structured_request(payload_json)
+
+    {
+      category: parsed["category"].to_s,
+      ingredients: Array(parsed["ingredients"])
+    }
+  end
+
+  private
+
+  # Executes a structured generation request with model fallback and returns the parsed JSON Hash.
+  #
+  # @param payload_json [String]
+  # @return [Hash]
+  def execute_structured_request(payload_json)
     raise ConfigurationError, "GEMINI_API_KEY is missing" if @api_key.blank?
 
-    payload_json = build_request_body(system_instruction, messages).to_json
     candidate_models = ([@model] + FALLBACK_MODELS).uniq
 
     response = nil
@@ -82,12 +165,10 @@ class GeminiClient
       raise ApiError, "Gemini API returned HTTP #{response.code}"
     end
 
-    parse_response_body(response.body)
+    parse_json_candidate(response.body)
   rescue JSON::ParserError, SocketError, Timeout::Error, Errno::ECONNREFUSED => e
     raise ApiError, e.message
   end
-
-  private
 
   # Executes the HTTPS POST request against the given Gemini model endpoint.
   #
@@ -109,12 +190,13 @@ class GeminiClient
     http.request(request)
   end
 
-  # Builds the Gemini generateContent request payload with structured output schema.
+  # Builds the Gemini generateContent request payload with the specified structured output schema.
   #
   # @param system_instruction [String]
   # @param messages [Array<Hash>]
+  # @param schema [Hash]
   # @return [Hash]
-  def build_request_body(system_instruction, messages)
+  def build_request_body(system_instruction, messages, schema = RESPONSE_SCHEMA)
     contents = messages.map do |msg|
       role = msg[:role].to_s == "assistant" ? "model" : "user"
       {
@@ -131,7 +213,7 @@ class GeminiClient
       generationConfig: {
         temperature: 0.4,
         responseMimeType: "application/json",
-        responseSchema: RESPONSE_SCHEMA
+        responseSchema: schema
       }
     }
   end
@@ -140,17 +222,13 @@ class GeminiClient
   #
   # @param raw_body [String]
   # @return [Hash]
-  def parse_response_body(raw_body)
+  def parse_json_candidate(raw_body)
     utf8_body = raw_body.to_s.dup.force_encoding(Encoding::UTF_8)
     outer = JSON.parse(utf8_body)
     text_payload = outer.dig("candidates", 0, "content", "parts", 0, "text")
     raise ApiError, "Empty response candidate from Gemini" if text_payload.blank?
 
-    parsed = JSON.parse(text_payload.to_s.dup.force_encoding(Encoding::UTF_8))
-    {
-      reply: parsed["reply"].to_s,
-      meal_plan: Array(parsed["meal_plan"])
-    }
+    JSON.parse(text_payload.to_s.dup.force_encoding(Encoding::UTF_8))
   end
 
   # Reads an environment variable with a development hot-read priority from .env.

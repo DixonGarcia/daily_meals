@@ -102,4 +102,45 @@ RSpec.describe GeminiClient do
       expect(result[:reply]).to eq("Respuesta usando modelo de respaldo.")
     end
   end
+
+  describe "#suggest_dish_ingredients" do
+    it "parses suggested category and ingredients from Gemini" do
+      fake_body = {
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: {
+                    category: "Lunch",
+                    ingredients: [
+                      { name: "Pechuga de pollo", supermarket_section: "Carnicería", suggested_quantity: "500g" },
+                      { name: "Curry en polvo", supermarket_section: "Despensa", suggested_quantity: "2 cdas" }
+                    ]
+                  }.to_json
+                }
+              ]
+            }
+          }
+        ]
+      }.to_json
+
+      fake_response = instance_double(Net::HTTPOK, body: fake_body, code: "200")
+      allow(fake_response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+
+      http_double = instance_double(Net::HTTP)
+      allow(Net::HTTP).to receive(:new).and_return(http_double)
+      allow(http_double).to receive(:use_ssl=)
+      allow(http_double).to receive(:open_timeout=)
+      allow(http_double).to receive(:read_timeout=)
+      allow(http_double).to receive(:request).and_return(fake_response)
+
+      client = described_class.new(api_key: "test-gemini-key")
+      result = client.suggest_dish_ingredients(dish_name: "Pollo al curry", existing_ingredients: [])
+
+      expect(result[:category]).to eq("Lunch")
+      expect(result[:ingredients].size).to eq(2)
+      expect(result[:ingredients].first["name"]).to eq("Pechuga de pollo")
+    end
+  end
 end

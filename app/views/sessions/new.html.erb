@@ -33,7 +33,7 @@
 </div>
 
 <script>
-  document.addEventListener("turbo:load", function() {
+  (function() {
     const toggleBtn = document.getElementById("toggle-password-visibility");
     const passwordInput = document.getElementById("password");
 
@@ -44,5 +44,5 @@
         toggleBtn.textContent = isPassword ? "🙈" : "👁️";
       });
     }
-  });
+  })();
 </script>
