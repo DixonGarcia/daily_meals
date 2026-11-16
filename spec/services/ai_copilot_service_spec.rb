@@ -78,6 +78,20 @@ RSpec.describe AiCopilotService do
         { 'day' => 'Tuesday', 'lunch_dish_id' => dish2.id, 'dinner_dish_id' => dish1.id }
       ])
     end
+
+    it 'does not persist an orphaned user message when GeminiClient raises ApiError' do
+      allow(gemini_client).to receive(:generate_plan_response).and_raise(GeminiClient::ApiError.new('HTTP 500'))
+
+      expect {
+        service_with_client.converse!(
+          session: chat_session,
+          user_message: 'Mensaje fallido',
+          parameters: {}
+        )
+      }.to raise_error(GeminiClient::ApiError)
+
+      expect(chat_session.ai_chat_messages.count).to eq(0)
+    end
   end
 
   describe '#apply_session_plan!' do

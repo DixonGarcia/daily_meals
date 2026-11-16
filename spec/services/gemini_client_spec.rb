@@ -65,5 +65,41 @@ RSpec.describe GeminiClient do
         client.generate_plan_response(system_instruction: "Sys", messages: [{ role: "user", content: "Hola" }])
       }.to raise_error(GeminiClient::ApiError)
     end
+
+    it "automatically falls back to DEFAULT_MODEL when a custom model returns HTTP 404" do
+      not_found_response = instance_double(Net::HTTPNotFound, body: '{"error":{"code":404}}', code: "404")
+      allow(not_found_response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(false)
+
+      ok_body = {
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: {
+                    reply: "Respuesta usando modelo de respaldo.",
+                    meal_plan: []
+                  }.to_json
+                }
+              ]
+            }
+          }
+        ]
+      }.to_json
+      ok_response = instance_double(Net::HTTPOK, body: ok_body, code: "200")
+      allow(ok_response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+
+      http_double = instance_double(Net::HTTP)
+      allow(Net::HTTP).to receive(:new).and_return(http_double)
+      allow(http_double).to receive(:use_ssl=)
+      allow(http_double).to receive(:open_timeout=)
+      allow(http_double).to receive(:read_timeout=)
+      allow(http_double).to receive(:request).and_return(not_found_response, ok_response)
+
+      client = described_class.new(api_key: "test-gemini-key", model: "gemini-legacy-404-model")
+      result = client.generate_plan_response(system_instruction: "Sys", messages: [{ role: "user", content: "Hola" }])
+
+      expect(result[:reply]).to eq("Respuesta usando modelo de respaldo.")
+    end
   end
 end

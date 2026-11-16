@@ -68,16 +68,12 @@ class AiCopilotService
   # @return [AiChatMessage] The persisted assistant message.
   def converse!(session:, user_message:, parameters: {})
     merged_params = session.effective_parameters.merge(parameters.to_h.stringify_keys)
-    session.update!(parameters: merged_params)
+    cleaned_message = user_message.to_s.strip
 
-    session.ai_chat_messages.create!(
-      role: "user",
-      content: user_message.to_s.strip
-    )
-
-    history = session.ai_chat_messages.reload.map do |msg|
+    history = session.ai_chat_messages.map do |msg|
       { role: msg.role, content: msg.content }
     end
+    history << { role: "user", content: cleaned_message }
 
     response = begin
       client.generate_plan_response(
@@ -87,13 +83,20 @@ class AiCopilotService
     rescue GeminiClient::ConfigurationError
       raise unless Rails.env.development?
 
-      build_local_development_response(user_message, merged_params)
+      build_local_development_response(cleaned_message, merged_params)
     end
 
     sanitized_plan = sanitize_proposed_plan(response[:meal_plan])
 
     assistant_message = nil
     ActiveRecord::Base.transaction do
+      session.update!(parameters: merged_params)
+
+      session.ai_chat_messages.create!(
+        role: "user",
+        content: cleaned_message
+      )
+
       assistant_message = session.ai_chat_messages.create!(
         role: "assistant",
         content: response[:reply].presence || "He actualizado la propuesta de menú.",
