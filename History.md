@@ -4,6 +4,16 @@ Development log for **DailyMeals**. Entries are newest-first. Each entry covers 
 
 ---
 
+## [FEAT-06] Copilot Flow Safeguards & Multi-Category Dishes — 2026-11-16
+
+Several usability and data-loss flaws in the Gemini AI Copilot planning flow and dish catalog were resolved. Previously, duplicate day objects in Gemini responses overwrote earlier slots, unchecking `Almuerzo` (`include_lunch`) or unchecking a proposed new dish could blank out existing calendar assignments, stale proposal previews lingered in `AiChatSession` after clicking apply, users had no structured option to generate dish recipes without touching the weekly calendar, and `Dish` records could belong to only a single category (`Lunch`, `Dinner`, or `Both`).
+
+Database migration `AddCategoriesToDishes` added a GIN-indexed `categories` JSONB array to `dishes` and backfilled existing records while preserving `dishes.category` for backward compatibility. `Dish` gained `categories=` normalization, `effective_categories`, `for_category`, and array inclusion validation, exposed through multi-category pill checkboxes (`dish[categories][]`) in `app/views/dishes/_form.html.erb`, flex-wrapped badges in `app/views/dishes/index.html.erb` and `app/views/dishes/show.html.erb`, `DishesController`, and `Api::V1::DishesController`. In `AiCopilotService`, `sanitize_proposed_plan` now merges duplicate weekday entries instead of clobbering slots, respects `days_scope: "none"` (`🚫 Sin calendario`), preserves existing `MealPlan` assignments whenever a slot or new dish is deselected (`apply_selective_meal_plan!`), and resets `proposed_plan` and `proposed_dishes` on `AiChatSession` right after applying. `GeminiClient` and `AiCopilotService` were updated with multi-category schemas (`categories` array) and prompt instructions, while `app/views/meal_plans/index.html.erb`, `AiChatMessagesController`, `AiChatSessionsController#apply`, `config/locales/es.yml`, and `app/assets/stylesheets/application.css` added the synced `🚫 Sin calendario` radio chip, honest preserved-slot indicators (`Se mantiene actual`), and compact S25+ navigation styling.
+
+During closing, `AiCopilotService` also added `Dish` to `ensure_latest_schema_cache!` alongside `AiChatSession` and `AiChatMessage`, and `_product/ai_copilot/implementation.md` and `_product/ai_copilot/mockups/` were removed. The RSpec suite closed at 106 examples, 0 failures, and Brakeman reported 0 code security warnings.
+
+---
+
 ## [FIX-02] ActiveRecord Schema Cache Refresh & Gemini Timeout Headroom — 2026-11-15
 
 An `ActiveModel::UnknownAttributeError` (`unknown attribute 'proposed_dishes' for AiChatMessage`) occurred in long-running development server processes that had booted prior to the `FEAT-05` migration (`AddProposedDishesToAiChat`).
