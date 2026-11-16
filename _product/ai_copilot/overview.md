@@ -26,3 +26,7 @@ Building upon the Persistent Gemini Pseudo-Chat (`FEAT-04`), **`FEAT-05`** remov
     *   Displays proposed new dishes and their ingredient checkboxes/quantity inputs directly inside the Calendar Chat preview card, and adds an inline **"✨ Autocompletar con IA"** bar + new-ingredient row support in `/dishes/new`.
 *   **Variant 2 (Editor en Modal Separado)**:
     *   Opens a secondary popup modal to edit proposed dishes before returning to the chat.
+
+## 6. Selected Variant
+* **Selected Layout**: **Variant 1 (Híbrido Inline: Checkboxes en Vista Previa del Chat + Botón Mágico en Formulario)**
+* **Rationale**: Allows the user to uncheck ingredients and edit quantities inline inside the Calendar Chat preview card and autocomplete ingredients directly inside `/dishes/new` without opening secondary modals.
