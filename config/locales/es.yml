@@ -2,6 +2,11 @@ es:
   meal_plans:
     index:
       title: "📆 Calendario Semanal de Comidas"
+      view_day: "📅 Por Día"
+      view_week: "🗓️ Semana"
+      today_badge: "📍 Hoy"
+      no_dish_assigned: "Sin plato asignado"
+      ingredients_summary: "Ingredientes:"
       lunch: "☀️ Almuerzo"
       dinner: "🌙 Cena"
       none: "Ninguno"
@@ -29,6 +34,7 @@ es:
     index:
       title: "🍽️ Catálogo de Platos"
       add_new: "➕ Agregar Nuevo Plato"
+      ingredients_button: "🥕 Ingredientes"
       empty: "No hay platos en el catálogo aún."
       table:
         name: "Nombre del Plato"
@@ -130,6 +136,14 @@ es:
     friday: "Viernes"
     saturday: "Sábado"
     sunday: "Domingo"
+  days_of_week_short:
+    monday: "Lun"
+    tuesday: "Mar"
+    wednesday: "Mié"
+    thursday: "Jue"
+    friday: "Vie"
+    saturday: "Sáb"
+    sunday: "Dom"
   ai_copilots:
     controller:
       imported: "Plan de comidas de IA importado con éxito."
@@ -186,6 +200,7 @@ es:
     ingredients: "🥕 Ingredientes"
     api_keys: "🔑 API Keys"
     settings: "⚙️ Configuración"
+    login: "🔑 Entrar"
     logout: "🚪 Salir"
   settings:
     show:

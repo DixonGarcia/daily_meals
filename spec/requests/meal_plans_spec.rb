@@ -4,11 +4,16 @@ RSpec.describe "MealPlans", type: :request do
   let!(:dish) { Dish.create!(name: 'Carne molida con papas', category: 'Lunch') }
 
   describe "GET /" do
-    it "renders the dashboard / weekly calendar" do
+    it "renders the dashboard in day view by default and supports week view via ?view=week" do
       get root_path
       expect(response).to have_http_status(:success)
-      expect(response.body).to include('Lunes')
-      expect(response.body).to include('Martes')
+      expect(response.body).to include(I18n.t("meal_plans.index.view_day"))
+      expect(response.body).to include(I18n.t("meal_plans.index.view_week"))
+
+      get root_path(view: "week")
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("Lunes")
+      expect(response.body).to include("Martes")
     end
   end
 

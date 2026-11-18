@@ -4,6 +4,7 @@
     <title><%= content_for(:title) || t('layout.title') %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="robots" content="noindex, nofollow">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -30,17 +31,20 @@
           <span class="logo-emoji">🍳</span>
           <span class="logo-text">DailyMeals</span>
         </a>
-        <% if authenticated? %>
-          <div class="nav-links">
-            <a href="<%= root_path %>" class="nav-link <%= 'active' if current_page?(root_path) %>"><%= t('layout.calendar') %></a>
-            <a href="<%= dishes_path %>" class="nav-link <%= 'active' if controller_name == 'dishes' %>"><%= t('layout.dishes') %></a>
-            <a href="<%= ingredients_path %>" class="nav-link <%= 'active' if controller_name == 'ingredients' %>"><%= t('layout.ingredients') %></a>
+        <div class="nav-links">
+          <a href="<%= root_path %>" class="nav-link <%= 'active' if controller_name == 'meal_plans' %>"><%= t('layout.calendar') %></a>
+          <a href="<%= dishes_path %>" class="nav-link <%= 'active' if %w[dishes ingredients].include?(controller_name) %>"><%= t('layout.dishes') %></a>
+          <% if authenticated? %>
             <a href="<%= settings_path %>" class="nav-link <%= 'active' if %w[settings api_keys meal_plan_histories].include?(controller_name) %>"><%= t('layout.settings') %></a>
             <div class="nav-logout-wrapper">
               <%= button_to t('layout.logout'), session_path, method: :delete, class: "nav-logout-btn" %>
             </div>
-          </div>
-        <% end %>
+          <% else %>
+            <div class="nav-logout-wrapper">
+              <a href="<%= new_session_path %>" class="nav-login-btn"><%= t('layout.login') %></a>
+            </div>
+          <% end %>
+        </div>
       </div>
     </nav>
 

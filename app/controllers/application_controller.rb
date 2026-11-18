@@ -7,6 +7,14 @@ class ApplicationController < ActionController::Base
   before_action :require_authentication!
   helper_method :authenticated?
 
+  # Allows unauthenticated (read-only) guest access to the specified controller actions.
+  #
+  # @param only [Array<Symbol>, Symbol] action names accessible without signing in
+  # @return [void]
+  def self.allow_guest_access(only:)
+    skip_before_action :require_authentication!, only: only
+  end
+
   private
 
   # Ensures the current browser holds a valid encrypted owner session cookie.

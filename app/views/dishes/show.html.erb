@@ -1,7 +1,9 @@
 <div class="header-actions">
   <h2 class="section-title"><%= t('dishes.show.title') %></h2>
   <div>
-    <a href="<%= edit_dish_path(@dish) %>" class="btn-action" style="margin-right: 0.5rem; background: var(--blue-high);"><%= t('dishes.show.edit_dish') %></a>
+    <% if authenticated? %>
+      <a href="<%= edit_dish_path(@dish) %>" class="btn-action" style="margin-right: 0.5rem; background: var(--blue-high);"><%= t('dishes.show.edit_dish') %></a>
+    <% end %>
     <a href="<%= dishes_path %>" class="btn-secondary"><%= t('dishes.show.back') %></a>
   </div>
 </div>

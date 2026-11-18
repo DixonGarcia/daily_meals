@@ -40,7 +40,9 @@ module DailyMeals
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    # All "today" and ISO-week calculations follow the household's local time (Caracas, UTC-4),
+    # independently of the VPS location (Hetzner Helsinki).
+    config.time_zone = "Caracas"
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Don't generate system test files.

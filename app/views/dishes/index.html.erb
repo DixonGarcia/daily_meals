@@ -1,6 +1,11 @@
 <div class="header-actions">
   <h2 class="section-title"><%= t('dishes.index.title') %></h2>
-  <a href="<%= new_dish_path %>" class="btn-action"><%= t('dishes.index.add_new') %></a>
+  <% if authenticated? %>
+    <div class="header-actions-group">
+      <a href="<%= ingredients_path %>" class="btn-secondary"><%= t('dishes.index.ingredients_button') %></a>
+      <a href="<%= new_dish_path %>" class="btn-action"><%= t('dishes.index.add_new') %></a>
+    </div>
+  <% end %>
 </div>
 
 <div class="card">
@@ -13,7 +18,9 @@
           <th><%= t('dishes.index.table.name') %></th>
           <th><%= t('dishes.index.table.category') %></th>
           <th><%= t('dishes.index.table.ingredients') %></th>
-          <th style="text-align: right;"><%= t('dishes.index.table.actions') %></th>
+          <% if authenticated? %>
+            <th style="text-align: right;"><%= t('dishes.index.table.actions') %></th>
+          <% end %>
         </tr>
       </thead>
       <tbody>
@@ -43,12 +50,14 @@
             <td>
               <%= dish.ingredients.map(&:name).join(', ').presence || t('meal_plans.index.none') %>
             </td>
-            <td style="text-align: right;">
-              <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
-                <a href="<%= edit_dish_path(dish) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;"><%= t('dishes.index.actions.edit') %></a>
-                <%= button_to t('dishes.index.actions.delete'), dish_path(dish), method: :delete, data: { confirm: t('dishes.index.actions.confirm_delete') }, class: 'btn-danger', style: 'padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
-              </div>
-            </td>
+            <% if authenticated? %>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+                  <a href="<%= edit_dish_path(dish) %>" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;"><%= t('dishes.index.actions.edit') %></a>
+                  <%= button_to t('dishes.index.actions.delete'), dish_path(dish), method: :delete, data: { confirm: t('dishes.index.actions.confirm_delete') }, class: 'btn-danger', style: 'padding: 0.4rem 0.8rem; font-size: 0.85rem;' %>
+                </div>
+              </td>
+            <% end %>
           </tr>
         <% end %>
       </tbody>

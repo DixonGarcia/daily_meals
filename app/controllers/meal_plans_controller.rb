@@ -1,27 +1,33 @@
 # Handles dashboard and calendar actions for MealPlan planning.
 class MealPlansController < ApplicationController
+  allow_guest_access only: :index
+
   # GET /
   # GET /meal_plans
-  # Renders the dashboard featuring the weekly calendar, shopping list, and Gemini AI Copilot chat.
+  # Renders the dashboard featuring the daily/weekly calendar, shopping list, and (when authenticated) Gemini AI Copilot chat.
   # @return [void]
   def index
-    # Load all meal plans in order of the week (eager loading associations to prevent N+1 queries)
     days = MealPlan::DAYS_OF_WEEK
-    existing_plans = MealPlan.includes(:lunch_dish, :dinner_dish).index_by(&:day_of_week)
+    existing_plans = MealPlan.includes(
+      lunch_dish: { dish_ingredients: :ingredient },
+      dinner_dish: { dish_ingredients: :ingredient }
+    ).index_by(&:day_of_week)
+
     @meal_plans = days.each_with_object({}) do |day, hash|
       hash[day] = existing_plans[day] || MealPlan.new(day_of_week: day)
     end
 
-    # Load available dishes for selecting in the form and resolving preview names in O(1)
-    @dishes = Dish.all.order(:name)
-    @dishes_by_id = @dishes.index_by(&:id)
+    @view_mode = params[:view] == "week" ? "week" : "day"
+    @today_key = Time.zone.today.strftime("%A")
+    @selected_day = days.include?(params[:day].to_s) ? params[:day].to_s : @today_key
+    @shopping_list = ShoppingListGenerator.new.generate
 
-    # Load persisted AI chat sessions and resolve the active session
+    return unless authenticated?
+
+    @dishes = Dish.order(:name)
+    @dishes_by_id = @dishes.index_by(&:id)
     @chat_sessions = AiChatSession.includes(:ai_chat_messages).order(updated_at: :desc).to_a
     @active_chat_session = resolve_active_chat_session
-
-    # Generate dynamic shopping list
-    @shopping_list = ShoppingListGenerator.new.generate
   end
 
   # PATCH /meal_plans/update_day
@@ -37,12 +43,13 @@ class MealPlansController < ApplicationController
     plan.dinner_dish_id = dinner_id
 
     day_translated = t("days_of_week.#{day.downcase}", default: day)
+    redirect_params = { view: params[:view].presence, day: params[:day].presence }.compact
 
     if plan.save
       MealPlanHistory.record_current_week!(target_date: Date.current, source: "manual")
-      redirect_to root_path, notice: t("meal_plans.controller.updated", day: day_translated)
+      redirect_to root_path(redirect_params), notice: t("meal_plans.controller.updated", day: day_translated)
     else
-      redirect_to root_path, alert: t("meal_plans.controller.error_update", day: day_translated, errors: plan.errors.full_messages.join(", "))
+      redirect_to root_path(redirect_params), alert: t("meal_plans.controller.error_update", day: day_translated, errors: plan.errors.full_messages.join(", "))
     end
   end
 
