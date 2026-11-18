@@ -1,6 +1,8 @@
 # Handles request routing and parameters for the Dish model.
 # Supports CRUD operations, inline ingredient creation, and AI ingredient suggestions.
 class DishesController < ApplicationController
+  allow_guest_access only: %i[index show]
+
   before_action :set_dish, only: [ :show, :edit, :update, :destroy ]
   before_action :set_ingredients, only: [ :new, :edit, :create, :update ]
 

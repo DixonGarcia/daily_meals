@@ -12,15 +12,18 @@ RSpec.describe "Sessions & Single-Owner Access Control", type: :request, unauthe
   end
 
   describe "Unauthenticated access protection" do
-    it "redirects GET / to the login page with an alert" do
+    it "allows public read-only access to GET / and GET /dishes" do
       get root_path
-      expect(response).to redirect_to(new_session_path)
-      expect(flash[:alert]).to eq(I18n.t("sessions.controller.unauthenticated"))
+      expect(response).to have_http_status(:ok)
+
+      get dishes_path
+      expect(response).to have_http_status(:ok)
     end
 
-    it "redirects GET /dishes to the login page" do
-      get dishes_path
+    it "redirects GET /dishes/new to the login page with an alert" do
+      get new_dish_path
       expect(response).to redirect_to(new_session_path)
+      expect(flash[:alert]).to eq(I18n.t("sessions.controller.unauthenticated"))
     end
 
     it "redirects GET /ingredients to the login page" do
@@ -67,7 +70,7 @@ RSpec.describe "Sessions & Single-Owner Access Control", type: :request, unauthe
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include(I18n.t("sessions.controller.invalid_password"))
 
-        get root_path
+        get settings_path
         expect(response).to redirect_to(new_session_path)
       end
     end
@@ -81,7 +84,7 @@ RSpec.describe "Sessions & Single-Owner Access Control", type: :request, unauthe
         post session_path, params: { password: "any-password" }
         expect(response).to have_http_status(:unprocessable_content)
 
-        get root_path
+        get settings_path
         expect(response).to redirect_to(new_session_path)
       end
     end
@@ -96,17 +99,17 @@ RSpec.describe "Sessions & Single-Owner Access Control", type: :request, unauthe
       expect(response).to redirect_to(new_session_path)
       expect(flash[:notice]).to eq(I18n.t("sessions.controller.signed_out"))
 
-      get root_path
+      get settings_path
       expect(response).to redirect_to(new_session_path)
     end
 
     it "immediately invalidates existing session cookies if ENV['APP_ACCESS_PASSWORD'] is rotated" do
       post session_path, params: { password: master_password }
-      get root_path
+      get settings_path
       expect(response).to have_http_status(:ok)
 
       ENV["APP_ACCESS_PASSWORD"] = "rotated-new-password-999"
-      get root_path
+      get settings_path
       expect(response).to redirect_to(new_session_path)
     end
   end

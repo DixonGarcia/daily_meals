@@ -40,19 +40,15 @@ Git Setup  →  Read Spec  →  Migrations  →  Write Specs (Red)  →  Impleme
 
 ## Step 1: Git Setup (Run First)
 
-Synchronize with the remote and create a dedicated implementation branch:
+Verify you are on the active `feat/<FEAT-XX>-<short-slug>` branch where the approved specification was committed (or create it from `main` if not yet created):
 
 ```bash
-git checkout main
-git pull origin main
-git checkout -b feat/<FEAT-XX>-<short-slug>
-# e.g.: git checkout -b feat/feat-03-shopping-list
-# for fixes: git checkout -b fix/fix-01-short-description
+git branch --show-current
+# Expected: feat/<FEAT-XX>-<short-slug>
 ```
 
-> The branch name must include the feature ID and a short lowercase hyphenated slug.
 > All implementation work (migrations, models, controllers, views, specs) is committed to this branch.
-> This branch is merged into `main` by the `close-feature` skill.
+> This branch is pushed and merged into `main` via a Pull Request by the `close-feature` skill.
 
 ---
 

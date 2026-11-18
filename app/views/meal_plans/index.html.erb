@@ -1,50 +1,67 @@
 <div class="mobile-quick-jumps">
-  <a href="#ai-copilot-panel" class="quick-jump-pill jump-ai"><%= t('ai_chat_sessions.jump_to_chat') %></a>
+  <% if authenticated? %>
+    <a href="#ai-copilot-panel" class="quick-jump-pill jump-ai"><%= t('ai_chat_sessions.jump_to_chat') %></a>
+  <% end %>
   <a href="#shopping-list-panel" class="quick-jump-pill jump-cart"><%= t('ai_chat_sessions.jump_to_shopping') %></a>
 </div>
 
 <div class="dashboard-grid">
-  <!-- Left Side: Weekly Calendar -->
+  <!-- Left Side: Daily / Weekly Calendar -->
   <div>
-    <h2 class="section-title"><%= t('meal_plans.index.title') %></h2>
-    
-    <div class="calendar-grid">
-      <% MealPlan::DAYS_OF_WEEK.each do |day| %>
-        <% plan = @meal_plans[day] %>
-        <div class="card day-card">
-          <div class="day-header">
-            <span><%= t("days_of_week.#{day.downcase}") %></span>
-            <span style="font-size: 1.1rem;">🗓️</span>
-          </div>
-
-          <%= form_with url: update_day_meal_plans_path, method: :patch, local: true do |f| %>
-            <%= f.hidden_field :day_of_week, value: day %>
-
-            <div class="meal-slot" style="margin-bottom: 0.8rem;">
-              <span class="meal-label"><%= t('meal_plans.index.lunch') %></span>
-              <%= f.select :lunch_dish_id, 
-                           options_from_collection_for_select(@dishes, :id, :name, plan.lunch_dish_id), 
-                           { include_blank: t('meal_plans.index.none') }, 
-                           { class: "meal-dish-selector" } %>
-            </div>
-
-            <div class="meal-slot" style="margin-bottom: 1.2rem;">
-              <span class="meal-label"><%= t('meal_plans.index.dinner') %></span>
-              <%= f.select :dinner_dish_id, 
-                           options_from_collection_for_select(@dishes, :id, :name, plan.dinner_dish_id), 
-                           { include_blank: t('meal_plans.index.none') }, 
-                           { class: "meal-dish-selector" } %>
-            </div>
-
-            <%= f.submit t('meal_plans.index.update_day'), class: "update-day-btn" %>
-          <% end %>
-        </div>
-      <% end %>
+    <div class="calendar-header-row">
+      <h2 class="section-title" style="margin-bottom: 0;"><%= t('meal_plans.index.title') %></h2>
+      <div class="view-toggle" role="tablist">
+        <a href="<%= root_path(view: 'day', day: @selected_day) %>"
+           class="view-toggle-btn <%= 'active' if @view_mode == 'day' %>">
+          <%= t('meal_plans.index.view_day') %>
+        </a>
+        <a href="<%= root_path(view: 'week') %>"
+           class="view-toggle-btn <%= 'active' if @view_mode == 'week' %>">
+          <%= t('meal_plans.index.view_week') %>
+        </a>
+      </div>
     </div>
+
+    <% if @view_mode == "day" %>
+      <div class="day-chips-bar">
+        <% MealPlan::DAYS_OF_WEEK.each do |day_name| %>
+          <% is_selected = (day_name == @selected_day) %>
+          <% is_today = (day_name == @today_key) %>
+          <a href="<%= root_path(view: 'day', day: day_name) %>"
+             class="day-chip <%= 'active' if is_selected %> <%= 'is-today' if is_today %>">
+            <span><%= t("days_of_week_short.#{day_name.downcase}") %></span>
+            <% if is_today %>
+              <span class="today-dot" title="<%= t('meal_plans.index.today_badge') %>"></span>
+            <% end %>
+          </a>
+        <% end %>
+      </div>
+
+      <div class="calendar-single-day">
+        <%= render "meal_plans/day_card",
+                   day: @selected_day,
+                   plan: @meal_plans[@selected_day],
+                   today_key: @today_key,
+                   view_mode: @view_mode,
+                   detailed: true %>
+      </div>
+    <% else %>
+      <div class="calendar-grid">
+        <% MealPlan::DAYS_OF_WEEK.each do |day| %>
+          <%= render "meal_plans/day_card",
+                     day: day,
+                     plan: @meal_plans[day],
+                     today_key: @today_key,
+                     view_mode: @view_mode,
+                     detailed: false %>
+        <% end %>
+      </div>
+    <% end %>
   </div>
 
   <!-- Right Side: Sidebar (Gemini Pseudo-Chat & Shopping List) -->
   <div class="sidebar-panel">
+    <% if authenticated? %>
     <!-- Persistent Gemini AI Copilot Chat Panel -->
     <div id="ai-copilot-panel" class="card ai-copilot-card">
       <div class="copilot-header-row">
@@ -300,6 +317,7 @@
         </div>
       </details>
     </div>
+    <% end %>
 
     <!-- Shopping List Card -->
     <div id="shopping-list-panel" class="card shopping-list-card">
@@ -327,6 +345,7 @@
   </div>
 </div>
 
+<% if authenticated? %>
 <script>
   (function() {
     const chatThread = document.getElementById("copilot-chat-thread");
@@ -447,3 +466,4 @@
     }
   })();
 </script>
+<% end %>

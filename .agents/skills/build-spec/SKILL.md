@@ -59,18 +59,17 @@ Every feature specification must live in its own directory `_product/<domain>/` 
 
 ## 🌿 Git Workflow (Run First)
 
-Before creating any spec file, synchronize with the remote and create a dedicated spec branch:
+Before creating any spec file, synchronize with the remote and create the feature branch (since `main` is protected, spec and implementation share one feature branch and merge via a single PR at `close-feature`, pausing for user spec approval before implementation begins):
 
 ```bash
 git checkout main
 git pull origin main
-git checkout -b spec/<FEAT-XX>-<short-slug>
-# e.g.: git checkout -b spec/feat-03-shopping-list
+git checkout -b feat/<FEAT-XX>-<short-slug>
+# e.g.: git checkout -b feat/feat-08-guest-view
 ```
 
 > The branch name must include the feature ID and a short lowercase hyphenated slug describing the domain.
-> All spec files (`overview.md`, `implementation.md`, `mockups/`) are committed to this branch.
-> This branch will be merged into `main` by the `merge-spec` skill after the mockup is approved.
+> All spec files (`overview.md`, `implementation.md`, `mockups/`) are committed to this branch first, and implementation only begins after the user approves the spec and mockup.
 
 ---
 

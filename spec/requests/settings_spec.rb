@@ -4,14 +4,19 @@ RSpec.describe "Settings, History & Integrations", type: :request do
   let!(:dish) { Dish.create!(name: 'Pabellón Criollo', categories: [ 'Lunch' ]) }
 
   describe "Navigation consolidation" do
-    it "replaces API Keys navbar item with Configuración while keeping <= 4 links" do
+    it "replaces API Keys navbar item with Configuración and moves Ingredientes to the dishes catalog" do
       get root_path
       expect(response).to have_http_status(:success)
-      expect(response.body).to include(I18n.t('layout.settings'))
-      expect(response.body).not_to include('🔑 API Keys')
+      expect(response.body).to include(I18n.t("layout.settings"))
+      expect(response.body).not_to include("🔑 API Keys")
+      expect(response.body).not_to include(I18n.t("layout.ingredients"))
 
       nav_links = response.body.scan(/<a [^>]*class="nav-link[^"]*"/).size
-      expect(nav_links).to eq(4)
+      expect(nav_links).to eq(3)
+
+      get dishes_path
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include(I18n.t("dishes.index.ingredients_button"))
     end
   end
 

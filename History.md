@@ -4,6 +4,16 @@ Development log for **DailyMeals**. Entries are newest-first. Each entry covers 
 
 ---
 
+## [FEAT-08] Public Guest Read-Only View, Day/Week Calendar Toggle, Caracas Time Zone & Navbar Cleanup — 2026-11-18
+
+Household members previously had to enter the master password on every visit just to check what was planned for lunch or dinner, the weekly calendar showed all seven days simultaneously without a focused daily view, the server's UTC/Helsinki clock advanced to the next day at 20:00 Venezuela time, and the top-level `🥕 Ingredientes` navigation link occupied navbar space despite being rarely visited directly.
+
+`ApplicationController` introduced the `allow_guest_access` class macro (`skip_before_action :require_authentication!`), enabled on `MealPlansController#index` and `DishesController#index` / `DishesController#show` while keeping all create, update, delete, AI Copilot, ingredient catalog, and settings endpoints protected behind `require_authentication!`. `MealPlansController#index` now guards `@dishes`, `@chat_sessions`, and `resolve_active_chat_session` behind `authenticated?` so guest visits never instantiate `AiChatSession` records, eager-loads `lunch_dish` and `dinner_dish` with `{ dish_ingredients: :ingredient }`, and resolves `@view_mode` (`"day"` by default, `"week"` via `?view=week`), `@today_key` (`Time.zone.today.strftime("%A")`), and `@selected_day`. `config/application.rb` set `config.time_zone = "Caracas"` (`UTC-4`) so daily views and `MealPlanHistory` ISO-week snapshots align with household local time regardless of the Hetzner Helsinki VPS clock.
+
+The Variant 1 layout (segmented `[📅 Por Día | 🗓️ Semana]` toggle paired with a 7-day quick-select chip bar `Lun`–`Dom` and inline dish ingredient pills) was implemented across `app/views/meal_plans/index.html.erb`, `app/views/meal_plans/_day_card.html.erb`, and `app/assets/stylesheets/application.css`. `app/views/layouts/application.html.erb` and `public/robots.txt` added `noindex, nofollow`, replaced `🚪 Salir` with `🔑 Entrar` for guests, and removed `🥕 Ingredientes` from the top navbar, relocating it to an authenticated-only header button inside `app/views/dishes/index.html.erb` while hiding action buttons and the `Acciones` column from unauthenticated visitors in `app/views/dishes/index.html.erb` and `app/views/dishes/show.html.erb`. The lifecycle skills under `.agents/` were also updated for the single-PR workflow on protected `main`. The RSpec suite closed at 122 examples, 0 failures, RuboCop reported 0 offenses across 81 files, and Brakeman reported 0 security warnings.
+
+---
+
 ## [FEAT-07] Consolidated Settings (`Configuración`), Meal Plan History & Integrations — 2026-11-16
 
 The top-level `🔑 API Keys` navigation link was replaced with a consolidated **`⚙️ Configuración`** entry (`/settings`) to house both weekly menu archiving and external API token integrations without exceeding four items in the mobile navigation bar on Samsung Galaxy S25+ (`412x915`). Prior to this change, weekly `MealPlan` assignments had no archival history and the rarely visited `API Keys` link lacked explanatory context.
