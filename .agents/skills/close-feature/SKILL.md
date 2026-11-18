@@ -83,7 +83,7 @@ rm -rf _product/<domain>/mockups/
 ```
 > **Keep**: `overview.md` (business context, permanent).
 
-### Step 5: Commit, Open Pull Request, Verify CI, and Merge into Protected Main
+### Step 5: Commit, Open Pull Request, Verify CI, and Wait for User PR Review
 ```bash
 # Delete the state file from disk (gitignored, never tracked)
 rm _product/current.yml
@@ -98,14 +98,8 @@ gh pr create --base main --title "feat: FEAT-XX <short title>" --fill
 
 # Wait for required GitHub Actions status checks (scan_ruby, lint, test) to pass
 gh pr checks --watch --fail-fast
-
-# Merge the Pull Request (creates a merge commit on main and deletes the remote branch)
-gh pr merge --merge --delete-branch
-
-# Sync local main
-git checkout main
-git pull --ff-only
 ```
+> **Mandatory pause & server boundary**: Present the Pull Request link to the user and **wait for explicit user review/approval** before merging (merging into `main` triggers GitHub Actions to deploy automatically). The AI agent must **never** SSH into or interact directly with the remote VPS server unless explicitly requested by the user.
 
 ### Step 6: Confirm Closure
 Reply to the user confirming:

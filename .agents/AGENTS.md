@@ -61,7 +61,7 @@ Because `main` is protected by GitHub Branch Protection (requiring Pull Requests
 3. **Design & Spec Approval** (`choose-mockup` & `merge-spec` skills) — Present spec and mockup variants, **wait for explicit user approval**, record choice, delete discarded mockup file, and commit the approved spec on `feat/<FEAT-XX>-<slug>`.
 4. **TDD** (`build-feature` skill) — Working on the same `feat/<FEAT-XX>-<slug>` branch, run migrations, write failing specs, implement, refactor.
 5. **Review** (`review-implementation` skill) — Audit security, stability, localization, and performance.
-6. **Close & PR Merge** (`close-feature` skill — **cannot be skipped**) — Write `History.md` entry, delete `implementation.md` + `mockups/` + `_product/current.yml`, push `feat/<FEAT-XX>-<slug>`, open Pull Request to `main`, wait for CI checks (`scan_ruby`, `lint`, `test`), merge PR (`gh pr merge --merge --delete-branch`), and sync local `main`.
+6. **Close & Open PR for User Review** (`close-feature` skill — **cannot be skipped**) — Write `History.md` entry, delete `implementation.md` + `mockups/` + `_product/current.yml`, push `feat/<FEAT-XX>-<slug>`, open Pull Request to `main`, verify CI checks (`scan_ruby`, `lint`, `test`), and **pause for explicit user review and approval of the PR before merging** (merging to `main` triggers the GitHub Actions automated deploy). The agent must **never** connect to or interact with the remote VPS server directly unless explicitly requested by the user.
 
 **Branch naming convention**:
 - Features (spec + implementation): `feat/<FEAT-XX>-<short-slug>` (e.g., `feat/feat-08-guest-view`)

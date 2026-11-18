@@ -8,10 +8,15 @@
 
 ## Key Capabilities
 
-- **Weekly Meal Calendar & Consolidated Shopping List**: Assign lunch and dinner dishes for Monday through Sunday (`MealPlan`), automatically grouping required ingredients by supermarket section (`ShoppingListGenerator`).
+- **Daily & Weekly Meal Calendar (`[📅 Por Día | 🗓️ Semana]`) & Consolidated Shopping List**:
+  - Defaults to **Day View** showing today's lunch and dinner in **Caracas time (`UTC-4`)**, with a 7-day quick-select chip bar (`Lun`–`Dom`), inline ingredient pills with quantities, and one-tap toggle to the full 7-day **Week View**.
+  - Automatically groups required ingredients across the week by supermarket section (`ShoppingListGenerator`).
+- **Public Read-Only Guest Mode & Single-Owner Write Protection**:
+  - Household members can browse the daily/weekly calendar, shopping list, dish catalog (`/dishes`), and dish details (`/dishes/:id`) without entering a password.
+  - All mutations, the Gemini AI Copilot chat (`#ai-copilot-panel`), the ingredients catalog (`/ingredients`), and settings (`/settings`) are protected behind single-owner authentication (`ENV["APP_ACCESS_PASSWORD"]`, constant-time SHA-256 verification, 60-day encrypted HTTP-only cookies, and Rails 8 `rate_limit`).
 - **Multi-Category Dish & Ingredient Catalog**:
-  - `Dish` supports multiple categories (`Lunch`, `Dinner`, `Both` stored in `dishes.categories` JSONB + legacy `category` compatibility) via touch-friendly pill checkboxes.
-  - Inline new ingredient creation directly inside `/dishes/new` and `/dishes/:id/edit`.
+  - `Dish` supports multiple categories (`Breakfast`, `Lunch`, `Dinner`, `Snack`, `Other` stored in `dishes.categories` JSONB + legacy `category` compatibility) via touch-friendly pill checkboxes.
+  - Inline new ingredient creation directly inside `/dishes/new` and `/dishes/:id/edit`, plus an authenticated **`🥕 Ingredientes`** catalog button inside `/dishes`.
   - **✨ Autocompletar con IA** (`POST /dishes/suggest_ingredients`) uses Google Gemini structured outputs to populate dish categories and ingredients on demand.
 - **Persistent Gemini AI Copilot Pseudo-Chat**:
   - Database-backed chat sessions (`AiChatSession`, `AiChatMessage`) with planning scope chips (`weekdays`, `full_week`, `none` / `🚫 Sin calendario`), meal slot toggles (`include_lunch`, `include_dinner`), and repetition control (`avoid_repetition`).
@@ -19,8 +24,7 @@
   - Includes a collapsible manual JSON export/import fallback (`/ai_copilot/export`, `/ai_copilot/import`).
 - **Consolidated `⚙️ Configuración` (`/settings`)**:
   - **`📚 Historial`**: Automatically snapshots each ISO week (`MealPlanHistory`) whenever a day is updated manually or a Gemini menu is applied, with one-click manual capture (`POST /meal_plan_histories/snapshot`) and safe transactional calendar restore (`POST /meal_plan_histories/:id/restore`).
-  - **`🔌 Integraciones`**: Manage Bearer tokens (`ApiKey`) for external automations without crowding the 4-item mobile navbar.
-- **Single-Owner Authentication**: Global web protection via `ENV["APP_ACCESS_PASSWORD"]`, constant-time SHA-256 verification, 60-day encrypted HTTP-only cookies, and Rails 8 `rate_limit` brute-force protection.
+  - **`🔌 Integraciones`**: Manage Bearer tokens (`ApiKey`) for external automations without crowding the mobile navbar.
 - **JSON REST API (`/api/v1`)**:
   - `GET /api/v1/dishes` & `POST /api/v1/dishes/import`
   - `GET /api/v1/meal_plans` & `POST /api/v1/meal_plans/import`
@@ -98,11 +102,36 @@ bundle exec brakeman -q --no-pager
 
 ---
 
-## Production Deployment (Hetzner VPS)
+## Production Deployment (Hetzner VPS & GitHub Actions CD)
 
-DailyMeals includes a production-ready Docker Compose + Caddy + PostgreSQL 16 stack ([`compose.production.yml`](compose.production.yml)) designed for Ubuntu 24.04 on Hetzner Cloud (starting via raw IP over HTTP or upgrading seamlessly to automatic Let's Encrypt HTTPS with a domain).
+DailyMeals includes a production-ready Docker Compose + Caddy + PostgreSQL 16 stack ([`compose.production.yml`](compose.production.yml)) designed for Ubuntu 24.04 on Hetzner Cloud (serving `https://meals.yourdomain.com` with automatic Let's Encrypt HTTPS).
 
-See [`deploy/HETZNER_GUIDE.md`](deploy/HETZNER_GUIDE.md) for the complete server creation, [`deploy/hetzner-bootstrap.sh`](deploy/hetzner-bootstrap.sh) setup, TLS upgrade, and backup guide.
+- **Automated Continuous Deployment (GitHub Actions)**: Every Pull Request merged into `main` that passes `scan_ruby`, `lint`, and `test` automatically triggers the `deploy` job in [`.github/workflows/ci.yml`](.github/workflows/ci.yml), updating `/opt/daily_meals`, rebuilding containers, and running idempotent `db:seed`.
+- **Initial Provisioning**: See [`deploy/HETZNER_GUIDE.md`](deploy/HETZNER_GUIDE.md) and [`deploy/hetzner-bootstrap.sh`](deploy/hetzner-bootstrap.sh).
+
+### Useful SSH Commands for Server Inspection & Practice
+
+1. **Connect to the VPS over SSH**:
+   ```bash
+   ssh root@meals.yourdomain.com
+   ```
+2. **Inspect deployed commits and git status**:
+   ```bash
+   cd /opt/daily_meals
+   git log -n 5 --oneline
+   git status
+   ```
+3. **Check container health and tail live Rails / Caddy logs**:
+   ```bash
+   docker compose -f compose.production.yml ps
+   docker compose -f compose.production.yml logs -f --tail=100 web
+   docker compose -f compose.production.yml logs -f --tail=50 caddy
+   ```
+4. **Open a Rails console or run a PostgreSQL backup**:
+   ```bash
+   docker compose -f compose.production.yml exec web ./bin/rails console
+   docker compose -f compose.production.yml exec -T db pg_dump -U daily_meals daily_meals_production > backup_$(date +%F).sql
+   ```
 
 ---
 
