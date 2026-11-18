@@ -413,7 +413,7 @@
         btnExport.innerText = "<%= j t('meal_plans.index.generating') %>";
         btnExport.disabled = true;
 
-        fetch(`/ai_copilot/export?restrictions=${restrictions}`, {
+        fetch("<%= j export_ai_copilot_path %>?restrictions=" + restrictions, {
           method: "GET",
           headers: {
             "Content-Type": "application/json"

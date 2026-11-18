@@ -98,6 +98,14 @@ bundle exec brakeman -q --no-pager
 
 ---
 
+## Production Deployment (Hetzner VPS)
+
+DailyMeals includes a production-ready Docker Compose + Caddy + PostgreSQL 16 stack ([`compose.production.yml`](compose.production.yml)) designed for Ubuntu 24.04 on Hetzner Cloud (starting via raw IP over HTTP or upgrading seamlessly to automatic Let's Encrypt HTTPS with a domain).
+
+See [`deploy/HETZNER_GUIDE.md`](deploy/HETZNER_GUIDE.md) for the complete server creation, [`deploy/hetzner-bootstrap.sh`](deploy/hetzner-bootstrap.sh) setup, TLS upgrade, and backup guide.
+
+---
+
 ## Project Workflows & Architecture Notes
 
 - See [`.agents/AGENTS.md`](.agents/AGENTS.md) and [`.agents/rules/claude.md`](.agents/rules/claude.md) for engineering conventions and the mandatory feature lifecycle (`build-spec` → `choose-mockup` → `merge-spec` → `build-feature` → `review-implementation` → `close-feature`).

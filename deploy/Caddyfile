@@ -1,0 +1,19 @@
+{$SITE_ADDRESS::80} {
+	encode gzip
+
+	reverse_proxy web:3000 {
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# Add other apps on separate subdomains cleanly (attach containers to `daily_meals_proxy`):
+#
+# yourdomain.com {
+# 	encode gzip
+# 	reverse_proxy website:80
+# }
+#
+# bot.yourdomain.com {
+# 	encode gzip
+# 	reverse_proxy python_chatbot:8000
+# }
