@@ -83,7 +83,7 @@ rm -rf _product/<domain>/mockups/
 ```
 > **Keep**: `overview.md` (business context, permanent).
 
-### Step 5: Commit, Merge Feature Branch, and Clean Up
+### Step 5: Commit, Open Pull Request, Verify CI, and Merge into Protected Main
 ```bash
 # Delete the state file from disk (gitignored, never tracked)
 rm _product/current.yml
@@ -92,12 +92,19 @@ rm _product/current.yml
 git add History.md _product/<domain>/
 git commit -m "chore: close FEAT-XX — History.md entry and spec artifacts removed"
 
-# Merge into main (no fast-forward to preserve the branch in history)
-git checkout main
-git merge --no-ff feat/<FEAT-XX>-<slug> -m "merge(feat): FEAT-XX <short title> into main"
+# Push the feature branch and open a Pull Request against protected main
+git push -u origin feat/<FEAT-XX>-<slug>
+gh pr create --base main --title "feat: FEAT-XX <short title>" --fill
 
-# Delete the feature branch
-git branch -d feat/<FEAT-XX>-<slug>
+# Wait for required GitHub Actions status checks (scan_ruby, lint, test) to pass
+gh pr checks --watch --fail-fast
+
+# Merge the Pull Request (creates a merge commit on main and deletes the remote branch)
+gh pr merge --merge --delete-branch
+
+# Sync local main
+git checkout main
+git pull --ff-only
 ```
 
 ### Step 6: Confirm Closure

@@ -58,22 +58,14 @@ git commit -m "spec(<domain>): record winning mockup variant selection"
 Update `_product/current.yml` on disk: set `merge-spec: done`, `branches.spec: ~`, and `current_step: build-feature`.
 > This is a local disk write only — `current.yml` is gitignored and never committed.
 
-### Step 4: Merge Spec Branch into Main
+### Step 4: Seal Approved Spec on the Feature Branch
+Because `main` is protected by GitHub Branch Protection and the workflow uses a single Pull Request at the end of the feature cycle (`close-feature`), do **not** merge into `main` locally here. Keep working on `feat/<FEAT-XX>-<slug>` after confirming explicit user approval of the spec and mockup:
 ```bash
-git checkout main
-git merge --no-ff spec/<FEAT-XX>-<slug> -m "merge(spec): integrate FEAT-XX spec into main"
-```
-> `--no-ff` (no fast-forward) creates an explicit merge commit, keeping spec work visible as a discrete unit in history.
-
-### Step 5: Delete the Spec Branch
-Once merged, the spec branch is no longer needed:
-```bash
-git branch -d spec/<FEAT-XX>-<slug>
+git status
 ```
 
-### Step 6: Confirm to the User
+### Step 5: Confirm to the User
 Reply confirming:
-1. Branch `spec/<FEAT-XX>-<slug>` was merged into `main`.
-2. The spec branch was deleted.
-3. `_product/current.yml` shows `current_step: build-feature`.
-4. `main` is now ready for the `build-feature` skill to branch off from.
+1. The spec and winning mockup are approved and committed on `feat/<FEAT-XX>-<slug>`.
+2. `_product/current.yml` shows `current_step: build-feature`.
+3. The branch is now ready for the `build-feature` skill to begin TDD implementation.

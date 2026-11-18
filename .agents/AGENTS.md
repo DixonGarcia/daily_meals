@@ -52,21 +52,19 @@ All agents modifying this codebase **must** follow the rules in [`.agents/rules/
 - **Code & Database (strictly English)**: tables, columns, associations, models, controllers, service objects, helpers, variable names, JSON/API payload keys.
 - **UI & stored content (Spanish)**: views, buttons, forms, labels, flash messages, select options, and database record values (e.g., dish names, ingredient names) — all via `config/locales/es.yml`.
 
-### 2. Feature Lifecycle (Mandatory Sequence)
+### 2. Feature Lifecycle (Mandatory Sequence — Single PR on Protected `main`)
 
-Every feature or fix must complete this sequence end-to-end:
+Because `main` is protected by GitHub Branch Protection (requiring Pull Requests and passing `scan_ruby`, `lint`, and `test` checks), every feature or fix runs on a **single feature branch** (`feat/<FEAT-XX>-<slug>` or `fix/<FIX-XX>-<slug>`) and closes via a **single Pull Request** after user spec approval:
 
-1. **Pre-flight** — Read `History.md`. Verify no feature is `[OPEN]`. Determine the next `FEAT-XX` or `FIX-XX` ID.
-2. **Spec** (`build-spec` skill) — `git checkout main && git pull`, create `spec/<FEAT-XX>-<slug>` branch, write `overview.md`, `implementation.md`, and `mockups/`.
-3. **Design** (`choose-mockup` skill) — Present variants, record choice, delete discarded mockup file.
-4. **Merge Spec** (`merge-spec` skill) — Merge `spec/<FEAT-XX>-<slug>` into `main` with `--no-ff`, delete the spec branch.
-5. **TDD** (`build-feature` skill) — `git checkout main && git pull`, create `feat/<FEAT-XX>-<slug>` branch, run migrations, write failing specs, implement, refactor.
-6. **Review** (`review-implementation` skill) — Audit security, stability, localization, and performance.
-7. **Close** (`close-feature` skill — **cannot be skipped**) — Write `History.md` entry, delete `implementation.md` + `mockups/`, merge `feat/<FEAT-XX>-<slug>` into `main` with `--no-ff`, delete the feat branch.
+1. **Pre-flight** — Read `History.md`. Verify no feature is `[OPEN]` and `_product/current.yml` does not exist. Determine the next `FEAT-XX` or `FIX-XX` ID.
+2. **Spec** (`build-spec` skill) — `git checkout main && git pull --ff-only`, create `feat/<FEAT-XX>-<slug>` branch, write `overview.md`, `implementation.md`, and `mockups/`.
+3. **Design & Spec Approval** (`choose-mockup` & `merge-spec` skills) — Present spec and mockup variants, **wait for explicit user approval**, record choice, delete discarded mockup file, and commit the approved spec on `feat/<FEAT-XX>-<slug>`.
+4. **TDD** (`build-feature` skill) — Working on the same `feat/<FEAT-XX>-<slug>` branch, run migrations, write failing specs, implement, refactor.
+5. **Review** (`review-implementation` skill) — Audit security, stability, localization, and performance.
+6. **Close & PR Merge** (`close-feature` skill — **cannot be skipped**) — Write `History.md` entry, delete `implementation.md` + `mockups/` + `_product/current.yml`, push `feat/<FEAT-XX>-<slug>`, open Pull Request to `main`, wait for CI checks (`scan_ruby`, `lint`, `test`), merge PR (`gh pr merge --merge --delete-branch`), and sync local `main`.
 
 **Branch naming convention**:
-- Spec work: `spec/<FEAT-XX>-<short-slug>` (e.g., `spec/feat-03-shopping-list`)
-- Implementation: `feat/<FEAT-XX>-<short-slug>` (e.g., `feat/feat-03-shopping-list`)
+- Features (spec + implementation): `feat/<FEAT-XX>-<short-slug>` (e.g., `feat/feat-08-guest-view`)
 - Bug fixes: `fix/<FIX-XX>-<short-slug>` (e.g., `fix/fix-01-modal-bind`)
 
 ### 3. Biteclub CSS Theme
