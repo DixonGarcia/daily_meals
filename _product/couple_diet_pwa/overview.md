@@ -48,3 +48,7 @@ Two interactive Biteclub-themed HTML mockups have been designed under `_product/
 - **Daily View + Tomorrow Radar + Settings Diet Tab**:
   - **Variant 1 (`variant_1_clean_radar.html`) — Tarjeta de Lectura + Franja Compacta "Mañana"**: Clean read-first Today card with `✏️ Editar día` toggle in the header, followed immediately by a slim clickable `"➡️ Mañana (Jueves)"` strip showing lunch/dinner inline plus a soft ice-blue `❄️ Descongelar hoy` pill, paired with the simplified single-thread Gemini sidebar.
   - **Variant 2 (`variant_2_split_cards.html`) — Tarjeta Hoy + Tarjeta Dedicada "Radar de Mañana"**: Clean read-first Today card paired with a distinct compact `"🌙 Radar de Mañana"` card featuring a dedicated blue defrost callout box (`❄️ Bajar a la nevera esta noche: Pechuga de pollo, Pescado`), plus the simplified single-thread Gemini sidebar.
+
+## 6. Selected Variant
+- **Selected**: **Variant 1 (`variant_1_clean_radar.html`)** — Tarjeta de Lectura + Franja Compacta "Mañana" (clean read-first Today card with `✏️ Editar día` on-demand toggle, slim clickable `"➡️ Mañana (Jueves)"` strip with inline lunch/dinner summary and ice-blue `❄️ Descongelar hoy` pill, simplified single-thread Gemini sidebar with active diet profile badge, and `⚙️ Configuración > 🥗 Dieta y Hogar` tab).
+- **Discarded**: Variant 2 (`variant_2_split_cards.html`) deleted per `choose-mockup`.
