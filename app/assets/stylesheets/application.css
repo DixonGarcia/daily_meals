@@ -2030,9 +2030,47 @@ html {
 
 .shopping-item-usage {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.76rem;
   color: var(--color-subtitle);
   margin-top: 0.12rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shopping-usage-toggle {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.2rem;
+  padding: 0.14rem 0.52rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-body-alt);
+  color: var(--color-subtitle);
+  font-family: var(--font-family-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.shopping-usage-toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-secondary);
+}
+
+.shopping-usage-list {
+  margin-top: 0.35rem;
+  padding-left: 1rem;
+  font-size: 0.76rem;
+  color: var(--color-subtitle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.shopping-usage-list[hidden] {
+  display: none;
 }
 
 .shopping-qty-pill {

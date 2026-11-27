@@ -56,6 +56,32 @@ RSpec.describe "ShoppingLists", type: :request do
     end
   end
 
+  describe "GET /shopping_list when an ingredient is used in 3 or more dishes", unauthenticated: true do
+    let!(:dish_2) do
+      record = Dish.create!(name: "Pollo con arroz y brócoli", categories: [ "Lunch" ])
+      DishIngredient.create!(dish: record, ingredient: chicken, suggested_quantity: "90g")
+      record
+    end
+    let!(:dish_3) do
+      record = Dish.create!(name: "Pollo con yuca y ensalada", categories: [ "Dinner" ])
+      DishIngredient.create!(dish: record, ingredient: chicken, suggested_quantity: "90g")
+      record
+    end
+
+    before do
+      MealPlan.create!(day_of_week: "Monday", lunch_dish: dish, dinner_dish: dish_2)
+      MealPlan.create!(day_of_week: "Tuesday", lunch_dish: dish_3)
+    end
+
+    it "renders a compact collapsible meal count toggle instead of a wall of dish names" do
+      get shopping_list_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("shopping-usage-toggle")
+      expect(response.body).to include(I18n.t("shopping_lists.show.used_in_meals", count: 3))
+    end
+  end
+
   describe "GET /shopping_list when no meals are planned", unauthenticated: true do
     it "displays the empty state message" do
       get shopping_list_path

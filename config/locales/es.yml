@@ -241,6 +241,7 @@ es:
       empty_title: "Tu lista de compras está vacía"
       empty_subtitle: "Planifica almuerzos o cenas en el calendario para generar tus ingredientes automáticamente."
       go_to_calendar: "📆 Ir al Calendario"
+      used_in_meals: "En %{count} comidas · ver platos"
   settings:
     show:
       title: "⚙️ Configuración"

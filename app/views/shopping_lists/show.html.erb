@@ -84,7 +84,18 @@
                   <span class="shopping-check-box" aria-hidden="true"></span>
                   <div class="shopping-item-main">
                     <span class="shopping-item-title"><%= item[:ingredient].name %></span>
-                    <span class="shopping-item-usage"><%= format_dish_usage(item[:dishes]) %></span>
+                    <% if item[:dishes].size <= 2 %>
+                      <span class="shopping-item-usage"><%= format_dish_usage(item[:dishes]) %></span>
+                    <% else %>
+                      <button type="button" class="shopping-usage-toggle" aria-expanded="false">
+                        <%= t('shopping_lists.show.used_in_meals', count: total_dish_occurrences(item[:dishes])) %> ▾
+                      </button>
+                      <ul class="shopping-usage-list" hidden>
+                        <% item[:dishes].each do |entry| %>
+                          <li><%= format_single_dish_usage(entry) %></li>
+                        <% end %>
+                      </ul>
+                    <% end %>
                   </div>
                   <span class="shopping-qty-pill"><%= item[:quantity] %></span>
                 </div>
@@ -129,7 +140,18 @@
                   <span class="shopping-check-box" aria-hidden="true"></span>
                   <div class="shopping-item-main">
                     <span class="shopping-item-title"><%= item[:ingredient].name %></span>
-                    <span class="shopping-item-usage"><%= format_dish_usage(item[:dishes]) %></span>
+                    <% if item[:dishes].size <= 2 %>
+                      <span class="shopping-item-usage"><%= format_dish_usage(item[:dishes]) %></span>
+                    <% else %>
+                      <button type="button" class="shopping-usage-toggle" aria-expanded="false">
+                        <%= t('shopping_lists.show.used_in_meals', count: total_dish_occurrences(item[:dishes])) %> ▾
+                      </button>
+                      <ul class="shopping-usage-list" hidden>
+                        <% item[:dishes].each do |entry| %>
+                          <li><%= format_single_dish_usage(entry) %></li>
+                        <% end %>
+                      </ul>
+                    <% end %>
                   </div>
                   <span class="shopping-qty-pill"><%= item[:quantity] %></span>
                 </div>
@@ -390,6 +412,17 @@
           ev.preventDefault();
           toggleRow();
         }
+      });
+    });
+
+    document.querySelectorAll(".shopping-usage-toggle").forEach(function(btn) {
+      btn.addEventListener("click", function(ev) {
+        ev.stopPropagation();
+        const list = btn.nextElementSibling;
+        if (!list) return;
+        const expanded = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", expanded ? "false" : "true");
+        list.hidden = expanded;
       });
     });
 
