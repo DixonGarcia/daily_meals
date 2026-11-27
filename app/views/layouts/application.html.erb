@@ -18,9 +18,10 @@
 
     <% base_prefix = root_path == "/" ? "" : root_path.chomp("/") %>
     <link rel="manifest" href="<%= pwa_manifest_path(format: :json) %>">
-    <link rel="icon" href="<%= base_prefix %>/icon.png" type="image/png">
-    <link rel="icon" href="<%= base_prefix %>/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="<%= base_prefix %>/icon.png">
+    <link rel="icon" href="<%= base_prefix %>/icon.svg?v=2" type="image/svg+xml">
+    <link rel="icon" href="<%= base_prefix %>/icon.png?v=2" type="image/png">
+    <link rel="shortcut icon" href="<%= base_prefix %>/favicon.ico?v=2">
+    <link rel="apple-touch-icon" href="<%= base_prefix %>/icon.png?v=2">
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   </head>
 

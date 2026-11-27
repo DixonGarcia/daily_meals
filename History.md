@@ -4,6 +4,16 @@ Development log for **DailyMeals**. Entries are newest-first. Each entry covers 
 
 ---
 
+## [FIX-04] Biteclub Brand Favicon & PWA Icons — 2026-11-27
+
+DailyMeals still served the default Rails 8 red placeholder square for `public/icon.svg` and `public/icon.png` without a `public/favicon.ico`, causing browser tabs and mobile home screen PWA icons to display a red box instead of the DailyMeals brand identity.
+
+`public/icon.svg` was replaced with a custom Biteclub-themed minimalist skillet-and-egg vector mark (Charcoal `#141414` background, Lime Green `#9bc024` skillet rim and handle, crisp white stylized egg, and golden yolk `#f5b700`), and used to generate a full-bleed 512x512 maskable-safe `public/icon.png` plus multi-resolution `public/favicon.ico` (`48x48`, `32x32`, `16x16`). `app/views/layouts/application.html.erb`, `app/views/pwa/manifest.json.erb`, and `app/views/pwa/service-worker.js` were updated with `?v=2` icon cache busting, explicit `shortcut icon` link, and `CACHE_NAME = "dailymeals-v2"` so existing browsers and installed PWAs refresh away from the cached red square immediately.
+
+The RSpec suite closed at 148 examples, 0 failures, RuboCop reported 0 offenses across 90 files, and Brakeman (`--except EOLRails`) reported 0 security warnings.
+
+---
+
 ## [FIX-03] Rails 8 Native params.expect, DRY Refactoring & Deprecation Cleanup — 2026-11-27
 
 A codebase-wide DRY, Clean Code, and Rails 8 conventions audit identified an obsolete Rails 7.2 `params.expect` monkey-patch shadowing Rails 8's native type-safe parameter expectations, duplicated `.env` file readers, repeated view templates and category badge logic, duplicated eager-loading and ingredient normalization code across models/services/controllers, a redundant double `Dish.all` query in `MealPlanHistory#restore_to_calendar!`, a dead `@categories_explicitly_set_empty` reference in `Dish`, missing `@household_setting` initialization in `ApiKeysController#render_validation_error`, and active Rack/Rails 8.1 deprecation warnings.
