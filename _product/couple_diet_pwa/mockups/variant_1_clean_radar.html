@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DailyMeals — FEAT-10 Variante 1: Tarjeta de Lectura + Franja Mañana</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #9bc024;
+      --color-secondary: #141414;
+      --color-body: #ffffff;
+      --color-body-alt: #f8f9fa;
+      --color-border: #e9e9e9;
+      --color-title: #111111;
+      --color-text: #343434;
+      --color-subtitle: #767676;
+      --blue-high: #0094e4;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.05);
+      --font-title: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--color-body-alt); color: var(--color-text); font-family: var(--font-body); padding-bottom: 3rem; }
+
+    .mockup-switcher {
+      background: #141414; color: #fff; padding: 0.6rem 1rem;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.82rem;
+    }
+    .mockup-links { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .mockup-pill {
+      padding: 0.3rem 0.75rem; border-radius: 999px; text-decoration: none; font-weight: 600;
+      color: #d4d4d4; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); cursor: pointer;
+    }
+    .mockup-pill.active { background: var(--color-primary); color: #141414; border-color: var(--color-primary); }
+
+    .app-nav { background: #fff; border-bottom: 1px solid var(--color-border); box-shadow: var(--shadow-sm); }
+    .nav-inner { max-width: 1080px; margin: 0 auto; padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+    .nav-logo { font-family: var(--font-title); font-weight: 800; font-size: 1.3rem; color: var(--color-secondary); text-decoration: none; }
+    .nav-links { display: flex; gap: 1rem; font-family: var(--font-title); font-weight: 600; font-size: 0.9rem; }
+    .nav-link { color: var(--color-subtitle); text-decoration: none; cursor: pointer; padding-bottom: 0.2rem; border-bottom: 2px solid transparent; }
+    .nav-link.active { color: var(--color-secondary); border-bottom-color: var(--color-primary); }
+
+    .container { max-width: 1080px; margin: 1.25rem auto; padding: 0 1rem; }
+    .dash-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.25rem; align-items: start; }
+    @media (max-width: 860px) { .dash-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: #fff; border: 1px solid var(--color-border); border-radius: 16px;
+      box-shadow: var(--shadow-md); padding: 1.25rem;
+    }
+
+    .cal-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+    h2 { font-family: var(--font-title); font-size: 1.35rem; color: var(--color-title); }
+    .seg-toggle { display: inline-flex; background: #fff; border: 1px solid var(--color-border); border-radius: 999px; padding: 0.2rem; }
+    .seg-btn { padding: 0.35rem 0.85rem; border-radius: 999px; font-family: var(--font-title); font-size: 0.82rem; font-weight: 700; color: var(--color-subtitle); }
+    .seg-btn.active { background: var(--color-primary); color: var(--color-secondary); }
+
+    .day-chips { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.35rem; margin-bottom: 1rem; }
+    .day-chip {
+      min-height: 44px; border-radius: 12px; border: 1px solid var(--color-border); background: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: var(--font-title); font-weight: 800; font-size: 0.78rem; color: var(--color-secondary);
+    }
+    .day-chip.active { background: var(--color-secondary); color: #fff; border-color: var(--color-secondary); }
+    .today-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-primary); margin-top: 3px; }
+
+    /* Read-First Today Card */
+    .today-card { border-color: var(--color-primary); margin-bottom: 0.85rem; }
+    .day-header { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--color-border); }
+    .day-title-group { display: flex; align-items: center; gap: 0.5rem; }
+    .day-title { font-family: var(--font-title); font-size: 1.2rem; font-weight: 800; }
+    .today-badge { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; font-size: 0.72rem; font-weight: 800; padding: 0.18rem 0.55rem; border-radius: 999px; }
+    .btn-edit-toggle {
+      border: 1px solid var(--color-border); background: var(--color-body-alt); color: var(--color-secondary);
+      border-radius: 10px; padding: 0.4rem 0.75rem; font-family: var(--font-title); font-weight: 700; font-size: 0.8rem; cursor: pointer; min-height: 36px;
+    }
+    .btn-edit-toggle:hover { border-color: var(--color-primary); }
+
+    .meal-slot { background: var(--color-body-alt); border: 1px solid var(--color-border); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.8rem; }
+    .meal-slot:last-child { margin-bottom: 0; }
+    .meal-label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-subtitle); margin-bottom: 0.25rem; }
+    .dish-link { font-family: var(--font-title); font-weight: 800; font-size: 1.05rem; color: var(--blue-high); text-decoration: none; }
+    .ing-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+    .ing-pill { background: #fff; border: 1px solid var(--color-border); border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.76rem; }
+
+    .edit-select { width: 100%; min-height: 42px; border: 1px solid var(--color-border); border-radius: 10px; padding: 0.45rem 0.7rem; font-size: 0.92rem; margin-top: 0.3rem; }
+    .edit-actions { display: flex; gap: 0.5rem; margin-top: 0.9rem; }
+    .btn-primary { flex: 1; min-height: 44px; border: none; border-radius: 10px; background: var(--color-primary); color: var(--color-secondary); font-family: var(--font-title); font-weight: 800; cursor: pointer; }
+    .btn-cancel { min-height: 44px; border: 1px solid var(--color-border); border-radius: 10px; background: #fff; padding: 0 1rem; font-weight: 600; cursor: pointer; }
+
+    /* Variant 1: Compact Tomorrow Strip */
+    .tomorrow-strip {
+      display: block; text-decoration: none; color: inherit;
+      background: #fff; border: 1px solid var(--color-border); border-radius: 14px;
+      padding: 0.85rem 1rem; box-shadow: var(--shadow-sm); transition: border-color 0.15s ease;
+    }
+    .tomorrow-strip:hover { border-color: var(--blue-high); }
+    .tomorrow-row-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .tomorrow-label { font-family: var(--font-title); font-weight: 800; font-size: 0.92rem; color: var(--color-secondary); }
+    .tomorrow-dishes { font-size: 0.85rem; color: var(--color-text); margin-top: 0.3rem; }
+    .defrost-pill {
+      display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 0.5rem;
+      background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8;
+      border-radius: 999px; padding: 0.25rem 0.7rem; font-size: 0.78rem; font-weight: 700;
+    }
+
+    /* Simplified Single-Chat Sidebar */
+    .copilot-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
+    .btn-reset-chat { border: 1px solid var(--color-border); background: var(--color-body-alt); border-radius: 8px; padding: 0.35rem 0.65rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+    .diet-active-tag {
+      display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0.75rem;
+      font-size: 0.76rem; font-weight: 700; color: #4d6407; background: #f4f9e4;
+      border: 1px solid #d9ea9d; padding: 0.28rem 0.65rem; border-radius: 999px;
+    }
+    .chat-box { background: var(--color-body-alt); border: 1px solid var(--color-border); border-radius: 12px; padding: 0.9rem; font-size: 0.85rem; color: var(--color-subtitle); margin-bottom: 0.8rem; }
+    .chat-input-row { display: flex; gap: 0.45rem; }
+    .chat-input { flex: 1; min-height: 42px; border: 1px solid var(--color-border); border-radius: 10px; padding: 0.5rem 0.8rem; font-size: 0.88rem; }
+    .btn-send { min-height: 42px; border: none; border-radius: 10px; background: var(--color-secondary); color: #fff; font-family: var(--font-title); font-weight: 700; padding: 0 1rem; cursor: pointer; }
+
+    /* Diet Settings Tab View */
+    .settings-wrap { max-width: 720px; margin: 0 auto; }
+    .settings-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .s-tab { padding: 0.55rem 1rem; border-radius: 10px; border: 1px solid var(--color-border); background: #fff; font-family: var(--font-title); font-weight: 700; font-size: 0.88rem; color: var(--color-subtitle); }
+    .s-tab.active { background: var(--color-secondary); color: #fff; border-color: var(--color-secondary); }
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label { display: block; font-family: var(--font-title); font-weight: 700; font-size: 0.92rem; margin-bottom: 0.35rem; }
+    .form-hint { display: block; font-size: 0.8rem; color: var(--color-subtitle); margin-bottom: 0.45rem; }
+    .form-textarea { width: 100%; min-height: 130px; border: 1px solid var(--color-border); border-radius: 12px; padding: 0.75rem; font-family: var(--font-body); font-size: 0.9rem; resize: vertical; }
+    .servings-input { width: 110px; min-height: 42px; border: 1px solid var(--color-border); border-radius: 10px; padding: 0.45rem 0.75rem; font-size: 0.95rem; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="mockup-switcher">
+    <span><strong>FEAT-10 Mockup</strong> · Variante 1: Tarjeta de Lectura + Franja Compacta "Mañana"</span>
+    <div class="mockup-links">
+      <a class="mockup-pill active" href="variant_1_clean_radar.html">Variante 1 (Franja)</a>
+      <a class="mockup-pill" href="variant_2_split_cards.html">Variante 2 (Tarjeta Radar)</a>
+      <button type="button" class="mockup-pill" id="btn-switch-screen">Ver ⚙️ Configuración > Dieta</button>
+    </div>
+  </div>
+
+  <nav class="app-nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="#">🍳 DailyMeals</a>
+      <div class="nav-links">
+        <span class="nav-link active" id="nav-cal">📆 Calendario</span>
+        <span class="nav-link">🛒 Compras</span>
+        <span class="nav-link">🍽️ Platos</span>
+        <span class="nav-link" id="nav-set">⚙️ Configuración</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- Screen A: Daily Dashboard -->
+    <div id="screen-dashboard" class="dash-grid">
+      <div>
+        <div class="cal-head">
+          <h2>📆 Calendario Semanal</h2>
+          <div class="seg-toggle">
+            <span class="seg-btn active">📅 Por Día</span>
+            <span class="seg-btn">🗓️ Semana</span>
+          </div>
+        </div>
+
+        <div class="day-chips">
+          <div class="day-chip">Lun</div>
+          <div class="day-chip">Mar</div>
+          <div class="day-chip active">Mié<span class="today-dot"></span></div>
+          <div class="day-chip">Jue</div>
+          <div class="day-chip">Vie</div>
+          <div class="day-chip">Sáb</div>
+          <div class="day-chip">Dom</div>
+        </div>
+
+        <!-- Read-First Card with On-Demand Edit Toggle -->
+        <div class="card today-card">
+          <div class="day-header">
+            <div class="day-title-group">
+              <span class="day-title">Miércoles</span>
+              <span class="today-badge">📍 Hoy</span>
+            </div>
+            <button type="button" class="btn-edit-toggle" id="btn-edit-day">✏️ Editar día</button>
+          </div>
+
+          <div id="today-read-view">
+            <div class="meal-slot">
+              <span class="meal-label">☀️ Almuerzo</span>
+              <a href="#" class="dish-link">Pollo con arroz integral y brócoli</a>
+              <div class="ing-pills">
+                <span class="ing-pill">Pechuga de pollo · <strong>90g</strong></span>
+                <span class="ing-pill">Arroz integral · <strong>160g</strong></span>
+                <span class="ing-pill">Brócoli · <strong>200g</strong></span>
+                <span class="ing-pill">Aceite de oliva · <strong>15ml</strong></span>
+              </div>
+            </div>
+            <div class="meal-slot">
+              <span class="meal-label">🌙 Cena</span>
+              <a href="#" class="dish-link">Carne con papas y aguacate</a>
+              <div class="ing-pills">
+                <span class="ing-pill">Carne magra de res · <strong>110g</strong></span>
+                <span class="ing-pill">Papa · <strong>720g</strong></span>
+                <span class="ing-pill">Coliflor · <strong>200g</strong></span>
+                <span class="ing-pill">Aguacate · <strong>155g</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div id="today-edit-view" hidden>
+            <div class="meal-slot">
+              <span class="meal-label">☀️ Almuerzo</span>
+              <select class="edit-select">
+                <option selected>Pollo con arroz integral y brócoli</option>
+                <option>Lentejas con pollo y calabacín</option>
+                <option>Pollo con yuca y ensalada fresca</option>
+              </select>
+            </div>
+            <div class="meal-slot">
+              <span class="meal-label">🌙 Cena</span>
+              <select class="edit-select">
+                <option selected>Carne con papas y aguacate</option>
+                <option>Pescado con arroz blanco y aguacate</option>
+                <option>Cerdo con yuca y aguacate</option>
+              </select>
+            </div>
+            <div class="edit-actions">
+              <button type="button" class="btn-primary" id="btn-save-edit">Guardar día</button>
+              <button type="button" class="btn-cancel" id="btn-cancel-edit">Cancelar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Variant 1: Slim Clickable Tomorrow Strip + Inline Defrost Pill -->
+        <a href="#" class="tomorrow-strip">
+          <div class="tomorrow-row-top">
+            <span class="tomorrow-label">➡️ Mañana (Jueves)</span>
+            <span style="font-size: 0.78rem; color: var(--blue-high); font-weight: 700;">Ver día →</span>
+          </div>
+          <div class="tomorrow-dishes">
+            ☀️ <strong>Pescado con arroz blanco y aguacate</strong> · 🌙 <strong>Cerdo con yuca y aguacate</strong>
+          </div>
+          <div class="defrost-pill">❄️ Descongelar hoy: Carne de cerdo magra, Pescado</div>
+        </a>
+      </div>
+
+      <!-- Simplified Sidebar (1 chat, zero JSON accordion, zero session switcher) -->
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="card">
+          <div class="copilot-head">
+            <h3 style="font-family: var(--font-title); font-size: 1.1rem;">🤖 Copiloto de IA</h3>
+            <button type="button" class="btn-reset-chat">🔄 Nuevo chat</button>
+          </div>
+          <span class="diet-active-tag">🥗 Perfil activo · 2 personas · Dieta Venezuela</span>
+          <div class="chat-box">
+            Gemini ya conoce tu perfil de dieta (2 personas, meal prep en 2 tandas, ingredientes locales en Venezuela). Solo pídele el menú de la semana.
+          </div>
+          <div class="chat-input-row">
+            <input type="text" class="chat-input" placeholder="Ej. Ármame Lun-Vie estilo meal prep...">
+            <button type="button" class="btn-send">Enviar</button>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column; gap:0.65rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-family:var(--font-title); color:var(--color-primary);">🛒 Lista de Compras</strong>
+            <span style="font-size:0.78rem; color:var(--color-subtitle);">9 frescos · 5 despensa (×2)</span>
+          </div>
+          <button type="button" class="btn-primary">🛒 Abrir Lista Interactiva</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen B: Settings > Diet & Household -->
+    <div id="screen-settings" class="settings-wrap" hidden>
+      <h2 style="margin-bottom: 1rem;">⚙️ Configuración</h2>
+      <div class="settings-tabs">
+        <span class="s-tab active">🥗 Dieta y Hogar</span>
+        <span class="s-tab">📚 Historial</span>
+        <span class="s-tab">🔌 Integraciones</span>
+      </div>
+      <div class="card">
+        <h3 style="font-family: var(--font-title); margin-bottom: 0.25rem;">Perfil de Dieta y Hogar</h3>
+        <p style="font-size: 0.85rem; color: var(--color-subtitle); margin-bottom: 1.1rem;">
+          Se guarda una sola vez y se envía automáticamente a Gemini en cada consulta. También define las porciones por defecto de tu Lista de Compras.
+        </p>
+        <div class="form-group">
+          <label class="form-label">👥 Personas en el hogar (porciones por defecto)</label>
+          <span class="form-hint">Las recetas del catálogo se mantienen para 1 persona; la lista de compras multiplicará por este número.</span>
+          <input type="number" class="servings-input" value="2" min="1" max="10">
+        </div>
+        <div class="form-group">
+          <label class="form-label">🥗 Reglas de nuestra dieta y cocina</label>
+          <span class="form-hint">Describe objetivos, ingredientes disponibles en Venezuela, días de meal prep o adaptaciones para el bebé.</span>
+          <textarea class="form-textarea">Pareja joven con bebé en Venezuela. Plan de 2172 kcal por persona para almuerzos y cenas. Priorizar proteínas e ingredientes fáciles de conseguir en feria/carnicería local. Preferir estilo meal prep en 2 tandas (Lun-Mié y Jue-Sáb) y cenas rápidas de menos de 25 min adaptables sin sal para el bebé.</textarea>
+        </div>
+        <button type="button" class="btn-primary" style="width:100%;">💾 Guardar perfil del hogar</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const btnEdit = document.getElementById("btn-edit-day");
+    const readView = document.getElementById("today-read-view");
+    const editView = document.getElementById("today-edit-view");
+    const btnCancel = document.getElementById("btn-cancel-edit");
+    const btnSave = document.getElementById("btn-save-edit");
+
+    function setEditing(editing) {
+      readView.hidden = editing;
+      editView.hidden = !editing;
+      btnEdit.hidden = editing;
+    }
+    btnEdit.addEventListener("click", () => setEditing(true));
+    btnCancel.addEventListener("click", () => setEditing(false));
+    btnSave.addEventListener("click", () => setEditing(false));
+
+    const btnSwitch = document.getElementById("btn-switch-screen");
+    const dash = document.getElementById("screen-dashboard");
+    const settings = document.getElementById("screen-settings");
+    const navCal = document.getElementById("nav-cal");
+    const navSet = document.getElementById("nav-set");
+
+    function showSettings(flag) {
+      dash.hidden = flag;
+      settings.hidden = !flag;
+      navCal.classList.toggle("active", !flag);
+      navSet.classList.toggle("active", flag);
+      btnSwitch.textContent = flag ? "Volver a 📆 Calendario" : "Ver ⚙️ Configuración > Dieta";
+    }
+    btnSwitch.addEventListener("click", () => showSettings(dash.hidden === false));
+    navCal.addEventListener("click", () => showSettings(false));
+    navSet.addEventListener("click", () => showSettings(true));
+  </script>
+</body>
+</html>

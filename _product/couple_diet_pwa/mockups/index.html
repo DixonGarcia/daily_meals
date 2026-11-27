@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DailyMeals — Mockups FEAT-10: Pareja, Bebé, Dieta y PWA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #9bc024;
+      --color-secondary: #141414;
+      --color-body: #ffffff;
+      --color-body-alt: #f8f9fa;
+      --color-border: #e9e9e9;
+      --color-subtitle: #767676;
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--color-body-alt);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--color-secondary);
+      padding: 2rem 1rem;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    h1 { font-family: 'Outfit', sans-serif; font-size: 1.75rem; margin-bottom: 0.4rem; }
+    .sub { color: var(--color-subtitle); margin-bottom: 1.75rem; font-size: 0.95rem; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--color-body);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      background: #f1f7df;
+      color: #4d6407;
+      margin-bottom: 0.5rem;
+    }
+    h2 { font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 0.5rem; }
+    ul { padding-left: 1.15rem; color: #444; font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.35rem; }
+    .btn {
+      display: inline-block;
+      text-align: center;
+      text-decoration: none;
+      background: var(--color-secondary);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>👨‍👩‍👧 FEAT-10: Mockups — Pareja + Bebé + Perfil de Dieta + Limpieza</h1>
+    <p class="sub">Ambas variantes incluyen tarjeta de lectura segura (<code>✏️ Editar día</code> bajo demanda), chat de Gemini simplificado (sin JSON ni switcher), y vista previa de la pestaña <code>🥗 Dieta y Hogar</code>.</p>
+
+    <div class="grid">
+      <div class="card">
+        <div>
+          <span class="badge">Variante 1</span>
+          <h2>Tarjeta de Lectura + Franja Compacta "Mañana"</h2>
+          <ul>
+            <li>Vista diaria ultra limpia con botón <code>✏️ Editar día</code> en la cabecera (evita toques accidentales cargando al bebé).</li>
+            <li>Franja compacta clicable justo debajo: <code>➡️ Mañana (Jueves)</code> con platos inline y píldora <code>❄️ Descongelar hoy</code>.</li>
+            <li>Máximo aprovechamiento vertical en pantallas de celular (todo cabe sin hacer scroll).</li>
+          </ul>
+        </div>
+        <a class="btn" href="variant_1_clean_radar.html">Abrir Variante 1 →</a>
+      </div>
+
+      <div class="card">
+        <div>
+          <span class="badge">Variante 2</span>
+          <h2>Tarjeta Hoy + Tarjeta Dedicada "Radar de Mañana"</h2>
+          <ul>
+            <li>Misma tarjeta de lectura segura para Hoy con <code>✏️ Editar día</code>.</li>
+            <li>Tarjeta separada <code>🌙 Radar de Mañana</code> con bloque destacado celeste <code>❄️ Bajar a la nevera esta noche</code> imposible de pasar por alto.</li>
+            <li>Ideal para la revisión nocturna de las 8:30 PM entre los dos.</li>
+          </ul>
+        </div>
+        <a class="btn" href="variant_2_split_cards.html">Abrir Variante 2 →</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
