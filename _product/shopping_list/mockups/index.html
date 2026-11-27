@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DailyMeals — Mockups FEAT-09: Lista de Compras</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #9bc024;
+      --color-secondary: #141414;
+      --color-body: #ffffff;
+      --color-body-alt: #f8f9fa;
+      --color-border: #e9e9e9;
+      --color-subtitle: #767676;
+      --blue-high: #0094e4;
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--color-body-alt);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--color-secondary);
+      padding: 2rem 1rem;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    h1 { font-family: 'Outfit', sans-serif; font-size: 1.8rem; margin-bottom: 0.4rem; }
+    .sub { color: var(--color-subtitle); margin-bottom: 1.75rem; font-size: 0.95rem; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--color-body);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      background: #f1f7df;
+      color: #4d6407;
+      margin-bottom: 0.5rem;
+    }
+    h2 { font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 0.5rem; }
+    ul { padding-left: 1.1rem; color: #444; font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.35rem; }
+    .btn {
+      display: inline-block;
+      text-align: center;
+      text-decoration: none;
+      background: var(--color-secondary);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+    }
+    .btn:hover { background: #2c2c2c; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🛒 FEAT-09: Mockups de Lista de Compras (Venezuela)</h1>
+    <p class="sub">Compara ambas propuestas interactivas en tu navegador antes de aprobar el diseño para implementación.</p>
+
+    <div class="grid">
+      <div class="card">
+        <div>
+          <span class="badge">Variante 1</span>
+          <h2>Enfoque por Parada + Checklist Compacto</h2>
+          <ul>
+            <li>Selector rápido de porciones (<code>1x–4x</code>) arriba.</li>
+            <li>Píldoras horizontales por parada (<code>Todas | 🥬 Verdulería | 🥩 Carnicería | 🧀 Charcutería</code>).</li>
+            <li>Checklist de una columna con filas altas de 58px ideales para una mano.</li>
+            <li>Extras rápidos integrados y acordeón colapsable <code>🏠 Revisar en despensa</code> al final.</li>
+          </ul>
+        </div>
+        <a class="btn" href="variant_1_stop_focus.html">Abrir Variante 1 →</a>
+      </div>
+
+      <div class="card">
+        <div>
+          <span class="badge">Variante 2</span>
+          <h2>Tablero por Pestañas + Copiar por Parada</h2>
+          <ul>
+            <li>Barra visual de progreso (<code>% comprado</code>) + stepper de personas (<code>− 2 +</code>).</li>
+            <li>Pestañas segmentadas: <code>🛒 Frescos</code> | <code>🏠 Despensa</code> | <code>✨ Extras</code>.</li>
+            <li>Grilla de tarjetas por sección con botón individual <code>📲 Copiar parada</code> (ej. enviar solo Carnicería al carnicero).</li>
+            <li>Barra fija inferior (dock) para copiar pendientes a WhatsApp en 1 toque.</li>
+          </ul>
+        </div>
+        <a class="btn" href="variant_2_split_dashboard.html">Abrir Variante 2 →</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

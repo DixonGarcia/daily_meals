@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DailyMeals — Mockup Variante 2: Tablero por Pestañas + Copiar por Parada</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #9bc024;
+      --color-secondary: #141414;
+      --grey-box-fill: #eeeeee;
+      --grey-text: #a4a4a4;
+      --color-body: #ffffff;
+      --color-body-alt: #f8f9fa;
+      --color-border: #e9e9e9;
+      --color-title: #111111;
+      --color-text: #343434;
+      --color-subtitle: #767676;
+      --blue-high: #0094e4;
+      --error-red: #d02e2e;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.05);
+      --font-title: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--color-body-alt);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      line-height: 1.45;
+      padding-bottom: 5.5rem;
+    }
+
+    /* Variant Switcher Banner */
+    .mockup-switcher {
+      background: #141414;
+      color: #fff;
+      padding: 0.6rem 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+    }
+    .mockup-switcher-links { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .mockup-pill {
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+      color: #d4d4d4;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+    }
+    .mockup-pill.active { background: var(--color-primary); color: #141414; border-color: var(--color-primary); }
+
+    /* App Navbar */
+    .app-nav {
+      background: var(--color-body);
+      border-bottom: 1px solid var(--color-border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .nav-logo { font-family: var(--font-title); font-weight: 800; font-size: 1.25rem; color: var(--color-secondary); text-decoration: none; }
+    .nav-links { display: flex; gap: 0.85rem; align-items: center; font-family: var(--font-title); font-size: 0.9rem; font-weight: 600; }
+    .nav-link { color: var(--color-subtitle); text-decoration: none; padding-bottom: 0.25rem; border-bottom: 2px solid transparent; }
+    .nav-link.active { color: var(--color-secondary); border-bottom-color: var(--color-primary); }
+
+    .container { max-width: 1040px; margin: 1.25rem auto; padding: 0 1rem; }
+
+    .card {
+      background: var(--color-body);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      padding: 1.15rem;
+    }
+
+    /* Summary Hero */
+    .hero-card { margin-bottom: 1rem; }
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+    h1 { font-family: var(--font-title); font-size: 1.5rem; color: var(--color-title); }
+
+    /* Stepper */
+    .stepper {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--color-body-alt);
+    }
+    .stepper button {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: transparent;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .stepper button:hover { background: var(--grey-box-fill); }
+    .stepper-val { padding: 0 0.75rem; font-family: var(--font-title); font-weight: 700; font-size: 0.9rem; }
+
+    /* Progress Bar */
+    .progress-wrap { margin-bottom: 0.95rem; }
+    .progress-meta { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; color: var(--color-subtitle); margin-bottom: 0.35rem; }
+    .progress-track { height: 8px; background: var(--grey-box-fill); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--color-primary); transition: width 0.25s ease; }
+
+    /* Segmented Tabs */
+    .seg-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.4rem;
+      background: var(--color-body-alt);
+      padding: 0.3rem;
+      border-radius: 12px;
+      border: 1px solid var(--color-border);
+    }
+    .seg-tab {
+      border: none;
+      background: transparent;
+      min-height: 40px;
+      border-radius: 9px;
+      font-family: var(--font-title);
+      font-weight: 700;
+      font-size: 0.86rem;
+      color: var(--color-subtitle);
+      cursor: pointer;
+    }
+    .seg-tab.active {
+      background: var(--color-body);
+      color: var(--color-secondary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Section Grid */
+    .sections-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    @media (max-width: 768px) {
+      .sections-grid { grid-template-columns: 1fr; }
+    }
+
+    .section-card { padding: 0; overflow: hidden; align-self: start; }
+    .section-head {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-name { font-family: var(--font-title); font-weight: 700; font-size: 1rem; color: var(--color-secondary); }
+    .btn-mini-wa {
+      border: 1px solid var(--color-border);
+      background: var(--color-body-alt);
+      border-radius: 8px;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--color-secondary);
+    }
+    .btn-mini-wa:hover { border-color: var(--color-primary); background: #f4f9e4; }
+
+    .shop-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.8rem 1rem;
+      min-height: 56px;
+      border-bottom: 1px solid var(--color-border);
+      cursor: pointer;
+    }
+    .shop-row:last-child { border-bottom: none; }
+    .shop-row.checked { background: #f8faf3; }
+    .shop-row.checked .item-name { text-decoration: line-through; color: var(--grey-text); }
+    .shop-row.checked .item-qty { opacity: 0.45; }
+
+    .check-box {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid #ccc;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+      font-size: 0.8rem;
+    }
+    .shop-row.checked .check-box { background: var(--color-primary); border-color: var(--color-primary); }
+    .item-main { flex: 1; }
+    .item-name { font-weight: 600; font-size: 0.94rem; display: block; color: var(--color-secondary); }
+    .item-usage { font-size: 0.75rem; color: var(--color-subtitle); display: block; }
+    .item-qty {
+      font-family: var(--font-title);
+      font-weight: 700;
+      font-size: 0.88rem;
+      background: var(--grey-box-fill);
+      padding: 0.25rem 0.6rem;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    /* Sticky Bottom Action Dock */
+    .bottom-dock {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--color-border);
+      padding: 0.75rem 1rem;
+      z-index: 60;
+    }
+    .dock-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+    .btn-primary-wa {
+      flex: 1;
+      min-height: 46px;
+      border: none;
+      border-radius: 12px;
+      background: var(--color-secondary);
+      color: #fff;
+      font-family: var(--font-title);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .btn-dock-secondary {
+      min-height: 46px;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      background: #fff;
+      padding: 0 0.95rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .extras-form { display: flex; gap: 0.5rem; margin-bottom: 0.85rem; }
+    .extras-input { flex: 1; min-height: 44px; border: 1px solid var(--color-border); border-radius: 10px; padding: 0.5rem 0.85rem; font-size: 0.92rem; }
+    .btn-add { min-height: 44px; border: none; border-radius: 10px; background: var(--blue-high); color: #fff; font-weight: 700; padding: 0 1rem; cursor: pointer; }
+
+    .toast {
+      position: fixed;
+      top: 4.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(-180%);
+      background: var(--color-secondary);
+      color: #fff;
+      padding: 0.65rem 1.15rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: transform 0.25s ease;
+      z-index: 120;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .wa-preview {
+      margin-top: 0.9rem;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 0.85rem;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      font-family: monospace;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="mockup-switcher">
+    <span><strong>FEAT-09 Mockup</strong> · Variante 2: Tablero por Pestañas + Copiar por Parada</span>
+    <div class="mockup-switcher-links">
+      <a class="mockup-pill" href="variant_1_stop_focus.html">Variante 1 (Parada)</a>
+      <a class="mockup-pill active" href="variant_2_split_dashboard.html">Variante 2 (Pestañas + Grilla)</a>
+    </div>
+  </div>
+
+  <nav class="app-nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="#">🍳 DailyMeals</a>
+      <div class="nav-links">
+        <a class="nav-link" href="#">📆 Calendario</a>
+        <a class="nav-link active" href="#">🛒 Compras</a>
+        <a class="nav-link" href="#">🍽️ Platos</a>
+        <a class="nav-link" href="#">⚙️ Config</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="card hero-card">
+      <div class="hero-top">
+        <h1>🛒 Lista de Compras</h1>
+        <div class="stepper">
+          <button type="button" id="step-minus">−</button>
+          <span class="stepper-val" id="stepper-val">👥 2 personas</span>
+          <button type="button" id="step-plus">+</button>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span id="progress-label">1 de 14 comprados</span>
+          <span id="progress-pct">7%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill" style="width: 7%;"></div>
+        </div>
+      </div>
+
+      <div class="seg-tabs">
+        <button type="button" class="seg-tab active" data-tab="fresh" id="tab-fresh">🛒 Frescos (9)</button>
+        <button type="button" class="seg-tab" data-tab="pantry" id="tab-pantry">🏠 Despensa (3)</button>
+        <button type="button" class="seg-tab" data-tab="extras" id="tab-extras">✨ Extras (2)</button>
+      </div>
+
+      <div class="wa-preview" id="wa-preview"></div>
+    </div>
+
+    <div id="tab-content"></div>
+  </main>
+
+  <div class="bottom-dock">
+    <div class="dock-inner">
+      <button type="button" class="btn-primary-wa" id="btn-copy-all">📲 Copiar pendientes para WhatsApp</button>
+      <button type="button" class="btn-dock-secondary" id="btn-clear">↺ Limpiar</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">✅ Copiado para WhatsApp</div>
+
+  <script>
+    const SECTION_EMOJIS = {
+      "Verdulería": "🥬", "Carnicería": "🥩", "Charcutería": "🧀",
+      "Víveres": "🥫", "Despensa": "🏠"
+    };
+
+    const BASE_ITEMS = [
+      { id: "ing-1", name: "Vegetales mixtos", section: "Verdulería", baseQty: 1400, unit: "g", usage: "7 comidas planificadas", pantry: false },
+      { id: "ing-2", name: "Papa", section: "Verdulería", baseQty: 1080, unit: "g", usage: "Pollo con papas · Carne con papas", pantry: false },
+      { id: "ing-3", name: "Aguacate", section: "Verdulería", baseQty: 465, unit: "g", usage: "Post-entreno (×3)", pantry: false },
+      { id: "ing-4", name: "Batata", section: "Verdulería", baseQty: 440, unit: "g", usage: "Pollo con batata (×2)", pantry: false },
+      { id: "ing-5", name: "Yuca", section: "Verdulería", baseQty: 260, unit: "g", usage: "Pollo con yuca · Cerdo con yuca", pantry: false },
+      { id: "ing-6", name: "Pechuga de pollo", section: "Carnicería", baseQty: 360, unit: "g", usage: "Pollo a la plancha (×4)", pantry: false },
+      { id: "ing-7", name: "Carne magra de res", section: "Carnicería", baseQty: 220, unit: "g", usage: "Carne con arroz · Carne con papas", pantry: false },
+      { id: "ing-8", name: "Pescado", section: "Carnicería", baseQty: 120, unit: "g", usage: "Pescado con arroz blanco", pantry: false },
+      { id: "ing-9", name: "Queso blanco bajo en sal", section: "Charcutería", baseQty: 250, unit: "g", usage: "Acompañante de cenas", pantry: false },
+      { id: "ing-10", name: "Arroz integral", section: "Víveres", baseQty: 480, unit: "g", usage: "Pollo con arroz · Carne con arroz", pantry: true },
+      { id: "ing-11", name: "Lentejas", section: "Víveres", baseQty: 480, unit: "g", usage: "Lentejas guisadas (×2)", pantry: true },
+      { id: "ing-12", name: "Aceite de oliva", section: "Despensa", baseQty: 75, unit: "ml", usage: "5 platos planificados", pantry: true }
+    ];
+
+    let state = {
+      servings: 2,
+      tab: "fresh",
+      checked: { "ing-12": true },
+      extras: [
+        { id: "ext-1", name: "Café molido 500g", checked: false },
+        { id: "ext-2", name: "Pañales bebé", checked: false }
+      ]
+    };
+
+    function formatQty(baseQty, unit, servings) {
+      const total = baseQty * servings;
+      if (unit === "g" && total >= 1000) return `${parseFloat((total / 1000).toFixed(2))} kg`;
+      if (unit === "ml" && total >= 1000) return `${parseFloat((total / 1000).toFixed(2))} L`;
+      return `${total}${unit}`;
+    }
+
+    function showCopyToast(text, label) {
+      if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {});
+      const preview = document.getElementById("wa-preview");
+      preview.textContent = text;
+      preview.style.display = "block";
+      const toast = document.getElementById("toast");
+      toast.textContent = label || "✅ Copiado para WhatsApp";
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function render() {
+      const freshItems = BASE_ITEMS.filter(i => !i.pantry);
+      const pantryItems = BASE_ITEMS.filter(i => i.pantry);
+      const total = BASE_ITEMS.length + state.extras.length;
+      const done = BASE_ITEMS.filter(i => state.checked[i.id]).length + state.extras.filter(x => x.checked).length;
+      const pct = total ? Math.round((done / total) * 100) : 0;
+
+      document.getElementById("stepper-val").textContent = `👥 ${state.servings} ${state.servings === 1 ? 'persona' : 'personas'}`;
+      document.getElementById("progress-label").textContent = `${done} de ${total} marcados`;
+      document.getElementById("progress-pct").textContent = `${pct}%`;
+      document.getElementById("progress-fill").style.width = `${pct}%`;
+
+      document.getElementById("tab-fresh").textContent = `🛒 Frescos (${freshItems.filter(i => !state.checked[i.id]).length})`;
+      document.getElementById("tab-pantry").textContent = `🏠 Despensa (${pantryItems.filter(i => !state.checked[i.id]).length})`;
+      document.getElementById("tab-extras").textContent = `✨ Extras (${state.extras.filter(x => !x.checked).length})`;
+
+      const root = document.getElementById("tab-content");
+
+      if (state.tab === "extras") {
+        root.innerHTML = `
+          <div class="card">
+            <form class="extras-form" id="extras-form">
+              <input type="text" id="extra-input" class="extras-input" placeholder="Ej. Pañales, café, agua potable...">
+              <button type="submit" class="btn-add">➕ Agregar</button>
+            </form>
+            ${state.extras.map(ex => `
+              <div class="shop-row ${ex.checked ? 'checked' : ''}" data-toggle-extra="${ex.id}">
+                <span class="check-box">${ex.checked ? '✓' : ''}</span>
+                <div class="item-main"><span class="item-name">${ex.name}</span></div>
+                <button type="button" data-del-extra="${ex.id}" style="border:none;background:none;cursor:pointer;color:#999;">✕</button>
+              </div>
+            `).join("")}
+          </div>
+        `;
+        document.getElementById("extras-form").addEventListener("submit", (e) => {
+          e.preventDefault();
+          const val = document.getElementById("extra-input").value.trim();
+          if (!val) return;
+          state.extras.push({ id: "ext-" + Date.now(), name: val, checked: false });
+          render();
+        });
+        return;
+      }
+
+      const list = state.tab === "fresh" ? freshItems : pantryItems;
+      const sections = [...new Set(list.map(i => i.section))];
+      root.innerHTML = `
+        <div class="sections-grid">
+          ${sections.map(sec => {
+            const items = list.filter(i => i.section === sec);
+            return `
+              <div class="card section-card">
+                <div class="section-head">
+                  <span class="section-name">${SECTION_EMOJIS[sec] || '📦'} ${sec}</span>
+                  <button type="button" class="btn-mini-wa" data-copy-sec="${sec}">📲 Copiar parada</button>
+                </div>
+                ${items.map(item => `
+                  <div class="shop-row ${state.checked[item.id] ? 'checked' : ''}" data-toggle="${item.id}">
+                    <span class="check-box">${state.checked[item.id] ? '✓' : ''}</span>
+                    <div class="item-main">
+                      <span class="item-name">${item.name}</span>
+                      <span class="item-usage">${item.usage}</span>
+                    </div>
+                    <span class="item-qty">${formatQty(item.baseQty, item.unit, state.servings)}</span>
+                  </div>
+                `).join("")}
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    document.addEventListener("click", (e) => {
+      const tab = e.target.closest("[data-tab]");
+      if (tab) {
+        state.tab = tab.dataset.tab;
+        document.querySelectorAll(".seg-tab").forEach(t => t.classList.toggle("active", t === tab));
+        render(); return;
+      }
+      const copySec = e.target.closest("[data-copy-sec]");
+      if (copySec) {
+        const sec = copySec.dataset.copySec;
+        const items = BASE_ITEMS.filter(i => i.section === sec && !state.checked[i.id]);
+        const lines = [`*${SECTION_EMOJIS[sec] || '📦'} ${sec} (${state.servings} personas)*`, ...items.map(i => `- ${i.name}: ${formatQty(i.baseQty, i.unit, state.servings)}`)];
+        showCopyToast(lines.join("\n"), `✅ ${sec} copiado para WhatsApp`);
+        return;
+      }
+      const delEx = e.target.closest("[data-del-extra]");
+      if (delEx) { state.extras = state.extras.filter(x => x.id !== delEx.dataset.delExtra); render(); return; }
+      const row = e.target.closest("[data-toggle]");
+      if (row) { state.checked[row.dataset.toggle] = !state.checked[row.dataset.toggle]; render(); return; }
+      const exRow = e.target.closest("[data-toggle-extra]");
+      if (exRow) { const x = state.extras.find(i => i.id === exRow.dataset.toggleExtra); if (x) x.checked = !x.checked; render(); return; }
+    });
+
+    document.getElementById("step-minus").addEventListener("click", () => { if (state.servings > 1) { state.servings--; render(); } });
+    document.getElementById("step-plus").addEventListener("click", () => { if (state.servings < 6) { state.servings++; render(); } });
+    document.getElementById("btn-clear").addEventListener("click", () => { state.checked = {}; state.extras.forEach(x => x.checked = false); render(); });
+    document.getElementById("btn-copy-all").addEventListener("click", () => {
+      const lines = [`🛒 *Lista de Compras (${state.servings} personas)*`];
+      const grouped = {};
+      BASE_ITEMS.filter(i => !i.pantry && !state.checked[i.id]).forEach(i => { (grouped[i.section] ||= []).push(i); });
+      Object.entries(grouped).forEach(([sec, items]) => {
+        lines.push(`\n*${SECTION_EMOJIS[sec] || '📦'} ${sec}*`);
+        items.forEach(i => lines.push(`- ${i.name}: ${formatQty(i.baseQty, i.unit, state.servings)}`));
+      });
+      const pendingExtras = state.extras.filter(x => !x.checked);
+      if (pendingExtras.length) {
+        lines.push(`\n*✨ Extras*`);
+        pendingExtras.forEach(x => lines.push(`- ${x.name}`));
+      }
+      showCopyToast(lines.join("\n"));
+    });
+
+    render();
+  </script>
+</body>
+</html>
