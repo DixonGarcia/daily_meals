@@ -2,8 +2,8 @@
 // Caches recently visited read-only household views (/, /shopping_list, /dishes) and static assets
 // so the menu and shopping list stay readable inside supermarkets or ferias with poor cell reception.
 
-const CACHE_NAME = "dailymeals-v1";
-const PRECACHE_URLS = [ "/", "/shopping_list", "/icon.png" ];
+const CACHE_NAME = "dailymeals-v2";
+const PRECACHE_URLS = [ "/", "/shopping_list", "/icon.png?v=2" ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

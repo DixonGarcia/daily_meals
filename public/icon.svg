@@ -1,3 +1,18 @@
-<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100%" height="100%" fill="red"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Biteclub Charcoal Squircle Background -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="#141414"/>
+
+  <!-- Minimalist Skillet Handle (placed behind pan for a seamless flush join) -->
+  <line x1="322" y1="322" x2="416" y2="416" stroke="#9bc024" stroke-width="34" stroke-linecap="round"/>
+
+  <!-- Lime Green Skillet Rim -->
+  <circle cx="236" cy="236" r="142" fill="#1f1f1f" stroke="#9bc024" stroke-width="20"/>
+
+  <!-- Crisp Stylized Egg White -->
+  <path d="M238 146 C282 144, 322 172, 324 216 C326 252, 300 278, 282 296 C262 316, 228 326, 194 314 C160 302, 142 268, 148 228 C154 186, 190 148, 238 146 Z" fill="#ffffff"/>
+
+  <!-- Vibrant Sunny Yolk -->
+  <circle cx="240" cy="232" r="44" fill="#f5b700"/>
+  <!-- Subtle Gloss Highlight on Yolk -->
+  <circle cx="225" cy="217" r="11" fill="#ffe17d"/>
 </svg>

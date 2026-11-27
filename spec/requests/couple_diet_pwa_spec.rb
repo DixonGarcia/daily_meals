@@ -102,7 +102,7 @@ RSpec.describe "FEAT-10 Household Diet Profile, Couple Daily UX, Cleanup & PWA",
 
       get pwa_service_worker_path(format: :js)
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("dailymeals-v1")
+      expect(response.body).to include("dailymeals-v2")
       expect(response.body).to include("addEventListener(\"fetch\"")
     end
   end
