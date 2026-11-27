@@ -4,6 +4,16 @@ Development log for **DailyMeals**. Entries are newest-first. Each entry covers 
 
 ---
 
+## [FIX-03] Rails 8 Native params.expect, DRY Refactoring & Deprecation Cleanup — 2026-11-27
+
+A codebase-wide DRY, Clean Code, and Rails 8 conventions audit identified an obsolete Rails 7.2 `params.expect` monkey-patch shadowing Rails 8's native type-safe parameter expectations, duplicated `.env` file readers, repeated view templates and category badge logic, duplicated eager-loading and ingredient normalization code across models/services/controllers, a redundant double `Dish.all` query in `MealPlanHistory#restore_to_calendar!`, a dead `@categories_explicitly_set_empty` reference in `Dish`, missing `@household_setting` initialization in `ApiKeysController#render_validation_error`, and active Rack/Rails 8.1 deprecation warnings.
+
+`config/initializers/parameters_expect.rb` was deleted and callers handling arrays and nested attributes (`Api::V1::MealPlansController#import`, `Api::V1::DishesController#import`, and `DishesController#dish_params`) were updated to native Rails 8 `params.expect` schemas, while `config/application.rb` enabled `config.active_support.to_time_preserves_timezone = :zone` and all controllers and specs standardized on `:unprocessable_content` (eliminating every deprecation warning). Shared logic was extracted into `EnvResolver` (`app/services/env_resolver.rb`, replacing duplicate `.env` parsers in `ApplicationController` and `GeminiClient`), `ApplicationController#current_household_servings`, `ApplicationHelper#dish_category_badge_class`, `Ingredient.normalize_section` / `Ingredient.find_or_create_normalized!`, and `MealPlan.with_dishes_and_ingredients` / `MealPlan.import_schedule!`. View duplication was removed by extracting `app/views/shopping_lists/_section_cards.html.erb` and `app/views/meal_plans/_readonly_meal_slot.html.erb` (with zero inline styles or `.html_safe`), and controllers were cleaned to use `params.expect(:id)`, omit redundant `.all` calls, and avoid unnecessary `set_ingredients` queries on successful `DishesController` writes.
+
+The RSpec suite closed at 150 examples, 0 failures, and 0 deprecation warnings (including new unit coverage in `spec/services/env_resolver_spec.rb`), RuboCop reported 0 offenses across 92 files, and Brakeman (`--except EOLRails`) reported 0 security warnings.
+
+---
+
 ## [FEAT-10] Household Diet Profile, Couple & Baby Daily UX, Offline PWA & Dashboard Cleanup — 2026-11-27
 
 Authenticated daily browsing on `/` previously displayed raw `<select>` dropdowns vulnerable to accidental one-handed taps, lacked visibility into tomorrow's meals or proteins needing overnight defrosting, required repeating household diet and Venezuela meal-prep context in every Gemini conversation while dish autocomplete defaulted to two to four servings, carried obsolete dashboard clutter (manual JSON fallback accordion, multi-session chat switcher, and redundant manual history snapshot buttons), silently skipped delete/restore confirmations because Turbo/UJS is not loaded, shipped a default red PWA manifest with a fully commented-out service worker, and returned only dish IDs from `GET /api/v1/meal_plans`.
