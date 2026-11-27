@@ -1,0 +1,15 @@
+<div class="readonly-meal-slot<%= ' readonly-meal-slot-last' if last_slot %>">
+  <span class="meal-label"><%= label %></span>
+  <% if dish.present? %>
+    <a href="<%= dish_path(dish, from: 'calendar') %>" class="readonly-dish-link"><%= dish.name %></a>
+    <% if detailed && dish.dish_ingredients.any? %>
+      <div class="day-dish-ingredients">
+        <% dish.dish_ingredients.each do |di| %>
+          <span class="day-ing-pill"><%= di.ingredient.name %> · <strong><%= di.suggested_quantity %></strong></span>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <span class="readonly-empty-slot"><%= t('meal_plans.index.no_dish_assigned') %></span>
+  <% end %>
+</div>

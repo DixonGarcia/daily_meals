@@ -157,10 +157,7 @@ class ShoppingListGenerator
   #
   # @return [Hash{Ingredient => Array<Hash>}]
   def collect_ingredient_occurrences
-    plans = @meal_plans || MealPlan.includes(
-      lunch_dish: { dish_ingredients: :ingredient },
-      dinner_dish: { dish_ingredients: :ingredient }
-    ).all
+    plans = @meal_plans || MealPlan.with_dishes_and_ingredients.to_a
 
     occurrences = Hash.new { |hash, key| hash[key] = [] }
 

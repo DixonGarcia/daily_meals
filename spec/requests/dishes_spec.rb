@@ -25,7 +25,7 @@ RSpec.describe "Dishes", type: :request do
         post dishes_path, params: { dish: { name: '', category: 'Lunch' } }
       }.not_to change(Dish, :count)
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "creates a dish with multiple categories via checkboxes" do

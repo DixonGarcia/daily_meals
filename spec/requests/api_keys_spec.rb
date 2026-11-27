@@ -30,7 +30,7 @@ RSpec.describe "ApiKeys UI Management", type: :request do
           post api_keys_path, params: { api_key: { name: "" } }
         }.not_to change(ApiKey, :count)
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
   end

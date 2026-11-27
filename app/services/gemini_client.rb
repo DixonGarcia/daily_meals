@@ -251,19 +251,6 @@ class GeminiClient
   # @param key [String]
   # @return [String]
   def resolve_env(key)
-    if Rails.env.development?
-      env_path = Rails.root.join(".env")
-      if File.exist?(env_path)
-        File.readlines(env_path, chomp: true).each do |line|
-          stripped = line.strip
-          next if stripped.empty? || stripped.start_with?("#")
-
-          k, v = stripped.split("=", 2)
-          return v.to_s.strip if k&.strip == key && v.to_s.strip.present?
-        end
-      end
-    end
-
-    ENV[key].to_s
+    EnvResolver.fetch(key, prefer_dotenv: true)
   end
 end

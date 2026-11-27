@@ -86,7 +86,7 @@ RSpec.describe "Api::V1::Dishes", type: :request do
                headers: { "Authorization" => "Bearer #{token}", "Content-Type" => "application/json" }
         }.not_to change(Dish, :count)
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
   end

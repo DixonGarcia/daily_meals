@@ -22,6 +22,7 @@ module DailyMeals
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.2
+    config.active_support.to_time_preserves_timezone = :zone
 
     # Set default locale to Spanish
     config.i18n.default_locale = :es

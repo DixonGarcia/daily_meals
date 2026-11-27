@@ -49,8 +49,9 @@ class MealPlanHistory < ApplicationRecord
   #
   # @return [Hash] summary containing :restored_slots [Integer] and :skipped_names [Array<String>]
   def restore_to_calendar!
-    dishes_by_id = Dish.all.index_by(&:id)
-    dishes_by_lower_name = Dish.all.index_by { |d| d.name.strip.downcase }
+    all_dishes = Dish.all.to_a
+    dishes_by_id = all_dishes.index_by(&:id)
+    dishes_by_lower_name = all_dishes.index_by { |d| d.name.strip.downcase }
     restored_slots = 0
     skipped_names = []
 

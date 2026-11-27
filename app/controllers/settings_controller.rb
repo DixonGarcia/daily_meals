@@ -25,7 +25,7 @@ class SettingsController < ApplicationController
     else
       @active_tab = "diet"
       load_settings_collections(preserve_household: true)
-      render :show, status: :unprocessable_entity
+      render :show, status: :unprocessable_content
     end
   end
 

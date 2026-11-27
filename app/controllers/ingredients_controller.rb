@@ -7,7 +7,7 @@ class IngredientsController < ApplicationController
   # Lists all ingredients ordered by name.
   # @return [void]
   def index
-    @ingredients = Ingredient.all.order(:name)
+    @ingredients = Ingredient.order(:name)
   end
 
   # GET /ingredients/:id
@@ -37,7 +37,7 @@ class IngredientsController < ApplicationController
     if @ingredient.save
       redirect_to ingredients_path, notice: t("ingredients.controller.created")
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -48,7 +48,7 @@ class IngredientsController < ApplicationController
     if @ingredient.update(ingredient_params)
       redirect_to ingredients_path, notice: t("ingredients.controller.updated")
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -66,7 +66,7 @@ class IngredientsController < ApplicationController
   # @return [Ingredient] the retrieved ingredient
   # @raise [ActiveRecord::RecordNotFound] if the ingredient does not exist
   def set_ingredient
-    @ingredient = Ingredient.find(params[:id])
+    @ingredient = Ingredient.find(params.expect(:id))
   end
 
   # Permit and validate strong parameters for Ingredient.

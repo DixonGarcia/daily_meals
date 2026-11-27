@@ -1579,6 +1579,11 @@ html {
   margin-bottom: 0.85rem;
 }
 
+.readonly-meal-slot:last-child,
+.readonly-meal-slot-last {
+  margin-bottom: 0;
+}
+
 .readonly-dish-link {
   display: inline-block;
   font-family: var(--font-family-title);

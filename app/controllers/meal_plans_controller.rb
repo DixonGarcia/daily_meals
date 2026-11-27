@@ -8,10 +8,7 @@ class MealPlansController < ApplicationController
   # @return [void]
   def index
     days = MealPlan::DAYS_OF_WEEK
-    existing_plans = MealPlan.includes(
-      lunch_dish: { dish_ingredients: :ingredient },
-      dinner_dish: { dish_ingredients: :ingredient }
-    ).index_by(&:day_of_week)
+    existing_plans = MealPlan.with_dishes_and_ingredients.index_by(&:day_of_week)
 
     @meal_plans = days.each_with_object({}) do |day, hash|
       hash[day] = existing_plans[day] || MealPlan.new(day_of_week: day)
@@ -25,8 +22,7 @@ class MealPlansController < ApplicationController
     @tomorrow_defrost_items = @tomorrow_plan.defrost_ingredient_names
 
     @household_setting = HouseholdSetting.current_or_default
-    stored_servings = cookies[:shopping_servings].to_i
-    @servings = stored_servings.between?(1, ShoppingListGenerator::MAX_SERVINGS) ? stored_servings : @household_setting.servings_multiplier
+    @servings = current_household_servings(@household_setting)
     @shopping_summary = ShoppingListGenerator.new(servings: @servings, meal_plans: existing_plans.values).generate_grouped
 
     return unless authenticated?

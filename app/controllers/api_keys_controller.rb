@@ -6,7 +6,7 @@ class ApiKeysController < ApplicationController
   # Lists all API keys.
   # @return [void]
   def index
-    @api_keys = ApiKey.all.order(created_at: :desc)
+    @api_keys = ApiKey.order(created_at: :desc)
     @api_key = ApiKey.new
   end
 
@@ -21,7 +21,7 @@ class ApiKeysController < ApplicationController
       flash[:plain_token] = @api_key.token
       redirect_to post_action_redirect_path, notice: t("api_keys.controller.created")
     else
-      @api_keys = ApiKey.all.order(created_at: :desc)
+      @api_keys = ApiKey.order(created_at: :desc)
       render_validation_error
     end
   end
@@ -33,7 +33,7 @@ class ApiKeysController < ApplicationController
     if @api_key.update(api_key_params)
       redirect_to post_action_redirect_path, notice: t("api_keys.controller.updated", default: "Estado actualizado.")
     else
-      @api_keys = ApiKey.all.order(created_at: :desc)
+      @api_keys = ApiKey.order(created_at: :desc)
       render_validation_error
     end
   end
@@ -59,18 +59,19 @@ class ApiKeysController < ApplicationController
   def render_validation_error
     if params[:return_to] == "settings"
       @active_tab = "integrations"
+      @household_setting = HouseholdSetting.current
       @histories = MealPlanHistory.order(year: :desc, week_number: :desc)
       @return_to = "settings"
-      render "settings/show", status: :unprocessable_entity
+      render "settings/show", status: :unprocessable_content
     else
-      render :index, status: :unprocessable_entity
+      render :index, status: :unprocessable_content
     end
   end
 
   # Set the API key from request id.
   # @return [ApiKey] the api key
   def set_api_key
-    @api_key = ApiKey.find(params[:id])
+    @api_key = ApiKey.find(params.expect(:id))
   end
 
   # Permitted parameters for API keys.

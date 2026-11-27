@@ -3,8 +3,8 @@
 class DishesController < ApplicationController
   allow_guest_access only: %i[index show]
 
-  before_action :set_dish, only: [ :show, :edit, :update, :destroy ]
-  before_action :set_ingredients, only: [ :new, :edit, :create, :update ]
+  before_action :set_dish, only: %i[show edit update destroy]
+  before_action :set_ingredients, only: %i[new edit]
 
   rate_limit to: 15, within: 5.minutes, only: :suggest_ingredients, with: -> {
     render json: { error: t("ai_chat_messages.controller.rate_limited") }, status: :too_many_requests
@@ -46,7 +46,7 @@ class DishesController < ApplicationController
       redirect_to dishes_path, notice: t("dishes.controller.created")
     else
       set_ingredients
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -58,7 +58,7 @@ class DishesController < ApplicationController
       redirect_to dishes_path, notice: t("dishes.controller.updated")
     else
       set_ingredients
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -96,13 +96,13 @@ class DishesController < ApplicationController
   # @return [Dish] the retrieved dish
   # @raise [ActiveRecord::RecordNotFound] if the dish does not exist
   def set_dish
-    @dish = Dish.find(params[:id])
+    @dish = Dish.find(params.expect(:id))
   end
 
   # Load all ingredients ordered by name for form options.
   # @return [ActiveRecord::Relation<Ingredient>]
   def set_ingredients
-    @ingredients = Ingredient.all.order(:name)
+    @ingredients = Ingredient.order(:name)
   end
 
   # Permit and validate strong parameters for Dish, including optional inline new ingredient fields.
@@ -113,14 +113,14 @@ class DishesController < ApplicationController
         :name,
         :category,
         { categories: [] },
-        { dish_ingredients_attributes: [
+        { dish_ingredients_attributes: [ [
           :id,
           :ingredient_id,
           :ingredient_name,
           :supermarket_section,
           :suggested_quantity,
           :_destroy
-        ] }
+        ] ] }
       ]
     )
   end
@@ -143,9 +143,10 @@ class DishesController < ApplicationController
           ing_name = row[:ingredient_name].to_s.strip
 
           if ing_id.blank? && ing_name.present? && !ActiveModel::Type::Boolean.new.cast(row[:_destroy])
-            sec = Ingredient::SECTIONS.find { |s| s.casecmp?(row[:supermarket_section].to_s.strip) } || "Otros"
-            ingredient = Ingredient.where("LOWER(name) = ?", ing_name.downcase).first ||
-                         Ingredient.create!(name: ing_name, supermarket_section: sec)
+            ingredient = Ingredient.find_or_create_normalized!(
+              name: ing_name,
+              supermarket_section: row[:supermarket_section]
+            )
             ing_id = ingredient.id
           end
 
