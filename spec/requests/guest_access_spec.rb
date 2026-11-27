@@ -101,6 +101,9 @@ RSpec.describe "Guest Read-Only Access, Day/Week Toggle & Caracas Time Zone", ty
 
       patch update_day_meal_plans_path, params: { day_of_week: "Wednesday", lunch_dish_id: nil }
       expect(response).to redirect_to(new_session_path)
+
+      patch update_week_meal_plans_path, params: { days: { Monday: { lunch_dish_id: nil, dinner_dish_id: nil } } }
+      expect(response).to redirect_to(new_session_path)
     end
   end
 end

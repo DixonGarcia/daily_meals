@@ -9,7 +9,23 @@
     <% end %>
   </div>
 
-  <% if authenticated? %>
+  <% if authenticated? && view_mode == "week" %>
+    <div class="meal-slot" style="margin-bottom: 0.8rem;">
+      <span class="meal-label"><%= t('meal_plans.index.lunch') %></span>
+      <%= select_tag "days[#{day}][lunch_dish_id]",
+                     options_from_collection_for_select(@dishes, :id, :name, plan.lunch_dish_id),
+                     include_blank: t('meal_plans.index.none'),
+                     class: "meal-dish-selector week-dish-selector" %>
+    </div>
+
+    <div class="meal-slot" style="margin-bottom: 0;">
+      <span class="meal-label"><%= t('meal_plans.index.dinner') %></span>
+      <%= select_tag "days[#{day}][dinner_dish_id]",
+                     options_from_collection_for_select(@dishes, :id, :name, plan.dinner_dish_id),
+                     include_blank: t('meal_plans.index.none'),
+                     class: "meal-dish-selector week-dish-selector" %>
+    </div>
+  <% elsif authenticated? %>
     <%= form_with url: update_day_meal_plans_path, method: :patch, local: true do |f| %>
       <%= f.hidden_field :day_of_week, value: day %>
       <%= hidden_field_tag :view, view_mode %>

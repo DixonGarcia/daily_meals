@@ -23,6 +23,7 @@ Rails.application.routes.draw do
   resources :meal_plans, only: [ :index ] do
     collection do
       patch :update_day
+      patch :update_week
     end
   end
 
