@@ -3,9 +3,22 @@
 #
 # @attr [String] name Name of the ingredient (must be unique).
 # @attr [String] supermarket_section The supermarket aisle/section where this ingredient is found.
+# @attr [Boolean] pantry_staple Whether this ingredient is a dry/long-life pantry staple bought biweekly or monthly.
 class Ingredient < ApplicationRecord
-  # Allowed supermarket sections for sorting shopping lists.
-  SECTIONS = [ "Carnicería", "Verdulería", "Víveres", "Despensa", "Lácteos", "Panadería", "Congelados", "Bebidas", "Limpieza", "Otros" ].freeze
+  # Allowed supermarket sections ordered by practical Venezuelan market stops.
+  SECTIONS = [
+    "Verdulería",
+    "Carnicería",
+    "Charcutería",
+    "Lácteos",
+    "Panadería",
+    "Víveres",
+    "Despensa",
+    "Congelados",
+    "Bebidas",
+    "Limpieza",
+    "Otros"
+  ].freeze
 
   has_many :dish_ingredients, dependent: :destroy
   has_many :dishes, through: :dish_ingredients

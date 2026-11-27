@@ -8,11 +8,12 @@ RSpec.describe "Settings, History & Integrations", type: :request do
       get root_path
       expect(response).to have_http_status(:success)
       expect(response.body).to include(I18n.t("layout.settings"))
+      expect(response.body).to include(I18n.t("layout.shopping_list"))
       expect(response.body).not_to include("🔑 API Keys")
       expect(response.body).not_to include(I18n.t("layout.ingredients"))
 
       nav_links = response.body.scan(/<a [^>]*class="nav-link[^"]*"/).size
-      expect(nav_links).to eq(3)
+      expect(nav_links).to eq(4)
 
       get dishes_path
       expect(response).to have_http_status(:success)

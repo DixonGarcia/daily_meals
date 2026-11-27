@@ -2,7 +2,7 @@
   <% if authenticated? %>
     <a href="#ai-copilot-panel" class="quick-jump-pill jump-ai"><%= t('ai_chat_sessions.jump_to_chat') %></a>
   <% end %>
-  <a href="#shopping-list-panel" class="quick-jump-pill jump-cart"><%= t('ai_chat_sessions.jump_to_shopping') %></a>
+  <a href="<%= shopping_list_path %>" class="quick-jump-pill jump-cart"><%= t('ai_chat_sessions.jump_to_shopping') %></a>
 </div>
 
 <div class="dashboard-grid">
@@ -46,16 +46,44 @@
                    detailed: true %>
       </div>
     <% else %>
-      <div class="calendar-grid">
-        <% MealPlan::DAYS_OF_WEEK.each do |day| %>
-          <%= render "meal_plans/day_card",
-                     day: day,
-                     plan: @meal_plans[day],
-                     today_key: @today_key,
-                     view_mode: @view_mode,
-                     detailed: false %>
+      <% if authenticated? %>
+        <%= form_with url: update_week_meal_plans_path, method: :patch, local: true, id: "weekly-meal-plan-form" do %>
+          <div class="week-save-bar">
+            <span class="week-save-hint" id="week-save-hint"><%= t('meal_plans.index.week_save_hint') %></span>
+            <button type="submit" class="btn-action week-save-btn" id="week-save-btn-top">
+              <%= t('meal_plans.index.save_week') %>
+            </button>
+          </div>
+
+          <div class="calendar-grid">
+            <% MealPlan::DAYS_OF_WEEK.each do |day| %>
+              <%= render "meal_plans/day_card",
+                         day: day,
+                         plan: @meal_plans[day],
+                         today_key: @today_key,
+                         view_mode: @view_mode,
+                         detailed: false %>
+            <% end %>
+          </div>
+
+          <div class="week-save-footer">
+            <button type="submit" class="btn-action week-save-btn-full">
+              <%= t('meal_plans.index.save_week') %>
+            </button>
+          </div>
         <% end %>
-      </div>
+      <% else %>
+        <div class="calendar-grid">
+          <% MealPlan::DAYS_OF_WEEK.each do |day| %>
+            <%= render "meal_plans/day_card",
+                       day: day,
+                       plan: @meal_plans[day],
+                       today_key: @today_key,
+                       view_mode: @view_mode,
+                       detailed: false %>
+          <% end %>
+        </div>
+      <% end %>
     <% end %>
   </div>
 
@@ -319,27 +347,33 @@
     </div>
     <% end %>
 
-    <!-- Shopping List Card -->
-    <div id="shopping-list-panel" class="card shopping-list-card">
-      <h3 class="section-title" style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--color-primary);"><%= t('meal_plans.index.shopping_list') %></h3>
-      
-      <% if @shopping_list.empty? %>
+    <!-- Compact Shopping List CTA Card -->
+    <div id="shopping-list-panel" class="card shopping-summary-card">
+      <div class="shopping-summary-head">
+        <h3 class="section-title shopping-summary-title"><%= t('meal_plans.index.shopping_list') %></h3>
+        <% if @shopping_summary[:total_count] > 0 %>
+          <span class="shopping-summary-pill">
+            <%= t('meal_plans.index.shopping_summary_count',
+                  fresh: @shopping_summary[:fresh_count],
+                  pantry: @shopping_summary[:pantry_count],
+                  servings: @servings) %>
+          </span>
+        <% end %>
+      </div>
+
+      <% if @shopping_summary[:total_count].zero? %>
         <p class="empty-shopping-list"><%= t('meal_plans.index.no_ingredients') %></p>
       <% else %>
-        <% @shopping_list.each do |section, items| %>
-          <div class="shopping-list-aisle">
-            <div class="shopping-list-aisle-name">
-              <% section_key = section.to_s.downcase %>
-              <%= t("ingredients.sections.#{section_key}", default: section.to_s) %>
-            </div>
-            <% items.each do |item| %>
-              <div class="shopping-item">
-                <span class="shopping-item-name"><%= item[:ingredient].name %></span>
-                <span class="shopping-item-qty"><%= item[:quantity] %></span>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
+        <div class="shopping-summary-stops">
+          <% @shopping_summary[:fresh].each do |section, items| %>
+            <span class="shopping-stop-badge">
+              <%= shopping_section_emoji(section) %> <%= section %> (<%= items.size %>)
+            </span>
+          <% end %>
+        </div>
+        <a href="<%= shopping_list_path %>" class="btn-action shopping-summary-cta">
+          <%= t('meal_plans.index.open_shopping_list') %>
+        </a>
       <% end %>
     </div>
   </div>
@@ -348,6 +382,18 @@
 <% if authenticated? %>
 <script>
   (function() {
+    const weeklyForm = document.getElementById("weekly-meal-plan-form");
+    const weekSaveHint = document.getElementById("week-save-hint");
+    if (weeklyForm && weekSaveHint) {
+      weeklyForm.querySelectorAll(".week-dish-selector").forEach(function(select) {
+        select.addEventListener("change", function() {
+          select.classList.add("selector-dirty");
+          weekSaveHint.textContent = "<%= j t('meal_plans.index.week_unsaved_changes') %>";
+          weekSaveHint.classList.add("week-save-hint-dirty");
+        });
+      });
+    }
+
     const chatThread = document.getElementById("copilot-chat-thread");
     if (chatThread) {
       chatThread.scrollTop = chatThread.scrollHeight;
