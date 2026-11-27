@@ -16,11 +16,16 @@ RSpec.describe "Api::V1::MealPlans", type: :request do
     end
 
     context "with valid token" do
+      let!(:chicken) { Ingredient.create!(name: "Pechuga de pollo", supermarket_section: "Carnicería") }
+      let!(:rice) { Ingredient.create!(name: "Arroz blanco", supermarket_section: "Víveres") }
+
       before do
+        DishIngredient.create!(dish: dish_lunch, ingredient: chicken, suggested_quantity: "90g")
+        DishIngredient.create!(dish: dish_lunch, ingredient: rice, suggested_quantity: "160g")
         MealPlan.create!(day_of_week: "Monday", lunch_dish: dish_lunch, dinner_dish: dish_dinner)
       end
 
-      it "returns the active meal plans" do
+      it "returns active meal plans with nested dish details, ingredients, and defrost_items" do
         get api_v1_meal_plans_path, headers: { "Authorization" => "Bearer #{token}" }
         expect(response).to have_http_status(:ok)
 
@@ -29,6 +34,11 @@ RSpec.describe "Api::V1::MealPlans", type: :request do
         monday_plan = json.find { |p| p['day_of_week'] == 'Monday' }
         expect(monday_plan['lunch_dish_id']).to eq(dish_lunch.id)
         expect(monday_plan['dinner_dish_id']).to eq(dish_dinner.id)
+        expect(monday_plan.dig('lunch_dish', 'name')).to eq('Chilaquiles')
+        expect(monday_plan.dig('lunch_dish', 'ingredients')).to include(
+          { 'name' => 'Pechuga de pollo', 'quantity' => '90g', 'supermarket_section' => 'Carnicería' }
+        )
+        expect(monday_plan['defrost_items']).to eq([ 'Pechuga de pollo' ])
       end
     end
   end

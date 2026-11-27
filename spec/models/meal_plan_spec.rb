@@ -47,4 +47,27 @@ RSpec.describe MealPlan, type: :model do
       expect(association.options[:optional]).to be_truthy
     end
   end
+
+  describe '.next_day_for' do
+    it 'returns the following weekday cyclically including Sunday to Monday wrap' do
+      expect(described_class.next_day_for('Wednesday')).to eq('Thursday')
+      expect(described_class.next_day_for('Sunday')).to eq('Monday')
+    end
+  end
+
+  describe '#defrost_ingredient_names' do
+    it 'returns sorted unique ingredient names belonging to Carnicería or Congelados' do
+      chicken = Ingredient.create!(name: 'Pechuga de pollo', supermarket_section: 'Carnicería')
+      frozen_peas = Ingredient.create!(name: 'Guisantes congelados', supermarket_section: 'Congelados')
+      broccoli = Ingredient.create!(name: 'Brócoli', supermarket_section: 'Verdulería')
+
+      DishIngredient.create!(dish: dish_1, ingredient: chicken, suggested_quantity: '90g')
+      DishIngredient.create!(dish: dish_1, ingredient: broccoli, suggested_quantity: '200g')
+      DishIngredient.create!(dish: dish_2, ingredient: chicken, suggested_quantity: '90g')
+      DishIngredient.create!(dish: dish_2, ingredient: frozen_peas, suggested_quantity: '150g')
+
+      plan = MealPlan.create!(day_of_week: 'Thursday', lunch_dish: dish_1, dinner_dish: dish_2)
+      expect(plan.defrost_ingredient_names).to eq([ 'Guisantes congelados', 'Pechuga de pollo' ])
+    end
+  end
 end

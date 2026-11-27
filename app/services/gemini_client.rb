@@ -131,15 +131,18 @@ class GeminiClient
   #
   # @param dish_name [String] The Spanish name of the dish.
   # @param existing_ingredients [Array<Hash>] Existing ingredients with :name and :supermarket_section.
-  # @return [Hash] Hash with :category (String) and :ingredients (Array<Hash>).
-  def suggest_dish_ingredients(dish_name:, existing_ingredients:)
+  # @param diet_guidelines [String, nil] Optional household diet guidelines to honor when choosing ingredients.
+  # @return [Hash] Hash with :category (String), :categories (Array<String>), and :ingredients (Array<Hash>).
+  def suggest_dish_ingredients(dish_name:, existing_ingredients:, diet_guidelines: nil)
+    guidelines_block = diet_guidelines.present? ? "\n      HOUSEHOLD_DIET_GUIDELINES:\n      #{diet_guidelines}\n" : ""
+
     system_instruction = <<~PROMPT
-      You are the DailyMeals Culinary Assistant. Given a dish name in Spanish, suggest its applicable meal categories (one or more from: #{Dish::CATEGORIES.join(', ')}) and a practical list of supermarket ingredients with quantities for 2 to 4 servings.
+      You are the DailyMeals Culinary Assistant. Given a dish name in Spanish, suggest its applicable meal categories (one or more from: #{Dish::CATEGORIES.join(', ')}) and a practical list of supermarket ingredients with realistic quantities for 1 single serving (individual diet portion; the shopping list automatically multiplies by household size).
       - Include all applicable `categories` (e.g., if a dish works for both Lunch and Dinner, return ["Lunch", "Dinner"]).
       - Allowed `supermarket_section` values: #{Ingredient::SECTIONS.join(', ')}.
       - Whenever an ingredient matches one in EXISTING_INGREDIENTS below, reuse its exact `name` and `supermarket_section`.
-      - All ingredient names and quantities must be in Spanish (e.g., "500g", "1 lata", "2 unidades").
-
+      - All ingredient names and quantities must be in Spanish (e.g., "120g", "1 lata", "2 unidades").
+      #{guidelines_block}
       EXISTING_INGREDIENTS:
       #{existing_ingredients.to_json}
     PROMPT

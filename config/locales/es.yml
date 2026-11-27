@@ -11,6 +11,13 @@ es:
       dinner: "🌙 Cena"
       none: "Ninguno"
       update_day: "Actualizar Día"
+      edit_day: "✏️ Editar día"
+      cancel_edit: "Cancelar"
+      tomorrow_prefix: "➡️ Mañana (%{day})"
+      next_day_prefix: "➡️ Día siguiente (%{day})"
+      view_next_day: "Ver día →"
+      tomorrow_empty: "Aún sin platos asignados para el día siguiente."
+      defrost_alert: "❄️ Descongelar hoy: %{items}"
       save_week: "💾 Guardar toda la semana"
       week_save_hint: "Edita los días que quieras y guarda todo de una vez."
       week_unsaved_changes: "⚠️ Tienes cambios sin guardar en la semana."
@@ -56,6 +63,7 @@ es:
       title: "🍽️ Detalles del Plato"
       edit_dish: "✏️ Editar Plato"
       back: "Volver al Catálogo"
+      back_to_calendar: "← Volver al Calendario"
       ingredients_title: "🥕 Ingredientes y Cantidades"
       empty_ingredients: "Este plato no tiene ingredientes asociados."
       table:
@@ -163,6 +171,9 @@ es:
   ai_chat_sessions:
     default_title: "Plan Semanal"
     new_session: "➕ Nueva"
+    reset_chat: "🔄 Nuevo chat"
+    diet_profile_active: "🥗 Perfil activo · %{servings} personas · Editar"
+    diet_profile_setup: "🥗 Configurar dieta del hogar (%{servings} personas) →"
     delete_session: "🗑️"
     delete_confirm: "¿Eliminar esta conversación de planificación?"
     history_label: "Conversación activa:"
@@ -251,13 +262,14 @@ es:
     show:
       title: "⚙️ Configuración"
       tabs:
+        diet: "🥗 Dieta y Hogar"
         history: "📚 Historial"
         integrations: "🔌 Integraciones"
       history_title: "Historial de Menús Semanales"
-      history_subtitle: "Tus semanas planificadas se guardan automáticamente cada vez que actualizas el calendario o aplicas un menú de Gemini. Puedes guardar la semana actual o restaurar semanas pasadas con un toque."
+      history_subtitle: "Tus semanas planificadas se guardan automáticamente cada vez que actualizas el calendario o aplicas un menú de Gemini. Puedes restaurar cualquier semana pasada con un toque."
       snapshot_current: "📸 Guardar semana actual"
       snapshot_next: "⏭️ Guardar como próxima semana"
-      empty_history: "Aún no hay semanas guardadas en tu historial. Planifica un día en el calendario o toca «Guardar semana actual»."
+      empty_history: "Aún no hay semanas guardadas en tu historial. Planifica un día en el calendario para archivar automáticamente esta semana."
       week_label: "Semana %{week} · %{year}"
       source_badges:
         manual: "✍️ Manual"
@@ -268,6 +280,16 @@ es:
       delete_button: "🗑️"
       delete_confirm: "¿Eliminar esta semana del historial?"
       integrations_intro: "Conecta atajos de iPhone (Siri), Home Assistant o scripts externos usando tokens Bearer en la API REST (/api/v1/dishes, /api/v1/meal_plans)."
+    diet:
+      title: "🥗 Perfil de Dieta y Hogar"
+      subtitle: "Se guarda una sola vez y se inyecta automáticamente en Gemini en cada conversación. También define las porciones por defecto de tu Lista de Compras."
+      servings_label: "👥 Personas en el hogar (porciones por defecto)"
+      servings_hint: "Las recetas del catálogo se mantienen en porción individual (1 persona); la lista de compras multiplicará por este número."
+      guidelines_label: "📝 Reglas de nuestra dieta y cocina"
+      guidelines_hint: "Describe su dieta actual, ingredientes locales en Venezuela, ritmo de meal prep y notas rápidas para cocinar con el bebé."
+      guidelines_placeholder: "Ej. Pareja joven con bebé en Venezuela. Plan 2172 kcal por persona en almuerzos y cenas. Priorizar ingredientes locales de feria, estilo meal prep en 2 tandas (Lun-Mié y Jue-Sáb) y cenas rápidas adaptables sin sal para el bebé."
+      submit: "💾 Guardar perfil del hogar"
+      saved_notice: "¡Perfil de dieta y hogar actualizado con éxito!"
   meal_plan_histories:
     controller:
       snapshot_saved: "Semana %{week} (%{year}) guardada en tu historial."

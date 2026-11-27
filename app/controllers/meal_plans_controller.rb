@@ -20,15 +20,19 @@ class MealPlansController < ApplicationController
     @view_mode = params[:view] == "week" ? "week" : "day"
     @today_key = Time.zone.today.strftime("%A")
     @selected_day = days.include?(params[:day].to_s) ? params[:day].to_s : @today_key
+    @tomorrow_key = MealPlan.next_day_for(@selected_day)
+    @tomorrow_plan = @meal_plans[@tomorrow_key]
+    @tomorrow_defrost_items = @tomorrow_plan.defrost_ingredient_names
+
+    @household_setting = HouseholdSetting.current_or_default
     stored_servings = cookies[:shopping_servings].to_i
-    @servings = stored_servings.between?(1, ShoppingListGenerator::MAX_SERVINGS) ? stored_servings : ShoppingListsController::DEFAULT_HOUSEHOLD_SERVINGS
+    @servings = stored_servings.between?(1, ShoppingListGenerator::MAX_SERVINGS) ? stored_servings : @household_setting.servings_multiplier
     @shopping_summary = ShoppingListGenerator.new(servings: @servings, meal_plans: existing_plans.values).generate_grouped
 
     return unless authenticated?
 
     @dishes = Dish.order(:name)
     @dishes_by_id = @dishes.index_by(&:id)
-    @chat_sessions = AiChatSession.includes(:ai_chat_messages).order(updated_at: :desc).to_a
     @active_chat_session = resolve_active_chat_session
   end
 
@@ -85,22 +89,22 @@ class MealPlansController < ApplicationController
 
   private
 
-  # Finds the currently selected AiChatSession or creates a default initial session.
+  # Finds the single active AiChatSession or creates a default initial session.
   #
   # @return [AiChatSession]
   def resolve_active_chat_session
     if session[:active_ai_chat_session_id].present?
-      found = @chat_sessions.find { |s| s.id == session[:active_ai_chat_session_id].to_i }
+      found = AiChatSession.includes(:ai_chat_messages).find_by(id: session[:active_ai_chat_session_id])
       return found if found
     end
 
-    return @chat_sessions.first if @chat_sessions.any?
+    latest = AiChatSession.includes(:ai_chat_messages).order(updated_at: :desc).first
+    return latest if latest
 
     created = AiChatSession.create!(
       title: "#{t('ai_chat_sessions.default_title')} (#{Time.current.strftime('%d/%m')})",
       parameters: AiChatSession::DEFAULT_PARAMETERS
     )
-    @chat_sessions = [ created ]
     session[:active_ai_chat_session_id] = created.id
     created
   end

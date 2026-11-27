@@ -2269,6 +2269,175 @@ html {
   background: #f9fdf0;
 }
 
+/* ==========================================================================
+   FEAT-10: Read-First Day Card, Variant 1 Tomorrow Strip & Diet Profile
+   ========================================================================== */
+
+.day-header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.day-header-icon {
+  font-size: 1.1rem;
+}
+
+.day-edit-toggle-btn {
+  border: 1px solid var(--color-border);
+  background: var(--color-body-alt);
+  color: var(--color-secondary);
+  border-radius: 10px;
+  padding: 0.4rem 0.78rem;
+  font-family: var(--font-family-title);
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  min-height: 36px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.day-edit-toggle-btn:hover {
+  border-color: var(--color-primary);
+  background: #f4f9e4;
+}
+
+.day-edit-actions {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.day-edit-actions .update-day-btn {
+  flex: 1;
+}
+
+.day-edit-cancel-btn {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+  white-space: nowrap;
+}
+
+/* Variant 1: Compact Clickable Tomorrow + Defrost Strip */
+.tomorrow-radar-strip {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  margin-top: 0.85rem;
+  background: var(--color-body);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 0.9rem 1.05rem;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tomorrow-radar-strip:hover {
+  border-color: var(--blue-high);
+  box-shadow: var(--shadow-md);
+}
+
+.tomorrow-radar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tomorrow-radar-label {
+  font-family: var(--font-family-title);
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--color-secondary);
+}
+
+.tomorrow-radar-cta {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--blue-high);
+}
+
+.tomorrow-radar-dishes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  margin-top: 0.35rem;
+}
+
+.tomorrow-radar-sep {
+  color: var(--grey-text);
+}
+
+.tomorrow-radar-empty {
+  font-size: 0.82rem;
+  color: var(--color-subtitle);
+  font-style: italic;
+  margin-top: 0.3rem;
+}
+
+.defrost-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  border-radius: 999px;
+  padding: 0.28rem 0.72rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* Active Diet Profile Badge in Copilot Sidebar */
+.diet-profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #4d6407;
+  background: #f4f9e4;
+  border: 1px solid #d9ea9d;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.diet-profile-badge:hover {
+  opacity: 0.88;
+}
+
+.diet-profile-badge-empty {
+  color: var(--color-subtitle);
+  background: var(--color-body-alt);
+  border-color: var(--color-border);
+}
+
+/* Settings > Diet & Household Tab */
+.settings-field-hint {
+  font-size: 0.8rem;
+  color: var(--color-subtitle);
+  margin: 0 0 0.45rem 0;
+}
+
+.diet-servings-input {
+  max-width: 120px;
+  font-weight: 700;
+}
+
+.diet-guidelines-textarea {
+  min-height: 140px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
 @media (max-width: 768px) {
   .shopping-sections-grid {
     grid-template-columns: 1fr;

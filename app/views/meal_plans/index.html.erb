@@ -44,6 +44,31 @@
                    today_key: @today_key,
                    view_mode: @view_mode,
                    detailed: true %>
+
+        <% tomorrow_name = t("days_of_week.#{@tomorrow_key.downcase}", default: @tomorrow_key) %>
+        <% tomorrow_prefix = @selected_day == @today_key ? t('meal_plans.index.tomorrow_prefix', day: tomorrow_name) : t('meal_plans.index.next_day_prefix', day: tomorrow_name) %>
+        <a href="<%= root_path(view: 'day', day: @tomorrow_key) %>" class="tomorrow-radar-strip">
+          <div class="tomorrow-radar-top">
+            <span class="tomorrow-radar-label"><%= tomorrow_prefix %></span>
+            <span class="tomorrow-radar-cta"><%= t('meal_plans.index.view_next_day') %></span>
+          </div>
+
+          <% if @tomorrow_plan.lunch_dish.present? || @tomorrow_plan.dinner_dish.present? %>
+            <div class="tomorrow-radar-dishes">
+              <span>☀️ <strong><%= @tomorrow_plan.lunch_dish&.name || t('meal_plans.index.none') %></strong></span>
+              <span class="tomorrow-radar-sep">·</span>
+              <span>🌙 <strong><%= @tomorrow_plan.dinner_dish&.name || t('meal_plans.index.none') %></strong></span>
+            </div>
+          <% else %>
+            <div class="tomorrow-radar-empty"><%= t('meal_plans.index.tomorrow_empty') %></div>
+          <% end %>
+
+          <% if @tomorrow_defrost_items.any? %>
+            <div class="defrost-pill">
+              <%= t('meal_plans.index.defrost_alert', items: @tomorrow_defrost_items.join(", ")) %>
+            </div>
+          <% end %>
+        </a>
       </div>
     <% else %>
       <% if authenticated? %>
@@ -90,39 +115,25 @@
   <!-- Right Side: Sidebar (Gemini Pseudo-Chat & Shopping List) -->
   <div class="sidebar-panel">
     <% if authenticated? %>
-    <!-- Persistent Gemini AI Copilot Chat Panel -->
+    <!-- Streamlined Single-Thread Gemini AI Copilot Panel -->
     <div id="ai-copilot-panel" class="card ai-copilot-card">
       <div class="copilot-header-row">
         <h3 class="section-title copilot-main-title"><%= t('meal_plans.index.ai_copilot') %></h3>
         <div class="copilot-session-actions">
-          <%= button_to t('ai_chat_sessions.new_session'),
+          <%= button_to t('ai_chat_sessions.reset_chat'),
                         ai_chat_sessions_path,
                         method: :post,
                         class: "btn-session-new" %>
-          <% if @chat_sessions.size > 1 %>
-            <%= button_to t('ai_chat_sessions.delete_session'),
-                          ai_chat_session_path(@active_chat_session),
-                          method: :delete,
-                          class: "btn-session-delete",
-                          form: { data: { turbo_confirm: t('ai_chat_sessions.delete_confirm') } } %>
-          <% end %>
         </div>
       </div>
 
-      <% if @chat_sessions.size > 1 %>
-        <div class="session-switcher-box">
-          <label class="form-label" for="session-switcher-select" style="margin-bottom: 0.3rem;"><%= t('ai_chat_sessions.history_label') %></label>
-          <%= form_with url: switch_ai_chat_session_path(@active_chat_session), method: :patch, local: true, id: "session-switch-form" do %>
-            <select id="session-switcher-select" class="meal-dish-selector session-select" onchange="this.form.action = '/ai_chat_sessions/' + this.value + '/switch'; this.form.submit();">
-              <% @chat_sessions.each do |cs| %>
-                <option value="<%= cs.id %>" <%= 'selected' if cs.id == @active_chat_session.id %>>
-                  <%= cs.title %> (<%= cs.ai_chat_messages.size %> msj)
-                </option>
-              <% end %>
-            </select>
-          <% end %>
-        </div>
-      <% end %>
+      <a href="<%= settings_path(tab: 'diet') %>" class="diet-profile-badge <%= 'diet-profile-badge-empty' unless @household_setting.guidelines_present? %>">
+        <% if @household_setting.guidelines_present? %>
+          <%= t('ai_chat_sessions.diet_profile_active', servings: @household_setting.servings_multiplier) %>
+        <% else %>
+          <%= t('ai_chat_sessions.diet_profile_setup', servings: @household_setting.servings_multiplier) %>
+        <% end %>
+      </a>
 
       <% active_params = @active_chat_session.effective_parameters %>
 
@@ -320,30 +331,6 @@
                        class: "btn-ai-violet copilot-send-btn" %>
         </div>
       <% end %>
-
-      <!-- Secondary Manual JSON Fallback Accordion -->
-      <details class="legacy-json-details">
-        <summary><%= t('ai_chat_sessions.manual_json_summary') %></summary>
-        <div class="legacy-json-body">
-          <div style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-size: 0.75rem;"><%= t('meal_plans.index.planning_restrictions') %></label>
-            <input type="text" id="ai-restrictions" class="ai-text-input" placeholder="<%= t('meal_plans.index.ai_placeholder') %>" value="<%= t('meal_plans.index.ai_default_value') %>">
-            <button type="button" id="btn-export" class="btn-secondary" style="width: 100%; font-size: 0.8rem; margin-bottom: 0.5rem;">
-              <%= t('meal_plans.index.generate_json') %>
-            </button>
-            <textarea id="ai-export-payload" class="ai-textarea" readonly placeholder="<%= t('meal_plans.index.catalog_placeholder') %>"></textarea>
-            <button type="button" id="btn-copy" class="btn-secondary" style="width: 100%; font-size: 0.8rem; padding: 0.45rem; display: none;">
-              <%= t('meal_plans.index.copy_clipboard') %>
-            </button>
-          </div>
-
-          <%= form_with url: import_ai_copilot_path, method: :post, local: true do |f| %>
-            <label class="form-label" style="font-size: 0.75rem;"><%= t('meal_plans.index.paste_json') %></label>
-            <%= f.text_area :payload, class: "ai-textarea", required: true, placeholder: t('meal_plans.index.paste_placeholder') %>
-            <%= f.submit t('meal_plans.index.import_plan'), class: "btn-secondary", style: "width: 100%; font-size: 0.8rem;" %>
-          <% end %>
-        </div>
-      </details>
     </div>
     <% end %>
 
@@ -461,53 +448,42 @@
       });
     });
 
+    document.querySelectorAll("[data-day-edit-open]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        const card = btn.closest(".day-card");
+        if (!card) return;
+        const readView = card.querySelector("[data-day-read-view]");
+        const editView = card.querySelector("[data-day-edit-view]");
+        if (readView && editView) {
+          readView.hidden = true;
+          editView.hidden = false;
+          btn.hidden = true;
+          btn.setAttribute("aria-expanded", "true");
+        }
+      });
+    });
+
+    document.querySelectorAll("[data-day-edit-cancel]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        const card = btn.closest(".day-card");
+        if (!card) return;
+        const readView = card.querySelector("[data-day-read-view]");
+        const editView = card.querySelector("[data-day-edit-view]");
+        const openBtn = card.querySelector("[data-day-edit-open]");
+        if (readView && editView) {
+          readView.hidden = false;
+          editView.hidden = true;
+          if (openBtn) {
+            openBtn.hidden = false;
+            openBtn.setAttribute("aria-expanded", "false");
+          }
+        }
+      });
+    });
+
     if (chatForm && sendBtn) {
       chatForm.addEventListener("submit", function() {
         sendBtn.value = "<%= j t('ai_chat_sessions.sending_button') %>";
-      });
-    }
-
-    const btnExport = document.getElementById("btn-export");
-    const restrictionsInput = document.getElementById("ai-restrictions");
-    const exportTextarea = document.getElementById("ai-export-payload");
-    const btnCopy = document.getElementById("btn-copy");
-
-    if (btnExport) {
-      btnExport.addEventListener("click", function() {
-        const restrictions = encodeURIComponent(restrictionsInput.value);
-        btnExport.innerText = "<%= j t('meal_plans.index.generating') %>";
-        btnExport.disabled = true;
-
-        fetch("<%= j export_ai_copilot_path %>?restrictions=" + restrictions, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        })
-        .then(response => response.json())
-        .then(data => {
-          exportTextarea.value = JSON.stringify(data, null, 2);
-          btnExport.innerText = "<%= j t('meal_plans.index.generate_json') %>";
-          btnExport.disabled = false;
-          btnCopy.style.display = "block";
-        })
-        .catch(err => {
-          console.error(err);
-          alert("<%= j t('meal_plans.index.error_exporting') %>");
-          btnExport.innerText = "<%= j t('meal_plans.index.generate_json') %>";
-          btnExport.disabled = false;
-        });
-      });
-    }
-
-    if (btnCopy) {
-      btnCopy.addEventListener("click", function() {
-        exportTextarea.select();
-        document.execCommand("copy");
-        btnCopy.innerText = "<%= j t('meal_plans.index.copied') %>";
-        setTimeout(() => {
-          btnCopy.innerText = "<%= j t('meal_plans.index.copy_clipboard') %>";
-        }, 2000);
       });
     }
   })();

@@ -4,7 +4,11 @@
     <% if authenticated? %>
       <a href="<%= edit_dish_path(@dish) %>" class="btn-action" style="margin-right: 0.5rem; background: var(--blue-high);"><%= t('dishes.show.edit_dish') %></a>
     <% end %>
-    <a href="<%= dishes_path %>" class="btn-secondary"><%= t('dishes.show.back') %></a>
+    <% if params[:from] == "calendar" %>
+      <a href="<%= root_path %>" class="btn-secondary"><%= t('dishes.show.back_to_calendar') %></a>
+    <% else %>
+      <a href="<%= dishes_path %>" class="btn-secondary"><%= t('dishes.show.back') %></a>
+    <% end %>
   </div>
 </div>
 

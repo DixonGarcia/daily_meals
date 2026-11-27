@@ -316,4 +316,32 @@ RSpec.describe AiCopilotService do
       expect(MealPlanHistory.last.source).to eq('ai_copilot')
     end
   end
+
+  describe 'FEAT-10 household diet profile injection' do
+    let(:gemini_client) { instance_double(GeminiClient) }
+    let(:service_with_client) { described_class.new(gemini_client: gemini_client) }
+
+    it 'injects HouseholdSetting diet_guidelines and servings_multiplier into Gemini system instruction' do
+      HouseholdSetting.current.update!(
+        servings_multiplier: 2,
+        diet_guidelines: 'Pareja joven en Venezuela. Priorizar meal prep en 2 tandas.'
+      )
+      chat_session = AiChatSession.create!(title: 'Plan semanal')
+
+      captured_instruction = nil
+      allow(gemini_client).to receive(:generate_plan_response) do |args|
+        captured_instruction = args[:system_instruction]
+        { reply: 'Listo.', new_dishes: [], meal_plan: [] }
+      end
+
+      service_with_client.converse!(
+        session: chat_session,
+        user_message: 'Arma mi semana',
+        parameters: { 'days_scope' => 'weekdays', 'include_lunch' => true, 'include_dinner' => true }
+      )
+
+      expect(captured_instruction).to include('Pareja joven en Venezuela. Priorizar meal prep en 2 tandas.')
+      expect(captured_instruction).to include('Household size: 2')
+    end
+  end
 end

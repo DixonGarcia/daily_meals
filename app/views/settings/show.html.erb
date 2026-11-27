@@ -4,6 +4,12 @@
   </div>
 
   <div class="settings-tabs" role="tablist">
+    <a href="<%= settings_path(tab: 'diet') %>"
+       role="tab"
+       aria-selected="<%= @active_tab == 'diet' %>"
+       class="settings-tab-link <%= 'active' if @active_tab == 'diet' %>">
+      <%= t('settings.show.tabs.diet') %>
+    </a>
     <a href="<%= settings_path(tab: 'history') %>"
        role="tab"
        aria-selected="<%= @active_tab == 'history' %>"
@@ -18,24 +24,49 @@
     </a>
   </div>
 
-  <% if @active_tab == "history" %>
+  <% if @active_tab == "diet" %>
+    <section class="card settings-panel">
+      <h3 class="section-subtitle" style="margin: 0 0 0.35rem 0;"><%= t('settings.diet.title') %></h3>
+      <p class="settings-subtitle" style="margin-bottom: 1.25rem;"><%= t('settings.diet.subtitle') %></p>
+
+      <%= form_with model: @household_setting, url: update_household_settings_path, method: :patch, local: true do |f| %>
+        <% if @household_setting.errors.any? %>
+          <div class="flash flash-alert" style="margin-bottom: 1.25rem;">
+            <ul>
+              <% @household_setting.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="form-group">
+          <%= f.label :servings_multiplier, t('settings.diet.servings_label'), class: "form-label" %>
+          <p class="settings-field-hint"><%= t('settings.diet.servings_hint') %></p>
+          <%= f.number_field :servings_multiplier,
+                             min: HouseholdSetting::MIN_SERVINGS,
+                             max: HouseholdSetting::MAX_SERVINGS,
+                             class: "form-input diet-servings-input" %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :diet_guidelines, t('settings.diet.guidelines_label'), class: "form-label" %>
+          <p class="settings-field-hint"><%= t('settings.diet.guidelines_hint') %></p>
+          <%= f.text_area :diet_guidelines,
+                          rows: 6,
+                          class: "form-input diet-guidelines-textarea",
+                          placeholder: t('settings.diet.guidelines_placeholder') %>
+        </div>
+
+        <%= f.submit t('settings.diet.submit'), class: "btn-action", style: "width: 100%;" %>
+      <% end %>
+    </section>
+  <% elsif @active_tab == "history" %>
     <section class="card settings-panel">
       <div class="settings-history-header">
         <div>
           <h3 class="section-subtitle" style="margin: 0 0 0.35rem 0;"><%= t('settings.show.history_title') %></h3>
           <p class="settings-subtitle"><%= t('settings.show.history_subtitle') %></p>
-        </div>
-        <div class="settings-snapshot-actions">
-          <%= button_to t('settings.show.snapshot_current'),
-                        snapshot_meal_plan_histories_path,
-                        method: :post,
-                        params: { week_offset: 0 },
-                        class: "btn-action" %>
-          <%= button_to t('settings.show.snapshot_next'),
-                        snapshot_meal_plan_histories_path,
-                        method: :post,
-                        params: { week_offset: 1 },
-                        class: "btn-secondary" %>
         </div>
       </div>
 

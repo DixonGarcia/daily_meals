@@ -1,11 +1,22 @@
 <% is_today = (day == today_key) %>
 <div class="card day-card <%= 'day-card-today' if is_today %> <%= 'day-card-detailed' if detailed %>">
   <div class="day-header">
-    <span><%= t("days_of_week.#{day.downcase}") %></span>
-    <% if is_today %>
-      <span class="today-badge"><%= t('meal_plans.index.today_badge') %></span>
-    <% else %>
-      <span style="font-size: 1.1rem;">🗓️</span>
+    <div class="day-header-title-group">
+      <span><%= t("days_of_week.#{day.downcase}") %></span>
+      <% if is_today %>
+        <span class="today-badge"><%= t('meal_plans.index.today_badge') %></span>
+      <% elsif view_mode == "week" %>
+        <span class="day-header-icon">🗓️</span>
+      <% end %>
+    </div>
+
+    <% if authenticated? && view_mode == "day" %>
+      <button type="button"
+              class="day-edit-toggle-btn"
+              data-day-edit-open
+              aria-expanded="false">
+        <%= t('meal_plans.index.edit_day') %>
+      </button>
     <% end %>
   </div>
 
@@ -25,85 +36,72 @@
                      include_blank: t('meal_plans.index.none'),
                      class: "meal-dish-selector week-dish-selector" %>
     </div>
-  <% elsif authenticated? %>
-    <%= form_with url: update_day_meal_plans_path, method: :patch, local: true do |f| %>
-      <%= f.hidden_field :day_of_week, value: day %>
-      <%= hidden_field_tag :view, view_mode %>
-      <%= hidden_field_tag :day, day if view_mode == "day" %>
-
-      <div class="meal-slot" style="margin-bottom: 0.8rem;">
-        <span class="meal-label"><%= t('meal_plans.index.lunch') %></span>
-        <%= f.select :lunch_dish_id,
-                     options_from_collection_for_select(@dishes, :id, :name, plan.lunch_dish_id),
-                     { include_blank: t('meal_plans.index.none') },
-                     { class: "meal-dish-selector" } %>
-        <% if detailed && plan.lunch_dish.present? %>
-          <div class="day-dish-details">
-            <a href="<%= dish_path(plan.lunch_dish) %>" class="readonly-dish-sublink"><%= plan.lunch_dish.name %></a>
-            <% if plan.lunch_dish.dish_ingredients.any? %>
-              <div class="day-dish-ingredients">
-                <% plan.lunch_dish.dish_ingredients.each do |di| %>
-                  <span class="day-ing-pill"><%= di.ingredient.name %> · <strong><%= di.suggested_quantity %></strong></span>
-                <% end %>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
-
-      <div class="meal-slot" style="margin-bottom: 1.2rem;">
-        <span class="meal-label"><%= t('meal_plans.index.dinner') %></span>
-        <%= f.select :dinner_dish_id,
-                     options_from_collection_for_select(@dishes, :id, :name, plan.dinner_dish_id),
-                     { include_blank: t('meal_plans.index.none') },
-                     { class: "meal-dish-selector" } %>
-        <% if detailed && plan.dinner_dish.present? %>
-          <div class="day-dish-details">
-            <a href="<%= dish_path(plan.dinner_dish) %>" class="readonly-dish-sublink"><%= plan.dinner_dish.name %></a>
-            <% if plan.dinner_dish.dish_ingredients.any? %>
-              <div class="day-dish-ingredients">
-                <% plan.dinner_dish.dish_ingredients.each do |di| %>
-                  <span class="day-ing-pill"><%= di.ingredient.name %> · <strong><%= di.suggested_quantity %></strong></span>
-                <% end %>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
-
-      <%= f.submit t('meal_plans.index.update_day'), class: "update-day-btn" %>
-    <% end %>
   <% else %>
-    <div class="readonly-meal-slot">
-      <span class="meal-label"><%= t('meal_plans.index.lunch') %></span>
-      <% if plan.lunch_dish.present? %>
-        <a href="<%= dish_path(plan.lunch_dish) %>" class="readonly-dish-link"><%= plan.lunch_dish.name %></a>
-        <% if detailed && plan.lunch_dish.dish_ingredients.any? %>
-          <div class="day-dish-ingredients">
-            <% plan.lunch_dish.dish_ingredients.each do |di| %>
-              <span class="day-ing-pill"><%= di.ingredient.name %> · <strong><%= di.suggested_quantity %></strong></span>
-            <% end %>
-          </div>
+    <div data-day-read-view>
+      <div class="readonly-meal-slot">
+        <span class="meal-label"><%= t('meal_plans.index.lunch') %></span>
+        <% if plan.lunch_dish.present? %>
+          <a href="<%= dish_path(plan.lunch_dish, from: 'calendar') %>" class="readonly-dish-link"><%= plan.lunch_dish.name %></a>
+          <% if detailed && plan.lunch_dish.dish_ingredients.any? %>
+            <div class="day-dish-ingredients">
+              <% plan.lunch_dish.dish_ingredients.each do |di| %>
+                <span class="day-ing-pill"><%= di.ingredient.name %> · <strong><%= di.suggested_quantity %></strong></span>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <span class="readonly-empty-slot"><%= t('meal_plans.index.no_dish_assigned') %></span>
         <% end %>
-      <% else %>
-        <span class="readonly-empty-slot"><%= t('meal_plans.index.no_dish_assigned') %></span>
-      <% end %>
+      </div>
+
+      <div class="readonly-meal-slot" style="margin-bottom: 0;">
+        <span class="meal-label"><%= t('meal_plans.index.dinner') %></span>
+        <% if plan.dinner_dish.present? %>
+          <a href="<%= dish_path(plan.dinner_dish, from: 'calendar') %>" class="readonly-dish-link"><%= plan.dinner_dish.name %></a>
+          <% if detailed && plan.dinner_dish.dish_ingredients.any? %>
+            <div class="day-dish-ingredients">
+              <% plan.dinner_dish.dish_ingredients.each do |di| %>
+                <span class="day-ing-pill"><%= di.ingredient.name %> · <strong><%= di.suggested_quantity %></strong></span>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <span class="readonly-empty-slot"><%= t('meal_plans.index.no_dish_assigned') %></span>
+        <% end %>
+      </div>
     </div>
 
-    <div class="readonly-meal-slot" style="margin-bottom: 0;">
-      <span class="meal-label"><%= t('meal_plans.index.dinner') %></span>
-      <% if plan.dinner_dish.present? %>
-        <a href="<%= dish_path(plan.dinner_dish) %>" class="readonly-dish-link"><%= plan.dinner_dish.name %></a>
-        <% if detailed && plan.dinner_dish.dish_ingredients.any? %>
-          <div class="day-dish-ingredients">
-            <% plan.dinner_dish.dish_ingredients.each do |di| %>
-              <span class="day-ing-pill"><%= di.ingredient.name %> · <strong><%= di.suggested_quantity %></strong></span>
-            <% end %>
+    <% if authenticated? && view_mode == "day" %>
+      <div class="day-inline-edit-form" data-day-edit-view hidden>
+        <%= form_with url: update_day_meal_plans_path, method: :patch, local: true do |f| %>
+          <%= f.hidden_field :day_of_week, value: day %>
+          <%= hidden_field_tag :view, view_mode %>
+          <%= hidden_field_tag :day, day %>
+
+          <div class="meal-slot" style="margin-bottom: 0.8rem;">
+            <span class="meal-label"><%= t('meal_plans.index.lunch') %></span>
+            <%= f.select :lunch_dish_id,
+                         options_from_collection_for_select(@dishes, :id, :name, plan.lunch_dish_id),
+                         { include_blank: t('meal_plans.index.none') },
+                         { class: "meal-dish-selector" } %>
+          </div>
+
+          <div class="meal-slot" style="margin-bottom: 1rem;">
+            <span class="meal-label"><%= t('meal_plans.index.dinner') %></span>
+            <%= f.select :dinner_dish_id,
+                         options_from_collection_for_select(@dishes, :id, :name, plan.dinner_dish_id),
+                         { include_blank: t('meal_plans.index.none') },
+                         { class: "meal-dish-selector" } %>
+          </div>
+
+          <div class="day-edit-actions">
+            <%= f.submit t('meal_plans.index.update_day'), class: "update-day-btn" %>
+            <button type="button" class="btn-secondary day-edit-cancel-btn" data-day-edit-cancel>
+              <%= t('meal_plans.index.cancel_edit') %>
+            </button>
           </div>
         <% end %>
-      <% else %>
-        <span class="readonly-empty-slot"><%= t('meal_plans.index.no_dish_assigned') %></span>
-      <% end %>
-    </div>
+      </div>
+    <% end %>
   <% end %>
 </div>
