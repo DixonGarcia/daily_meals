@@ -43,11 +43,11 @@ class ApplicationController < ActionController::Base
     ActiveSupport::SecurityUtils.secure_compare(actual_digest, expected_digest)
   end
 
-  # Reads the master access password from the environment (with development .env fallback).
+  # Reads the master access password from the environment (loaded from .env at boot in development).
   #
   # @return [String]
   def current_access_password
-    EnvResolver.fetch("APP_ACCESS_PASSWORD", prefer_dotenv: false)
+    ENV["APP_ACCESS_PASSWORD"].to_s
   end
 
   # Resolves the active household servings count from cookie or persisted HouseholdSetting default.

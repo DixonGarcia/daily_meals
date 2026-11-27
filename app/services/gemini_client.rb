@@ -102,8 +102,8 @@ class GeminiClient
   # @param api_key [String, nil] Optional override for GEMINI_API_KEY.
   # @param model [String, nil] Optional override for GEMINI_MODEL.
   def initialize(api_key: nil, model: nil)
-    @api_key = api_key.nil? ? resolve_env("GEMINI_API_KEY") : api_key.to_s
-    raw_model = (model.presence || resolve_env("GEMINI_MODEL").presence || DEFAULT_MODEL).to_s
+    @api_key = api_key.nil? ? ENV["GEMINI_API_KEY"].to_s : api_key.to_s
+    raw_model = (model.presence || ENV["GEMINI_MODEL"].presence || DEFAULT_MODEL).to_s
     cleaned = raw_model.sub(/\Amodels\//, "").strip
     @model = MODEL_ALIASES.fetch(cleaned, cleaned)
   end
@@ -244,13 +244,5 @@ class GeminiClient
     raise ApiError, "Empty response candidate from Gemini" if text_payload.blank?
 
     JSON.parse(text_payload.to_s.dup.force_encoding(Encoding::UTF_8))
-  end
-
-  # Reads an environment variable with a development hot-read priority from .env.
-  #
-  # @param key [String]
-  # @return [String]
-  def resolve_env(key)
-    EnvResolver.fetch(key, prefer_dotenv: true)
   end
 end
