@@ -44,6 +44,7 @@ Rails.application.routes.draw do
 
   resources :api_keys, only: [ :index, :create, :destroy, :update ]
   get "settings", to: "settings#show"
+  patch "settings/household", to: "settings#update_household", as: :update_household_settings
   resources :meal_plan_histories, only: [ :destroy ] do
     collection do
       post :snapshot

@@ -170,7 +170,8 @@ class AiCopilotService
 
     raw = client.suggest_dish_ingredients(
       dish_name: dish_name.to_s.strip,
-      existing_ingredients: existing_ingredients.map { |i| { name: i.name, supermarket_section: i.supermarket_section } }
+      existing_ingredients: existing_ingredients.map { |i| { name: i.name, supermarket_section: i.supermarket_section } },
+      diet_guidelines: HouseholdSetting.current.diet_guidelines.presence
     )
 
     normalized_categories = normalize_categories(raw[:categories] || raw[:category])
@@ -273,12 +274,22 @@ class AiCopilotService
     slots_text = no_calendar ? "None (chat/dish creation only)" : slots_rule.join(" and ")
 
     repetition_rule = cast_bool(params["avoid_repetition"]) ? "Avoid repeating the same dish on consecutive days." : "Repetition is allowed."
+    household_setting = HouseholdSetting.current
+    household_profile_lines = [
+      "- Household size: #{household_setting.servings_multiplier} people (catalog ingredient quantities represent 1 single serving per person; the shopping list automatically multiplies by household size)."
+    ]
+    if household_setting.guidelines_present?
+      household_profile_lines << "- Diet & household guidelines: #{household_setting.diet_guidelines}"
+    end
 
     <<~PROMPT
       You are the DailyMeals AI Culinary Copilot. Always write your `reply` in friendly, concise Spanish.
       Valid day names for `meal_plan` are strictly: #{MealPlan::DAYS_OF_WEEK.join(', ')}.
       Allowed dish `categories` values: #{Dish::CATEGORIES.join(', ')} (a dish can have MULTIPLE categories, e.g. ["Lunch", "Dinner"]).
       Allowed ingredient `supermarket_section` values: #{Ingredient::SECTIONS.join(', ')}.
+
+      HOUSEHOLD_DIET_PROFILE:
+      #{household_profile_lines.join("\n")}
 
       CRITICAL RULES FOR `meal_plan`:
       - Emit AT MOST ONE object per day in `meal_plan` (never repeat the same `day` twice).

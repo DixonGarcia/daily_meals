@@ -4,6 +4,7 @@
     <title><%= content_for(:title) || t('layout.title') %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ffffff">
     <meta name="robots" content="noindex, nofollow">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -61,5 +62,35 @@
 
       <%= yield %>
     </main>
+
+    <script>
+      (function() {
+        // Reliable native confirmations for data-confirm / data-turbo-confirm without Turbo/UJS
+        document.addEventListener("click", function(event) {
+          const el = event.target.closest("[data-confirm], [data-turbo-confirm]");
+          if (!el || el.tagName === "FORM") return;
+          const message = el.getAttribute("data-confirm") || el.getAttribute("data-turbo-confirm");
+          if (message && !window.confirm(message)) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }, true);
+
+        document.addEventListener("submit", function(event) {
+          const form = event.target;
+          if (!form || !form.getAttribute) return;
+          const message = form.getAttribute("data-confirm") || form.getAttribute("data-turbo-confirm");
+          if (message && !window.confirm(message)) {
+            event.preventDefault();
+          }
+        }, true);
+
+        if ("serviceWorker" in navigator) {
+          window.addEventListener("load", function() {
+            navigator.serviceWorker.register("<%= pwa_service_worker_path(format: :js) %>").catch(function() {});
+          });
+        }
+      })();
+    </script>
   </body>
 </html>
