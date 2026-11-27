@@ -41,9 +41,6 @@ class ShoppingListsController < ApplicationController
       end
     end
 
-    stored = cookies[:shopping_servings].to_i
-    return stored if stored.between?(1, ShoppingListGenerator::MAX_SERVINGS)
-
-    HouseholdSetting.current_or_default.servings_multiplier
+    current_household_servings
   end
 end

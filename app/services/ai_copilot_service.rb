@@ -50,27 +50,8 @@ class AiCopilotService
     data = payload.is_a?(String) ? JSON.parse(payload, symbolize_names: true) : payload
     data = data.with_indifferent_access if data.respond_to?(:with_indifferent_access)
 
-    return false unless data[:meal_plan].is_a?(Array)
-
-    success = true
-    ActiveRecord::Base.transaction do
-      data[:meal_plan].each do |item|
-        day = item[:day]
-        lunch_id = item[:lunch_dish_id]
-        dinner_id = item[:dinner_dish_id]
-
-        plan = MealPlan.find_or_initialize_by(day_of_week: day)
-        plan.lunch_dish_id = lunch_id
-        plan.dinner_dish_id = dinner_id
-
-        unless plan.save
-          success = false
-          raise ActiveRecord::Rollback
-        end
-      end
-    end
-    success
-  rescue => _e
+    MealPlan.import_schedule!(data[:meal_plan])
+  rescue StandardError
     false
   end
 
@@ -444,13 +425,10 @@ class AiCopilotService
         ing_name = ing_data[:name].to_s.strip
         next if ing_name.blank?
 
-        ingredient = Ingredient.where("LOWER(name) = ?", ing_name.downcase).first
-        unless ingredient
-          ingredient = Ingredient.create!(
-            name: ing_name,
-            supermarket_section: normalize_section(ing_data[:supermarket_section])
-          )
-        end
+        ingredient = Ingredient.find_or_create_normalized!(
+          name: ing_name,
+          supermarket_section: ing_data[:supermarket_section]
+        )
 
         di = DishIngredient.find_or_initialize_by(dish: dish, ingredient: ingredient)
         di.suggested_quantity = ing_data[:suggested_quantity].to_s.strip.presence || "1 unidad"
@@ -560,8 +538,6 @@ class AiCopilotService
   # @param raw_section [String, nil]
   # @return [String]
   def normalize_section(raw_section)
-    sec = raw_section.to_s.strip
-    matched = Ingredient::SECTIONS.find { |s| s.casecmp?(sec) }
-    matched || "Otros"
+    Ingredient.normalize_section(raw_section)
   end
 end

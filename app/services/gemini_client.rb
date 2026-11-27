@@ -102,8 +102,8 @@ class GeminiClient
   # @param api_key [String, nil] Optional override for GEMINI_API_KEY.
   # @param model [String, nil] Optional override for GEMINI_MODEL.
   def initialize(api_key: nil, model: nil)
-    @api_key = api_key.nil? ? resolve_env("GEMINI_API_KEY") : api_key.to_s
-    raw_model = (model.presence || resolve_env("GEMINI_MODEL").presence || DEFAULT_MODEL).to_s
+    @api_key = api_key.nil? ? ENV["GEMINI_API_KEY"].to_s : api_key.to_s
+    raw_model = (model.presence || ENV["GEMINI_MODEL"].presence || DEFAULT_MODEL).to_s
     cleaned = raw_model.sub(/\Amodels\//, "").strip
     @model = MODEL_ALIASES.fetch(cleaned, cleaned)
   end
@@ -244,26 +244,5 @@ class GeminiClient
     raise ApiError, "Empty response candidate from Gemini" if text_payload.blank?
 
     JSON.parse(text_payload.to_s.dup.force_encoding(Encoding::UTF_8))
-  end
-
-  # Reads an environment variable with a development hot-read priority from .env.
-  #
-  # @param key [String]
-  # @return [String]
-  def resolve_env(key)
-    if Rails.env.development?
-      env_path = Rails.root.join(".env")
-      if File.exist?(env_path)
-        File.readlines(env_path, chomp: true).each do |line|
-          stripped = line.strip
-          next if stripped.empty? || stripped.start_with?("#")
-
-          k, v = stripped.split("=", 2)
-          return v.to_s.strip if k&.strip == key && v.to_s.strip.present?
-        end
-      end
-    end
-
-    ENV[key].to_s
   end
 end

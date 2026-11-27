@@ -59,51 +59,7 @@
         <p><%= t('shopping_lists.show.fresh_empty') %></p>
       </div>
     <% else %>
-      <div class="shopping-sections-grid">
-        <% @fresh_sections.each do |section, items| %>
-          <div class="card shopping-section-card" data-section="<%= section %>" data-emoji="<%= shopping_section_emoji(section) %>" data-group="fresh">
-            <div class="shopping-section-head">
-              <span class="shopping-section-name"><%= shopping_section_emoji(section) %> <%= section %></span>
-              <button type="button" class="btn-copy-section" data-copy-section="<%= section %>">
-                <%= t('shopping_lists.show.copy_section') %>
-              </button>
-            </div>
-            <div class="shopping-section-items">
-              <% items.each do |item| %>
-                <% item_key = "ing-#{item[:ingredient].id}" %>
-                <div class="shopping-check-row"
-                     role="checkbox"
-                     tabindex="0"
-                     aria-checked="false"
-                     data-item-key="<%= item_key %>"
-                     data-item-group="fresh"
-                     data-item-section="<%= section %>"
-                     data-item-emoji="<%= shopping_section_emoji(section) %>"
-                     data-item-name="<%= item[:ingredient].name %>"
-                     data-item-qty="<%= item[:quantity] %>">
-                  <span class="shopping-check-box" aria-hidden="true"></span>
-                  <div class="shopping-item-main">
-                    <span class="shopping-item-title"><%= item[:ingredient].name %></span>
-                    <% if item[:dishes].size <= 2 %>
-                      <span class="shopping-item-usage"><%= format_dish_usage(item[:dishes]) %></span>
-                    <% else %>
-                      <button type="button" class="shopping-usage-toggle" aria-expanded="false">
-                        <%= t('shopping_lists.show.used_in_meals', count: total_dish_occurrences(item[:dishes])) %> ▾
-                      </button>
-                      <ul class="shopping-usage-list" hidden>
-                        <% item[:dishes].each do |entry| %>
-                          <li><%= format_single_dish_usage(entry) %></li>
-                        <% end %>
-                      </ul>
-                    <% end %>
-                  </div>
-                  <span class="shopping-qty-pill"><%= item[:quantity] %></span>
-                </div>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
+      <%= render "section_cards", sections: @fresh_sections, group: "fresh" %>
     <% end %>
   </section>
 
@@ -115,51 +71,7 @@
       </div>
     <% else %>
       <p class="shopping-pantry-hint"><%= t('shopping_lists.show.pantry_hint') %></p>
-      <div class="shopping-sections-grid">
-        <% @pantry_sections.each do |section, items| %>
-          <div class="card shopping-section-card" data-section="<%= section %>" data-emoji="<%= shopping_section_emoji(section) %>" data-group="pantry">
-            <div class="shopping-section-head">
-              <span class="shopping-section-name"><%= shopping_section_emoji(section) %> <%= section %></span>
-              <button type="button" class="btn-copy-section" data-copy-section="<%= section %>">
-                <%= t('shopping_lists.show.copy_section') %>
-              </button>
-            </div>
-            <div class="shopping-section-items">
-              <% items.each do |item| %>
-                <% item_key = "ing-#{item[:ingredient].id}" %>
-                <div class="shopping-check-row"
-                     role="checkbox"
-                     tabindex="0"
-                     aria-checked="false"
-                     data-item-key="<%= item_key %>"
-                     data-item-group="pantry"
-                     data-item-section="<%= section %>"
-                     data-item-emoji="<%= shopping_section_emoji(section) %>"
-                     data-item-name="<%= item[:ingredient].name %>"
-                     data-item-qty="<%= item[:quantity] %>">
-                  <span class="shopping-check-box" aria-hidden="true"></span>
-                  <div class="shopping-item-main">
-                    <span class="shopping-item-title"><%= item[:ingredient].name %></span>
-                    <% if item[:dishes].size <= 2 %>
-                      <span class="shopping-item-usage"><%= format_dish_usage(item[:dishes]) %></span>
-                    <% else %>
-                      <button type="button" class="shopping-usage-toggle" aria-expanded="false">
-                        <%= t('shopping_lists.show.used_in_meals', count: total_dish_occurrences(item[:dishes])) %> ▾
-                      </button>
-                      <ul class="shopping-usage-list" hidden>
-                        <% item[:dishes].each do |entry| %>
-                          <li><%= format_single_dish_usage(entry) %></li>
-                        <% end %>
-                      </ul>
-                    <% end %>
-                  </div>
-                  <span class="shopping-qty-pill"><%= item[:quantity] %></span>
-                </div>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
+      <%= render "section_cards", sections: @pantry_sections, group: "pantry" %>
     <% end %>
   </section>
 

@@ -7,10 +7,7 @@ class Api::V1::MealPlansController < Api::V1::BaseController
   #
   # @return [void]
   def index
-    plans = MealPlan.includes(
-      lunch_dish: { dish_ingredients: :ingredient },
-      dinner_dish: { dish_ingredients: :ingredient }
-    ).all
+    plans = MealPlan.with_dishes_and_ingredients.to_a
 
     payload = plans.map do |plan|
       {
@@ -32,30 +29,12 @@ class Api::V1::MealPlansController < Api::V1::BaseController
   #
   # @return [void]
   def import
-    meal_plan_payload = params.expect(:meal_plan)
+    meal_plan_payload = params.expect(meal_plan: [ [ :day, :lunch_dish_id, :dinner_dish_id ] ])
 
-    success = true
-    ActiveRecord::Base.transaction do
-      meal_plan_payload.each do |item|
-        day = item[:day]
-        lunch_id = item[:lunch_dish_id]
-        dinner_id = item[:dinner_dish_id]
-
-        plan = MealPlan.find_or_initialize_by(day_of_week: day)
-        plan.lunch_dish_id = lunch_id
-        plan.dinner_dish_id = dinner_id
-
-        unless plan.save
-          success = false
-          raise ActiveRecord::Rollback
-        end
-      end
-    end
-
-    if success
+    if MealPlan.import_schedule!(meal_plan_payload)
       render json: { status: "success" }, status: :ok
     else
-      render json: { error: "Failed to import meal plan" }, status: :unprocessable_entity
+      render json: { error: "Failed to import meal plan" }, status: :unprocessable_content
     end
   end
 

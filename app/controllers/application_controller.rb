@@ -43,23 +43,21 @@ class ApplicationController < ActionController::Base
     ActiveSupport::SecurityUtils.secure_compare(actual_digest, expected_digest)
   end
 
-  # Reads the master access password from the environment (with development hot-read fallback from .env).
+  # Reads the master access password from the environment (loaded from .env at boot in development).
   #
   # @return [String]
   def current_access_password
-    env_val = ENV["APP_ACCESS_PASSWORD"]
-    return env_val.to_s unless env_val.nil?
+    ENV["APP_ACCESS_PASSWORD"].to_s
+  end
 
-    if Rails.env.development?
-      env_path = Rails.root.join(".env")
-      if File.exist?(env_path)
-        File.readlines(env_path, chomp: true).each do |line|
-          k, v = line.strip.split("=", 2)
-          return v.to_s.strip if k == "APP_ACCESS_PASSWORD"
-        end
-      end
-    end
+  # Resolves the active household servings count from cookie or persisted HouseholdSetting default.
+  #
+  # @param household_setting [HouseholdSetting] Optional preloaded setting instance.
+  # @return [Integer]
+  def current_household_servings(household_setting = HouseholdSetting.current_or_default)
+    stored = cookies[:shopping_servings].to_i
+    return stored if stored.between?(1, ShoppingListGenerator::MAX_SERVINGS)
 
-    ""
+    household_setting.servings_multiplier
   end
 end

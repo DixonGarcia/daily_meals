@@ -17,14 +17,7 @@
     <span><%= @dish.name %></span>
     <div class="category-tags-group">
       <% @dish.effective_categories.each do |cat| %>
-        <% category_class = case cat
-                          when 'Breakfast' then 'tag-breakfast'
-                          when 'Lunch' then 'tag-lunch'
-                          when 'Dinner' then 'tag-dinner'
-                          when 'Snack' then 'tag-snack'
-                          else 'tag-other'
-                          end %>
-        <span class="category-tag <%= category_class %>" style="font-size: 0.85rem; padding: 0.25rem 0.7rem;">
+        <span class="category-tag <%= dish_category_badge_class(cat) %>" style="font-size: 0.85rem; padding: 0.25rem 0.7rem;">
           <%= t("dish_categories.#{cat.downcase}", default: cat) %>
         </span>
       <% end %>

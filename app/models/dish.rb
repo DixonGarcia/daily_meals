@@ -49,7 +49,7 @@ class Dish < ApplicationRecord
   def sync_categories_and_primary_category
     cleaned = Array(categories).map { |v| v.to_s.strip }.reject(&:blank?).uniq
 
-    if cleaned.empty? && category.present? && !@categories_explicitly_set_empty
+    if cleaned.empty? && category.present?
       cleaned = [ category.to_s.strip ]
     end
 

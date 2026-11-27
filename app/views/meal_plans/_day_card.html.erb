@@ -38,37 +38,16 @@
     </div>
   <% else %>
     <div data-day-read-view>
-      <div class="readonly-meal-slot">
-        <span class="meal-label"><%= t('meal_plans.index.lunch') %></span>
-        <% if plan.lunch_dish.present? %>
-          <a href="<%= dish_path(plan.lunch_dish, from: 'calendar') %>" class="readonly-dish-link"><%= plan.lunch_dish.name %></a>
-          <% if detailed && plan.lunch_dish.dish_ingredients.any? %>
-            <div class="day-dish-ingredients">
-              <% plan.lunch_dish.dish_ingredients.each do |di| %>
-                <span class="day-ing-pill"><%= di.ingredient.name %> · <strong><%= di.suggested_quantity %></strong></span>
-              <% end %>
-            </div>
-          <% end %>
-        <% else %>
-          <span class="readonly-empty-slot"><%= t('meal_plans.index.no_dish_assigned') %></span>
-        <% end %>
-      </div>
-
-      <div class="readonly-meal-slot" style="margin-bottom: 0;">
-        <span class="meal-label"><%= t('meal_plans.index.dinner') %></span>
-        <% if plan.dinner_dish.present? %>
-          <a href="<%= dish_path(plan.dinner_dish, from: 'calendar') %>" class="readonly-dish-link"><%= plan.dinner_dish.name %></a>
-          <% if detailed && plan.dinner_dish.dish_ingredients.any? %>
-            <div class="day-dish-ingredients">
-              <% plan.dinner_dish.dish_ingredients.each do |di| %>
-                <span class="day-ing-pill"><%= di.ingredient.name %> · <strong><%= di.suggested_quantity %></strong></span>
-              <% end %>
-            </div>
-          <% end %>
-        <% else %>
-          <span class="readonly-empty-slot"><%= t('meal_plans.index.no_dish_assigned') %></span>
-        <% end %>
-      </div>
+      <%= render "meal_plans/readonly_meal_slot",
+                 label: t('meal_plans.index.lunch'),
+                 dish: plan.lunch_dish,
+                 detailed: detailed,
+                 last_slot: false %>
+      <%= render "meal_plans/readonly_meal_slot",
+                 label: t('meal_plans.index.dinner'),
+                 dish: plan.dinner_dish,
+                 detailed: detailed,
+                 last_slot: true %>
     </div>
 
     <% if authenticated? && view_mode == "day" %>

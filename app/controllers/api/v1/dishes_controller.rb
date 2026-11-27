@@ -12,7 +12,9 @@ class Api::V1::DishesController < Api::V1::BaseController
   # Imports a catalog of dishes and ingredients atomically inside a transaction.
   # @return [void]
   def import
-    dishes_payload = params.expect(:dishes)
+    dishes_payload = params.expect(
+      dishes: [ [ :name, :category, { categories: [] }, { ingredients: [ [ :name, :supermarket_section, :suggested_quantity ] ] } ] ]
+    )
 
     success = true
     ActiveRecord::Base.transaction do
@@ -54,7 +56,7 @@ class Api::V1::DishesController < Api::V1::BaseController
     if success
       render json: { status: "success" }, status: :ok
     else
-      render json: { error: "Failed to import dishes catalog" }, status: :unprocessable_entity
+      render json: { error: "Failed to import dishes catalog" }, status: :unprocessable_content
     end
   end
 end
