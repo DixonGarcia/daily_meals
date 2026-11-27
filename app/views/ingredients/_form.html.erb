@@ -23,6 +23,16 @@
                  { class: "form-input" } %>
   </div>
 
+  <div class="form-group">
+    <label class="pantry-checkbox-card">
+      <%= f.check_box :pantry_staple, class: "pantry-checkbox-input" %>
+      <div>
+        <span class="pantry-checkbox-title"><%= t('ingredients.form.pantry_staple_label') %></span>
+        <span class="pantry-checkbox-hint"><%= t('ingredients.form.pantry_staple_hint') %></span>
+      </div>
+    </label>
+  </div>
+
   <div style="display: flex; gap: 1rem; margin-top: 2rem;">
     <%= f.submit ingredient.new_record? ? t('ingredients.form.submit_create') : t('ingredients.form.submit_update'), class: "btn-action", style: "flex: 1;" %>
     <a href="<%= ingredients_path %>" class="btn-secondary" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;"><%= t('ingredients.form.cancel') %></a>

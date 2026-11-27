@@ -72,6 +72,6 @@ class IngredientsController < ApplicationController
   # Permit and validate strong parameters for Ingredient.
   # @return [ActionController::Parameters]
   def ingredient_params
-    params.expect(ingredient: [ :name, :supermarket_section ])
+    params.expect(ingredient: [ :name, :supermarket_section, :pantry_staple ])
   end
 end

@@ -26,6 +26,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resource :shopping_list, only: [ :show ]
+
   resources :ai_chat_sessions, only: [ :create, :destroy ] do
     member do
       patch :switch

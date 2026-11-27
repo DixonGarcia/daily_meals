@@ -33,6 +33,7 @@
         </a>
         <div class="nav-links">
           <a href="<%= root_path %>" class="nav-link <%= 'active' if controller_name == 'meal_plans' %>"><%= t('layout.calendar') %></a>
+          <a href="<%= shopping_list_path %>" class="nav-link <%= 'active' if controller_name == 'shopping_lists' %>"><%= t('layout.shopping_list') %></a>
           <a href="<%= dishes_path %>" class="nav-link <%= 'active' if %w[dishes ingredients].include?(controller_name) %>"><%= t('layout.dishes') %></a>
           <% if authenticated? %>
             <a href="<%= settings_path %>" class="nav-link <%= 'active' if %w[settings api_keys meal_plan_histories].include?(controller_name) %>"><%= t('layout.settings') %></a>

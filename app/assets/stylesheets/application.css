@@ -1669,6 +1669,529 @@ html {
   white-space: nowrap;
 }
 
+/* ==========================================================================
+   FEAT-09: Interactive Shopping List (Variant 2 — Tabs + Section Grid + Dock)
+   ========================================================================== */
+
+.pantry-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.45rem;
+  padding: 0.14rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #f3f4f6;
+  color: var(--color-subtitle);
+  border: 1px solid var(--color-border);
+}
+
+.pantry-checkbox-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-body-alt);
+  cursor: pointer;
+}
+
+.pantry-checkbox-input {
+  width: 20px;
+  height: 20px;
+  margin-top: 0.15rem;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.pantry-checkbox-title {
+  display: block;
+  font-family: var(--font-family-title);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-secondary);
+}
+
+.pantry-checkbox-hint {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-subtitle);
+  margin-top: 0.15rem;
+}
+
+/* Compact Shopping Summary Card on / */
+.shopping-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.shopping-summary-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.shopping-summary-title {
+  font-size: 1.2rem;
+  margin-bottom: 0;
+  color: var(--color-primary);
+}
+
+.shopping-summary-pill {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-secondary);
+  background: var(--color-body-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.22rem 0.65rem;
+}
+
+.shopping-summary-stops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.shopping-stop-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text);
+  background: var(--color-body-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+}
+
+.shopping-summary-cta {
+  width: 100%;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dedicated /shopping_list Workspace */
+.shopping-workspace {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding-bottom: 5.5rem;
+}
+
+.shopping-hero-card {
+  margin-bottom: 1rem;
+}
+
+.shopping-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.shopping-page-title {
+  margin-bottom: 0;
+  font-size: 1.5rem;
+}
+
+.servings-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-body-alt);
+}
+
+.stepper-btn {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-secondary);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.stepper-btn:hover {
+  background: var(--grey-box-fill);
+}
+
+.stepper-btn-disabled {
+  color: var(--grey-text);
+  cursor: not-allowed;
+}
+
+.stepper-value {
+  padding: 0 0.8rem;
+  font-family: var(--font-family-title);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-secondary);
+  white-space: nowrap;
+}
+
+.shopping-progress-wrap {
+  margin-bottom: 0.95rem;
+}
+
+.shopping-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-subtitle);
+  margin-bottom: 0.35rem;
+}
+
+.shopping-progress-track {
+  height: 8px;
+  background: var(--grey-box-fill);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.shopping-progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.shopping-seg-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  background: var(--color-body-alt);
+  padding: 0.3rem;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.shopping-seg-tab {
+  border: none;
+  background: transparent;
+  min-height: 42px;
+  border-radius: 9px;
+  font-family: var(--font-family-title);
+  font-weight: 700;
+  font-size: 0.86rem;
+  color: var(--color-subtitle);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0.35rem 0.4rem;
+}
+
+.shopping-seg-tab.active {
+  background: var(--color-body);
+  color: var(--color-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.shopping-wa-preview {
+  margin-top: 0.9rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 0.85rem;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #166534;
+}
+
+.shopping-pantry-hint {
+  font-size: 0.85rem;
+  color: var(--color-subtitle);
+  margin-bottom: 0.85rem;
+}
+
+.shopping-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.shopping-section-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.shopping-section-head {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-body-alt);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shopping-section-name {
+  font-family: var(--font-family-title);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-secondary);
+}
+
+.btn-copy-section {
+  border: 1px solid var(--color-border);
+  background: var(--color-body);
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--color-secondary);
+  min-height: 34px;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-section:hover {
+  border-color: var(--color-primary);
+  background: #f4f9e4;
+}
+
+.shopping-check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  min-height: 58px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.shopping-check-row:last-child {
+  border-bottom: none;
+}
+
+.shopping-check-row:hover {
+  background: #fafafa;
+}
+
+.shopping-check-row.checked {
+  background: #f8faf3;
+}
+
+.shopping-check-row.checked .shopping-item-title {
+  text-decoration: line-through;
+  color: var(--grey-text);
+}
+
+.shopping-check-row.checked .shopping-qty-pill {
+  opacity: 0.45;
+}
+
+.shopping-check-box {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 2px solid #cccccc;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  background: var(--color-body);
+  transition: all 0.15s ease;
+}
+
+.shopping-check-row.checked .shopping-check-box {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.shopping-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.shopping-item-title {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-secondary);
+}
+
+.shopping-item-usage {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-subtitle);
+  margin-top: 0.12rem;
+}
+
+.shopping-qty-pill {
+  font-family: var(--font-family-title);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--color-secondary);
+  background: var(--grey-box-fill);
+  padding: 0.25rem 0.65rem;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.shopping-extras-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.shopping-extra-input {
+  flex: 1;
+  min-height: 44px;
+}
+
+.shopping-extra-submit {
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.shopping-extra-remove {
+  border: none;
+  background: transparent;
+  color: var(--grey-text);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.shopping-extra-remove:hover {
+  color: var(--error-red);
+}
+
+.shopping-extras-empty {
+  font-size: 0.88rem;
+  color: var(--color-subtitle);
+  text-align: center;
+  padding: 1rem 0.5rem;
+  font-style: italic;
+}
+
+.shopping-empty-card {
+  text-align: center;
+  padding: 2.2rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.shopping-empty-card p {
+  color: var(--color-subtitle);
+  max-width: 420px;
+}
+
+/* Sticky Bottom Action Dock */
+.shopping-bottom-dock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--color-border);
+  padding: 0.75rem 1rem;
+  z-index: 80;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.shopping-dock-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.btn-whatsapp-primary {
+  flex: 1;
+  min-height: 46px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-secondary);
+  color: #ffffff;
+  font-family: var(--font-family-title);
+  font-weight: 700;
+  font-size: 0.94rem;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-whatsapp-primary:hover {
+  opacity: 0.92;
+}
+
+.btn-dock-clear {
+  min-height: 46px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-body);
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0 0.95rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-dock-clear:hover {
+  background: var(--color-body-alt);
+}
+
+.shopping-toast {
+  position: fixed;
+  top: 4.8rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-180%);
+  background: var(--color-secondary);
+  color: #ffffff;
+  padding: 0.65rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.25s ease;
+  z-index: 120;
+  pointer-events: none;
+}
+
+.shopping-toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 768px) {
+  .shopping-sections-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shopping-seg-tab {
+    font-size: 0.78rem;
+  }
+
+  .shopping-extras-form {
+    flex-direction: column;
+  }
+}
+
 
 
 

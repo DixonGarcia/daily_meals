@@ -20,7 +20,9 @@ class MealPlansController < ApplicationController
     @view_mode = params[:view] == "week" ? "week" : "day"
     @today_key = Time.zone.today.strftime("%A")
     @selected_day = days.include?(params[:day].to_s) ? params[:day].to_s : @today_key
-    @shopping_list = ShoppingListGenerator.new.generate
+    stored_servings = cookies[:shopping_servings].to_i
+    @servings = stored_servings.between?(1, ShoppingListGenerator::MAX_SERVINGS) ? stored_servings : ShoppingListsController::DEFAULT_HOUSEHOLD_SERVINGS
+    @shopping_summary = ShoppingListGenerator.new(servings: @servings, meal_plans: existing_plans.values).generate_grouped
 
     return unless authenticated?
 
