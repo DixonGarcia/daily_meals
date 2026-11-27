@@ -46,3 +46,7 @@ Two interactive Biteclub-themed HTML mockups have been created under `_product/s
 - **Shopping List Workspace (`/shopping_list`)**:
   - **Variant 1 (`variant_1_stop_focus.html`) — Enfoque por Parada + Checklist Compacto**: Sticky top bar with servings pills (`1x–4x`), horizontal store-stop filter chips (`Todas`, `🥬 Verdulería`, `🥩 Carnicería`, `🧀 Charcutería`, `🥫 Víveres`), primary `📲 Copiar para WhatsApp` button, single-column high-contrast checklist with 52px one-handed tap targets and dish-usage subtext, inline quick-add extra bar, and a collapsible `🏠 Revisar en despensa` accordion at the bottom.
   - **Variant 2 (`variant_2_split_dashboard.html`) — Tablero por Pestañas + Copiar por Parada**: Header summary card with visual progress bar and servings stepper (`− 2 +`), segmented category tabs (`🛒 Frescos`, `🏠 Despensa`, `✨ Extras`), responsive multi-card section grid where every section card has its own quick `📲` WhatsApp copy button (ideal for texting only the butcher or produce vendor), and a sticky mobile bottom action dock.
+
+## 6. Selected Variant
+- **Selected**: **Variant 2 (`variant_2_split_dashboard.html`)** — Tablero por Pestañas + Copiar por Parada (header summary card with progress bar + servings stepper, segmented `Frescos / Despensa / Extras` tabs, responsive section card grid with per-stop `📲 Copiar parada` WhatsApp buttons, and sticky bottom action dock).
+- **Discarded**: Variant 1 (`variant_1_stop_focus.html`) deleted per `choose-mockup`.
